@@ -88,16 +88,16 @@ const HOME_CARDS: HomeCardItem[] = [
 type NavItemConfig = {
   icon: string;
   label: string;
-  href?: "/" | "/planner";
+  href: "/" | "/planner" | "/recipes" | "/starter" | "/profile";
   active?: boolean;
 };
 
 const NAV_ITEMS: NavItemConfig[] = [
   { icon: "🏠", label: "Home", href: "/", active: true },
   { icon: "🕘", label: "Planner", href: "/planner" },
-  { icon: "📖", label: "Recepten" },
-  { icon: "🫙", label: "Starter" },
-  { icon: "👤", label: "Profiel" },
+  { icon: "📖", label: "Recepten", href: "/recipes" },
+  { icon: "🫙", label: "Starter", href: "/starter" },
+  { icon: "👤", label: "Profiel", href: "/profile" },
 ];
 
 export default function HomeScreen() {

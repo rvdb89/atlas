@@ -1,19 +1,11 @@
 import { router, type Href } from "expo-router";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import PageNav from "@/components/PageNav";
+import ScreenLayout from "@/components/ScreenLayout";
 import { recipeList } from "@/data/recipes";
 import type { Recipe } from "@/types/recipe";
 
 const COLORS = {
-  cream: "#F7F1E8",
   warmWhite: "#FFFDF8",
   card: "#F8F0E6",
   brown: "#2B2118",
@@ -22,38 +14,22 @@ const COLORS = {
 };
 
 export default function RecipesScreen() {
-  const insets = useSafeAreaInsets();
-
   return (
-    <View style={styles.screen}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.scrollContent,
-          {
-            paddingTop: Math.max(insets.top, 20) + 12,
-            paddingBottom: Math.max(insets.bottom, 20) + 32,
-          },
-        ]}
-      >
-        <PageNav backTo="/" />
-
-        <Text style={styles.title}>Recepten</Text>
-        <Text style={styles.subtitle}>
-          Ontdek en bewaar recepten.
-        </Text>
-
-        <View style={styles.list}>
-          {recipeList.map((recipe) => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-              onPress={() => router.push(recipe.route as Href)}
-            />
-          ))}
-        </View>
-      </ScrollView>
-    </View>
+    <ScreenLayout
+      backTo="/"
+      title="Recepten"
+      subtitle="Ontdek en bewaar recepten."
+    >
+      <View style={styles.list}>
+        {recipeList.map((recipe) => (
+          <RecipeCard
+            key={recipe.id}
+            recipe={recipe}
+            onPress={() => router.push(recipe.route as Href)}
+          />
+        ))}
+      </View>
+    </ScreenLayout>
   );
 }
 
@@ -95,30 +71,6 @@ function RecipeCard({
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.cream,
-  },
-
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-  },
-
-  title: {
-    fontSize: 36,
-    fontWeight: "900",
-    color: COLORS.brown,
-  },
-
-  subtitle: {
-    marginTop: 8,
-    marginBottom: 28,
-    fontSize: 17,
-    lineHeight: 24,
-    color: COLORS.secondary,
-  },
-
   list: {
     gap: 14,
   },
