@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import ScreenLayout from "@/components/ScreenLayout";
+import { RecipeKnowledgeView } from "@/components/knowledge";
 import { FLOUR_LABELS } from "@/data/recipes";
 import type {
   FlourKey,
@@ -125,6 +126,10 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
           ))}
         </View>
       </Section>
+
+      {recipe.knowledge ? (
+        <RecipeKnowledgeView knowledge={recipe.knowledge} />
+      ) : null}
 
       <Pressable
         style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}

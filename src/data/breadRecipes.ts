@@ -1,5 +1,7 @@
 import type { Recipe, RecipeStep } from "@/types/recipe";
 
+import { painDeCampagneKnowledge } from "./knowledge/painDeCampagneKnowledge";
+
 const FLOUR_BASE = 500;
 
 function saltAmount(percent: number) {
@@ -129,7 +131,8 @@ export const painDeCampagne: Recipe = {
   slug: "pain-de-campagne",
   name: "Pain de Campagne",
   category: "Brood",
-  tagline: "⭐ Doughbert Signature — ons dagelijkse zuurdesembrood.",
+  tagline:
+    "⭐ Doughbert Signature — ons premium dagelijks brood met Franse diepte.",
   route: "/pain-de-campagne",
 
   meta: {
@@ -138,7 +141,8 @@ export const painDeCampagne: Recipe = {
     durationLabel: "±24 uur",
     totalHoursMin: 20,
     totalHoursMax: 30,
-    goodFor: "Dagelijks brood, ontbijt, lunch, toast en soep.",
+    goodFor:
+      "Dagelijks ontbijt, boter & jam, belegde boterhammen, toast, soep en avondmaaltijden.",
   },
 
   hydration: 76,
@@ -152,28 +156,115 @@ export const painDeCampagne: Recipe = {
   },
 
   introduction:
-    "Het signature brood van Doughbert. Dunne knapperige korst, licht open kruim, volle tarwesmaak en een licht nootachtig karakter. Perfect als dagelijks zuurdesembrood.",
+    "Pain de Campagne is het signature recept van Doughbert — het brood waarmee alles begint. Drie Franse tarwemelsoorten werken samen tot een harmonieus geheel: volle tarwesmaak, een licht nootachtig karakter en een licht open kruim onder een dunne, knapperige korst. Perfect als dagelijks zuurdesembrood. Thuisbakker-vriendelijk opgezet: heldere verhoudingen, betrouwbare rijsing en een resultaat dat week na week lukt — ook als je nog geen ervaren bakker bent.",
 
   ingredients: [
-    { id: "t65", name: "T65", amount: "250 g" },
-    { id: "t80", name: "T80", amount: "200 g" },
-    { id: "t130", name: "T130", amount: "50 g" },
-    { id: "water", name: "Water", amount: waterAmount(76), note: "76% hydratatie" },
+    {
+      id: "t65",
+      name: "T65",
+      amount: "250 g",
+      note: "50% · witte tarwebasis voor zachte kruim en milde smaak",
+    },
+    {
+      id: "t80",
+      name: "T80",
+      amount: "200 g",
+      note: "40% · meer body, diepere tarwesmaak en stevigere structuur",
+    },
+    {
+      id: "t130",
+      name: "T130",
+      amount: "50 g",
+      note: "10% · voller graan voor diepte en een licht nootachtig accent",
+    },
+    {
+      id: "water",
+      name: "Water",
+      amount: waterAmount(76),
+      note: "76% hydratatie · kamertemperatuur",
+    },
     {
       id: "starter",
       name: "Actieve zuurdesem starter",
       amount: starterAmount(20),
-      note: "20% · 100% hydratatie",
+      note: "20% · 100% hydratatie · bubbelend en actief op het moment van mixen",
     },
-    { id: "salt", name: "Zout", amount: saltAmount(2), note: "2% van de bloem" },
+    {
+      id: "salt",
+      name: "Zout",
+      amount: saltAmount(2),
+      note: "2% van de bloem · voeg toe na autolyse",
+    },
   ],
 
-  steps: standardBreadSteps("4–5 uur", "12–24 uur"),
-  tips: [
-    "Doughberts favoriet voor elke dag — eenvoudig, vol en betrouwbaar.",
-    "Bak op hoge temperatuur voor die dunne, knapperige korst.",
-    "Combineert perfect met boter, kaas of een drizzle olijfolie.",
+  steps: [
+    {
+      id: "feed-starter",
+      order: 1,
+      title: "Starter voeden",
+      body:
+        "Voed je starter 8 tot 12 uur voor het mixen. Je wilt een bubbelende, licht zurige massa — dat is het teken dat hij klaar is. Bij kamertemperatuur (20–22 °C) is dit meestal voldoende; in een koelere keuken mag je iets langer wachten.",
+      durationLabel: "8–12 uur",
+    },
+    {
+      id: "autolyse",
+      order: 2,
+      title: "Autolyse",
+      body:
+        "Meng T65, T80 en T130 met water tot er geen droge stukken meer zijn. Laat 30 tot 45 minuten rusten. De autolyse helpt de tarwe hydrateren en maakt het deeg soepeler — handig bij 76% hydratatie thuis.",
+      durationLabel: "30–45 min",
+    },
+    {
+      id: "mix",
+      order: 3,
+      title: "Mengen",
+      body:
+        "Voeg starter en zout toe. Kneed tot het deeg samenhangend en soepel aanvoelt — het mag licht plakken, dat hoort bij deze hydratatie. Geen standmixer nodig: stretch-and-folds werken uitstekend.",
+      durationLabel: "8–12 min",
+    },
+    {
+      id: "bulk",
+      order: 4,
+      title: "Bulkfermentatie",
+      body:
+        "Laat 4 tot 5 uur rijzen op kamertemperatuur. Geef elke 30 tot 45 minuten een stretch-and-fold — drie tot vier keer is genoeg. Het deeg is klaar als het zichtbaar is gezwollen, luchtig aanvoelt en niet meer strak terugveert. Iets warmer = sneller; koeler = geduld.",
+      durationLabel: "4–5 uur",
+    },
+    {
+      id: "shape",
+      order: 5,
+      title: "Vormen",
+      body:
+        "Strooi rijstemeel in je rijsmand. Vorm het deeg voorzichtig tot een strakke bâtard of bol — behoud zoveel mogelijk lucht. Een goede spanning geeft een mooiere oven spring.",
+      durationLabel: "15 min",
+    },
+    {
+      id: "cold-proof",
+      order: 6,
+      title: "Koel rijzen",
+      body:
+        "Laat 12 tot 24 uur rijzen in de koelkast (4 °C). Langere koelrijsing geeft mildere zuurgraad en diepere smaak — ideaal als je het brood 's ochtends wilt bakken. Dek af zodat het deeg niet uitdroogt.",
+      durationLabel: "12–24 uur",
+    },
+    {
+      id: "bake",
+      order: 7,
+      title: "Bakken",
+      body:
+        "Verwarm je oven goed voor (230–250 °C). Bak met stoom of een deksel voor die dunne, knapperige korst. Bak tot diep amberkleurig — meestal 35 tot 45 minuten. Laat minstens 1 uur afkoelen voordat je snijdt.",
+      durationLabel: "35–45 min",
+    },
   ],
+
+  tips: [
+    "Karakter: dunne knapperige korst, licht open kruim, volle tarwesmaak en een licht nootachtig accent — precies wat je verwacht van een goed Pain de Campagne.",
+    "De bloemmix is bewust gekozen: T65 geeft zachtheid, T80 body en tarwesmaak, T130 diepte zonder het deeg zwaar te maken. Wissel de percentages niet — dit is de Doughbert-balans.",
+    "Bij 76% hydratatie voelt het deeg nat aan; dat is normaal. Vertrouw op stretch-and-folds in plaats van extra bloem op je werkbank.",
+    "Bak met stoom of een Dutch oven-deksel voor die signature knapperige korst. Zonder stoom wordt de korst dikker en minder elegant.",
+    "Laat het brood volledig afkoelen — het kruim zet nog na en de smaak komt het best tot zijn recht op kamertemperatuur.",
+  ],
+
+  knowledge: painDeCampagneKnowledge,
 
   plannerRoute: "/planner",
 };

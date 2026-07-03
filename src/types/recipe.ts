@@ -1,3 +1,5 @@
+import type { RecipeKnowledge } from "@/types/knowledge";
+
 export type RecipeId =
   | "country-loaf"
   | "pain-de-campagne"
@@ -94,6 +96,9 @@ export interface Recipe {
   ingredients: RecipeIngredient[];
   steps: RecipeStep[];
   tips: string[];
+
+  /** Modular knowledge sections — optional, rendered when present. */
+  knowledge?: RecipeKnowledge;
 
   /** Route used by the "Start Bake Planner" action. */
   plannerRoute: string;
