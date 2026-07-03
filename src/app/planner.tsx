@@ -1,16 +1,36 @@
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import ScreenLayout from "@/components/ScreenLayout";
+import { applyRecipeToBakePlan, bakePlan } from "@/data/bakePlan";
+import { getRecipe, getRecipeBySlug } from "@/data/recipes";
 
 export default function PlannerScreen() {
+  const { slug: slugParam } = useLocalSearchParams<{ slug?: string }>();
+
+  const recipeSlug =
+    typeof slugParam === "string" ? slugParam : bakePlan.recipeSlug;
+
+  const recipe = useMemo(
+    () => getRecipeBySlug(recipeSlug) ?? getRecipe("landbrood"),
+    [recipeSlug],
+  );
+
+  useEffect(() => {
+    applyRecipeToBakePlan(recipe);
+  }, [recipe]);
+
   const goToTemperature = () => {
-    router.push("/planner-temperature");
+    router.push({
+      pathname: "/planner-temperature",
+      params: { slug: recipe.slug },
+    });
   };
 
   return (
     <ScreenLayout
-      backTo="/landbrood"
+      backTo={recipe.route}
       title="Wanneer wil je genieten van vers brood?"
       subtitle="Kies je gewenste moment. Doughbert rekent straks terug wanneer wij moeten beginnen."
       headerExtra={<Text style={styles.step}>Stap 1 van 4</Text>}

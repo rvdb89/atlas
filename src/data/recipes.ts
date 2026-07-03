@@ -124,6 +124,10 @@ export function getRecipe(id: RecipeId): Recipe {
   return recipes[id];
 }
 
+export function getRecipeBySlug(slug: string): Recipe | undefined {
+  return recipeList.find((recipe) => recipe.slug === slug);
+}
+
 export function getRecipeByRoute(route: string): Recipe | undefined {
   return recipeList.find((recipe) => recipe.route === route);
 }

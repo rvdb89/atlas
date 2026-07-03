@@ -1,4 +1,4 @@
-import { router, type Href } from "expo-router";
+import { router } from "expo-router";
 import type { ReactNode } from "react";
 import {
   ImageBackground,
@@ -128,7 +128,12 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
 
       <Pressable
         style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
-        onPress={() => router.push(recipe.plannerRoute as Href)}
+        onPress={() =>
+          router.push({
+            pathname: "/planner",
+            params: { slug: recipe.slug },
+          })
+        }
       >
         <Text style={styles.ctaText}>Start Bake Planner</Text>
       </Pressable>
