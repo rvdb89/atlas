@@ -1,12 +1,37 @@
-export type RecipeId = "landbrood";
+export type RecipeId =
+  | "country-loaf"
+  | "pain-de-campagne"
+  | "wit-busbrood"
+  | "volkoren"
+  | "donker-volkoren"
+  | "bagels"
+  | "baguette"
+  | "focaccia"
+  | "brioche"
+  | "meergranen"
+  | "napolitaanse-pizza"
+  | "new-york-style-pizza"
+  | "detroit-style-pizza"
+  | "roman-pizza-teglia"
+  | "sicilian-pan-pizza";
 
 export type RecipeCategory = "Brood" | "Pizza";
 
 export type DifficultyLevel = "beginner" | "intermediate" | "advanced";
 
-export type FlourKey = "t65" | "wholeWheat" | "rye";
+export type FlourKey =
+  | "tipo00"
+  | "breadFlour"
+  | "t65"
+  | "t80"
+  | "t110"
+  | "t130"
+  | "t150"
+  | "wholeWheat"
+  | "rye"
+  | "semola";
 
-export type FlourMix = Record<FlourKey, number>;
+export type FlourMix = Partial<Record<FlourKey, number>>;
 
 export interface FermentationProfile {
   /** Multiplier applied to bulk fermentation time in the planner engine. */

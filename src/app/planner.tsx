@@ -13,7 +13,7 @@ export default function PlannerScreen() {
     typeof slugParam === "string" ? slugParam : bakePlan.recipeSlug;
 
   const recipe = useMemo(
-    () => getRecipeBySlug(recipeSlug) ?? getRecipe("landbrood"),
+    () => getRecipeBySlug(recipeSlug) ?? getRecipe("country-loaf"),
     [recipeSlug],
   );
 

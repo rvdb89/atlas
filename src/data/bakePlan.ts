@@ -3,7 +3,7 @@ import type { FlourMix, Recipe } from "@/types/recipe";
 import { getRecipe, getRecipeBySlug } from "./recipes";
 
 export const bakePlan = {
-  recipeSlug: "landbrood",
+  recipeSlug: "country-loaf",
 
   recipe: {
     name: "",
@@ -12,11 +12,7 @@ export const bakePlan = {
     starterPercentage: 0,
     bulkFactor: 1,
     coldProofHours: 0,
-    flour: {
-      t65: 0,
-      wholeWheat: 0,
-      rye: 0,
-    } satisfies FlourMix,
+    flour: {} as FlourMix,
   },
 
   schedule: {
@@ -54,5 +50,5 @@ export function applyRecipeToBakePlan(recipe: Recipe) {
 }
 
 export function getActiveRecipe(): Recipe {
-  return getRecipeBySlug(bakePlan.recipeSlug) ?? getRecipe("landbrood");
+  return getRecipeBySlug(bakePlan.recipeSlug) ?? getRecipe("country-loaf");
 }

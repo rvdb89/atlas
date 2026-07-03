@@ -1,7 +1,10 @@
-import { router } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { router, type Href } from "expo-router";
+import { Pressable, StyleSheet, Text } from "react-native";
 
 import ScreenLayout from "@/components/ScreenLayout";
+import { getRecipesByCategory } from "@/data/recipes";
+
+const breadRecipes = getRecipesByCategory("Brood");
 
 export default function BreadScreen() {
   return (
@@ -10,29 +13,17 @@ export default function BreadScreen() {
       title="Brood"
       subtitle="Kies het brood dat we samen gaan maken."
     >
-      <Pressable style={styles.card} onPress={() => router.push("/landbrood")}>
-        <Text style={styles.cardTitle}>Landbrood</Text>
-        <Text style={styles.cardText}>
-          Licht, luchtig en perfect om mee te starten.
-        </Text>
-        <Text style={styles.meta}>Beginner ⭐</Text>
-      </Pressable>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Licht volkoren</Text>
-        <Text style={styles.cardText}>
-          Meer smaak en vezels, maar nog steeds toegankelijk.
-        </Text>
-        <Text style={styles.meta}>Beginner ⭐</Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Volkoren</Text>
-        <Text style={styles.cardText}>
-          Steviger, voedzamer en voller van smaak.
-        </Text>
-        <Text style={styles.meta}>Gemiddeld ⭐⭐</Text>
-      </View>
+      {breadRecipes.map((recipe) => (
+        <Pressable
+          key={recipe.id}
+          style={styles.card}
+          onPress={() => router.push(recipe.route as Href)}
+        >
+          <Text style={styles.cardTitle}>{recipe.name}</Text>
+          <Text style={styles.cardText}>{recipe.tagline}</Text>
+          <Text style={styles.meta}>{recipe.meta.difficultyLabel}</Text>
+        </Pressable>
+      ))}
     </ScreenLayout>
   );
 }
