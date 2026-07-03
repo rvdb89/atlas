@@ -1,4 +1,10 @@
-import type { Recipe, RecipeCategory, RecipeId, RecipeRegistry } from "@/types/recipe";
+import type { FlourKey, Recipe, RecipeCategory, RecipeId, RecipeRegistry } from "@/types/recipe";
+
+export const FLOUR_LABELS: Record<FlourKey, string> = {
+  t65: "Tarwebloem (T65)",
+  wholeWheat: "Volkoren tarwemeel",
+  rye: "Rogge",
+};
 
 const landbrood: Recipe = {
   id: "landbrood",
