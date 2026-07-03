@@ -31,13 +31,19 @@ const PANEL_OVERLAP = 20;
 const BOTTOM_NAV_CONTENT_HEIGHT = 68;
 const SCROLL_EXTRA_PADDING = 48;
 
-type AppRoute = "/bread" | "/planner";
+type AppRoute =
+  | "/bread"
+  | "/pizza"
+  | "/starter"
+  | "/planner"
+  | "/recipes"
+  | "/tips";
 
 type HomeCardItem = {
   emoji: string;
   title: string;
   text: string;
-  href?: AppRoute;
+  href: AppRoute;
 };
 
 const HOME_CARDS: HomeCardItem[] = [
@@ -51,11 +57,13 @@ const HOME_CARDS: HomeCardItem[] = [
     emoji: "🍕",
     title: "Pizza",
     text: "Maak de perfecte pizzabodem.",
+    href: "/pizza",
   },
   {
     emoji: "🫙",
     title: "Mijn Starter",
     text: "Houd je starter gezond en sterk.",
+    href: "/starter",
   },
   {
     emoji: "📅",
@@ -67,11 +75,13 @@ const HOME_CARDS: HomeCardItem[] = [
     emoji: "📖",
     title: "Recepten",
     text: "Ontdek en bewaar recepten.",
+    href: "/recipes",
   },
   {
     emoji: "💡",
     title: "Tips & Kennis",
     text: "Word elke dag beter.",
+    href: "/tips",
   },
 ];
 
@@ -139,20 +149,16 @@ export default function HomeScreen() {
           <Text style={styles.panelTitle}>Kies waar je zin in hebt.</Text>
 
           <View style={styles.grid}>
-            {HOME_CARDS.map((card) => {
-              const href = card.href;
-
-              return (
-                <HomeCard
-                  key={card.title}
-                  emoji={card.emoji}
-                  title={card.title}
-                  text={card.text}
-                  width={cardWidth}
-                  onPress={href ? () => router.push(href) : undefined}
-                />
-              );
-            })}
+            {HOME_CARDS.map((card) => (
+              <HomeCard
+                key={card.title}
+                emoji={card.emoji}
+                title={card.title}
+                text={card.text}
+                width={cardWidth}
+                onPress={() => router.push(card.href)}
+              />
+            ))}
           </View>
 
           <View style={styles.quote}>
@@ -207,7 +213,7 @@ function HomeCard({
   title: string;
   text: string;
   width: number;
-  onPress?: () => void;
+  onPress: () => void;
 }) {
   return (
     <Pressable
@@ -217,7 +223,6 @@ function HomeCard({
         pressed && styles.cardPressed,
       ]}
       onPress={onPress}
-      disabled={!onPress}
     >
       <Text style={styles.cardEmoji}>{emoji}</Text>
       <Text style={styles.cardTitle}>{title}</Text>
