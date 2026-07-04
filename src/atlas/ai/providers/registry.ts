@@ -14,6 +14,10 @@ export function listProviders(): AiProviderAdapter[] {
   return [...adapters.values()];
 }
 
+export function hasProvider(providerId: string): boolean {
+  return adapters.has(providerId);
+}
+
 export function clearProviders(): void {
   adapters.clear();
 }

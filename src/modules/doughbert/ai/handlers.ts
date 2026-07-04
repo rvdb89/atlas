@@ -92,4 +92,7 @@ export function registerDoughbertAiHandlers(): void {
 
   registerTaskHandler("recipe.review", async () => handlerResponse({ reviewed: true }));
   registerTaskHandler("quality.score", async () => handlerResponse({ score: 85, passed: true }));
+  registerTaskHandler("writing.improve", async () => handlerResponse({ improved: true }));
+  registerTaskHandler("prompt.generate", async () => handlerResponse({ prompt: "Generated prompt stub" }));
+  registerTaskHandler("quiz.create", async () => handlerResponse({ questions: [] }));
 }

@@ -8,6 +8,7 @@ import { TRANSLATION_PROMPTS } from "./translation";
 import { SEO_PROMPTS } from "./seo";
 import { LINK_PROMPTS } from "./link";
 import { QUALITY_PROMPTS } from "./quality";
+import { GENERIC_PROMPTS } from "./generic";
 
 const PROMPT_LIBRARY: Record<string, PromptDefinition> = {};
 
@@ -26,6 +27,11 @@ registerPrompts(TRANSLATION_PROMPTS);
 registerPrompts(SEO_PROMPTS);
 registerPrompts(LINK_PROMPTS);
 registerPrompts(QUALITY_PROMPTS);
+registerPrompts(GENERIC_PROMPTS);
+
+export function registerPromptDefinition(prompt: PromptDefinition): void {
+  PROMPT_LIBRARY[prompt.id] = prompt;
+}
 
 export function getPromptDefinition(promptId: string): PromptDefinition {
   const prompt = PROMPT_LIBRARY[promptId];
@@ -67,4 +73,7 @@ export const TASK_PROMPT_IDS: Record<import("../types").AtlasTaskType, string> =
   "seo.optimize": "seo.optimize.v1",
   "link.build": "link.build.v1",
   "quality.score": "quality.score.v1",
+  "writing.improve": "writing.improve.v1",
+  "prompt.generate": "prompt.generate.v1",
+  "quiz.create": "quiz.create.v1",
 };

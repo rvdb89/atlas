@@ -1,8 +1,37 @@
-import type { ModelProfile } from "./types";
+import type { ModelProfile, ModelProfileSeed } from "./types";
 import { tryGetActiveModule } from "@/atlas/publishing/plugin/registry";
 
-/** Model metadata — names only live here, never in agents or modules. */
-export const MODEL_PROFILES: Record<string, ModelProfile> = {
+const ROUTING_DEFAULTS: Pick<ModelProfile, "priority" | "rankScore" | "estimatedCostPer1kTokens"> = {
+  priority: 100,
+  rankScore: 70,
+  estimatedCostPer1kTokens: 0.002,
+};
+
+const MODEL_ROUTING: Partial<Record<string, Partial<ModelProfile>>> = {
+  "claude-sonnet": { priority: 10, rankScore: 95, fallbackModelId: "gpt-4o", estimatedCostPer1kTokens: 0.003 },
+  "gpt-4o": { priority: 20, rankScore: 92, fallbackModelId: "gemini-pro", estimatedCostPer1kTokens: 0.0025 },
+  "gemini-pro": { priority: 30, rankScore: 90, fallbackModelId: "mistral-large", estimatedCostPer1kTokens: 0.002 },
+  perplexity: { priority: 15, rankScore: 88, estimatedCostPer1kTokens: 0.0025 },
+  "mistral-large": { priority: 40, rankScore: 86, estimatedCostPer1kTokens: 0.0015 },
+  "grok-beta": { priority: 45, rankScore: 84, estimatedCostPer1kTokens: 0.002 },
+  "openrouter-auto": { priority: 50, rankScore: 82, estimatedCostPer1kTokens: 0.002 },
+  "deepseek-chat": { priority: 35, rankScore: 85, estimatedCostPer1kTokens: 0.001 },
+  deepl: { priority: 12, rankScore: 93, estimatedCostPer1kTokens: 0.0012 },
+  "openai-dalle": { priority: 25, rankScore: 90, estimatedCostPer1kTokens: 0.02 },
+  "atlas-stub": { priority: 999, rankScore: 50, estimatedCostPer1kTokens: 0 },
+  "atlas-mock": { priority: 998, rankScore: 50, estimatedCostPer1kTokens: 0 },
+};
+
+function enrichModelProfile(seed: ModelProfileSeed): ModelProfile {
+  return {
+    ...ROUTING_DEFAULTS,
+    ...seed,
+    ...(MODEL_ROUTING[seed.id] ?? {}),
+  };
+}
+
+/** Model metadata — vendor names only live here, never in agents or modules. */
+export const MODEL_PROFILES: Record<string, ModelProfileSeed> = {
   "claude-sonnet": {
     id: "claude-sonnet",
     providerId: "claude",
@@ -131,14 +160,80 @@ export const MODEL_PROFILES: Record<string, ModelProfile> = {
     supportedMedia: ["text", "image"],
     available: true,
   },
+  "atlas-mock": {
+    id: "atlas-mock",
+    providerId: "mock",
+    name: "Atlas Mock",
+    vendor: "Atlas",
+    strengths: ["Deterministic tests", "CI pipelines", "Offline mode"],
+    costTier: "low",
+    speedTier: "fast",
+    qualityTier: "good",
+    latencyMs: 5,
+    contextWindow: 0,
+    supportedLanguages: ["nl", "en", "de", "fr", "es", "it"],
+    supportedOutputs: ["text", "markdown", "json", "image", "research", "translation", "validation", "score"],
+    supportedMedia: ["text", "image"],
+    available: true,
+  },
+  "mistral-large": {
+    id: "mistral-large",
+    providerId: "mistral",
+    name: "Mistral Large",
+    vendor: "Mistral",
+    strengths: ["Reasoning", "Multilingual", "Structured output"],
+    costTier: "medium",
+    speedTier: "fast",
+    qualityTier: "excellent",
+    latencyMs: 1700,
+    contextWindow: 128_000,
+    supportedLanguages: ["nl", "en", "de", "fr", "es", "it"],
+    supportedOutputs: ["text", "markdown", "json", "validation"],
+    supportedMedia: ["text"],
+    available: true,
+  },
+  "grok-beta": {
+    id: "grok-beta",
+    providerId: "grok",
+    name: "Grok Beta",
+    vendor: "xAI",
+    strengths: ["Fast reasoning", "General text", "Structured JSON"],
+    costTier: "medium",
+    speedTier: "fast",
+    qualityTier: "excellent",
+    latencyMs: 1900,
+    contextWindow: 131_072,
+    supportedLanguages: ["nl", "en", "de", "fr", "es", "it"],
+    supportedOutputs: ["text", "markdown", "json", "research"],
+    supportedMedia: ["text"],
+    available: true,
+  },
+  "openrouter-auto": {
+    id: "openrouter-auto",
+    providerId: "openrouter",
+    name: "OpenRouter Auto",
+    vendor: "OpenRouter",
+    strengths: ["Multi-vendor routing", "Fallback aggregation", "Cost optimization"],
+    costTier: "medium",
+    speedTier: "balanced",
+    qualityTier: "excellent",
+    latencyMs: 2100,
+    contextWindow: 200_000,
+    supportedLanguages: ["nl", "en", "de", "fr", "es", "it"],
+    supportedOutputs: ["text", "markdown", "json", "translation", "validation", "score"],
+    supportedMedia: ["text", "image"],
+    available: true,
+  },
 };
 
 function getAllModelProfiles(): Record<string, ModelProfile> {
   const module = tryGetActiveModule();
-  return {
+  const merged: Record<string, ModelProfileSeed> = {
     ...MODEL_PROFILES,
     ...(module?.additionalModelProfiles ?? {}),
   };
+
+  return Object.fromEntries(Object.entries(merged).map(([id, seed]) => [id, enrichModelProfile(seed)]));
 }
 
 export function getModelProfile(modelId: string): ModelProfile | undefined {

@@ -1,8 +1,8 @@
 import type { AtlasTaskType } from "../types";
 import { getModelsForProvider } from "../models/profiles";
 import { getTaskHandler } from "../tasks/handlerRegistry";
-import type { AiProviderAdapter, AiProviderRequest, AiProviderResponse } from "./types";
-import { ProviderUnavailableError } from "./types";
+import type { AiProviderAdapter, AiProviderRequest, AiProviderResponse } from "../interfaces/provider";
+import { ProviderUnavailableError } from "../interfaces/provider";
 
 const forcedDown = new Set<string>();
 
@@ -19,14 +19,11 @@ export function createStubCapableProvider(config: {
   supportedTasks: AtlasTaskType[];
   useHandlers?: boolean;
 }): AiProviderAdapter {
-  const models = getModelsForProvider(config.id);
-
   return {
     id: config.id,
-    models: models.length > 0 ? models : getModelsForProvider("stub"),
     supports(task: AtlasTaskType, modelId: string) {
       if (!config.supportedTasks.includes(task)) return false;
-      return Boolean(getModelsForProvider(config.id).find((m) => m.id === modelId) ?? modelId === "atlas-stub");
+      return Boolean(getModelsForProvider(config.id).find((m) => m.id === modelId) ?? modelId.startsWith("atlas-"));
     },
     async healthCheck() {
       if (forcedDown.has(config.id)) {
@@ -39,7 +36,7 @@ export function createStubCapableProvider(config: {
         throw new ProviderUnavailableError(config.id, request.modelId);
       }
 
-      if (config.useHandlers || request.modelId === "atlas-stub") {
+      if (config.useHandlers || request.modelId.startsWith("atlas-")) {
         const handler = getTaskHandler(request.task);
         if (!handler) {
           throw new Error(`No task handler registered for ${request.task}`);
@@ -50,15 +47,36 @@ export function createStubCapableProvider(config: {
       throw new ProviderUnavailableError(
         config.id,
         request.modelId,
-        `${config.id} live API not configured — use atlas-stub or register handlers`,
+        `${config.id} live API not configured — use atlas-stub/atlas-mock or register handlers`,
       );
     },
   };
 }
 
+const ALL_TASKS: AtlasTaskType[] = [
+  "knowledge.write",
+  "knowledge.review",
+  "recipe.write",
+  "recipe.review",
+  "recipe.validate",
+  "visual.generate",
+  "visual.diagram",
+  "visual.infographic",
+  "research.search",
+  "research.summarize",
+  "fact.check",
+  "translate",
+  "seo.optimize",
+  "link.build",
+  "quality.score",
+  "writing.improve",
+  "prompt.generate",
+  "quiz.create",
+];
+
 export const claudeProvider = createStubCapableProvider({
   id: "claude",
-  supportedTasks: ["knowledge.write", "knowledge.review", "recipe.write", "recipe.review", "fact.check", "seo.optimize"],
+  supportedTasks: ["knowledge.write", "knowledge.review", "recipe.write", "recipe.review", "fact.check", "seo.optimize", "writing.improve"],
 });
 
 export const openaiProvider = createStubCapableProvider({
@@ -73,6 +91,9 @@ export const openaiProvider = createStubCapableProvider({
     "seo.optimize",
     "translate",
     "quality.score",
+    "writing.improve",
+    "prompt.generate",
+    "quiz.create",
   ],
 });
 
@@ -87,6 +108,7 @@ export const geminiProvider = createStubCapableProvider({
     "link.build",
     "research.summarize",
     "translate",
+    "quiz.create",
   ],
 });
 
@@ -105,25 +127,30 @@ export const deeplProvider = createStubCapableProvider({
   supportedTasks: ["translate"],
 });
 
+export const mistralProvider = createStubCapableProvider({
+  id: "mistral",
+  supportedTasks: ["knowledge.write", "recipe.write", "fact.check", "writing.improve", "research.summarize"],
+});
+
+export const grokProvider = createStubCapableProvider({
+  id: "grok",
+  supportedTasks: ["knowledge.write", "research.search", "research.summarize", "fact.check"],
+});
+
+export const openrouterProvider = createStubCapableProvider({
+  id: "openrouter",
+  supportedTasks: ALL_TASKS,
+});
+
+export const mockProvider = createStubCapableProvider({
+  id: "mock",
+  supportedTasks: ALL_TASKS,
+  useHandlers: true,
+});
+
 export const stubProvider = createStubCapableProvider({
   id: "stub",
-  supportedTasks: [
-    "knowledge.write",
-    "knowledge.review",
-    "recipe.write",
-    "recipe.review",
-    "recipe.validate",
-    "visual.generate",
-    "visual.diagram",
-    "visual.infographic",
-    "research.search",
-    "research.summarize",
-    "fact.check",
-    "translate",
-    "seo.optimize",
-    "link.build",
-    "quality.score",
-  ],
+  supportedTasks: ALL_TASKS,
   useHandlers: true,
 });
 
@@ -134,5 +161,9 @@ export const ALL_PROVIDERS = [
   perplexityProvider,
   deepseekProvider,
   deeplProvider,
+  mistralProvider,
+  grokProvider,
+  openrouterProvider,
+  mockProvider,
   stubProvider,
 ];

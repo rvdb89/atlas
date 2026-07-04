@@ -1,5 +1,5 @@
 import type { AtlasModule } from "@/atlas/publishing/plugin/types";
-import type { ModelProfile } from "@/atlas/ai/models/types";
+import type { ModelProfileSeed } from "@/atlas/ai/models/types";
 import type { ArticleCatalogEntry, PublicationDraft } from "@/atlas/publishing/types";
 import { collectKnowledgeArticleInputs } from "@/modules/doughbert/knowledge/collectSources";
 import { bulkImportArticles } from "@/modules/doughbert/knowledge/import/bulkImport";
@@ -14,7 +14,7 @@ import { doughbertDomainValidatorAgent } from "./agents/domain-validator/DomainV
 import { doughbertVisualDesignerAgent } from "./agents/visual-designer/VisualDesignerAgent";
 import { DOUGHBERT_CATEGORY_PRESETS } from "./studio/categoryPresets";
 
-const DOUGHBERT_MODEL_PROFILES: Record<string, ModelProfile> = {
+const DOUGHBERT_MODEL_PROFILES: Record<string, ModelProfileSeed> = {
   "doughbert-ensemble": {
     id: "doughbert-ensemble",
     providerId: "stub",

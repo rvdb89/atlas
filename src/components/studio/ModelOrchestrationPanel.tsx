@@ -21,8 +21,8 @@ export default function ModelOrchestrationPanel() {
         {routes.map((route) => {
           const config = getTaskRouteConfig(route.task);
           const member = getTeamMember(config.agentId);
-          const primary = getModelProfile(route.primaryProviderId);
-          const fallbacks = route.fallbackProviderIds
+          const primary = getModelProfile(route.primaryModelId);
+          const fallbacks = route.fallbackModelIds
             .map((id) => getModelProfile(id))
             .filter((profile) => profile !== undefined);
 
@@ -35,7 +35,7 @@ export default function ModelOrchestrationPanel() {
                 <Text style={styles.task}>{route.task}</Text>
               </View>
               <Text style={styles.primary}>
-                → {primary?.vendor ?? route.primaryProviderId} · {primary?.name ?? route.primaryProviderId}
+                → {primary?.vendor ?? route.primaryModelId} · {primary?.name ?? route.primaryModelId}
               </Text>
               {fallbacks.length > 0 ? (
                 <Text style={styles.fallbacks}>

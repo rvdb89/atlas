@@ -1,5 +1,5 @@
 import type { AtlasTaskType, CacheEntry } from "../types";
-import { buildCacheKey } from "../validation/validateOutput";
+import { buildCacheKey } from "../utils/hash";
 
 const cache = new Map<string, CacheEntry>();
 

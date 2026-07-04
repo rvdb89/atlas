@@ -7,7 +7,7 @@ import type {
   PublicationDraft,
   VisualAssetBrief,
 } from "../types";
-import type { ModelProfile } from "@/atlas/ai/models/types";
+import type { ModelProfileSeed } from "@/atlas/ai/models/types";
 import type { TaskRouteConfig } from "@/atlas/ai/tasks/routes";
 
 /** Stable agent ids in the Atlas publishing engine. */
@@ -103,7 +103,7 @@ export type AtlasModule = {
     catalog: ArticleCatalogEntry[],
   ): string[];
   categoryPresets: Record<string, CategoryPreset>;
-  additionalModelProfiles?: Record<string, ModelProfile>;
+  additionalModelProfiles?: Record<string, ModelProfileSeed>;
   domainValidationRoute?: Pick<TaskRouteConfig, "primaryModelId" | "fallbackModelIds">;
   validationPassThreshold?: number;
   isPublishAllowed(draft: PublicationDraft): PublishGateResult;

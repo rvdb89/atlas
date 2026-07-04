@@ -134,6 +134,30 @@ const BASE_ROUTES: TaskRouteConfig[] = [
     primaryModelId: "gpt-4o",
     fallbackModelIds: ["atlas-stub"],
   },
+  {
+    task: "writing.improve",
+    agentId: "copywriter",
+    label: "Writing improvement",
+    promptId: "writing.improve.v1",
+    primaryModelId: "claude-sonnet",
+    fallbackModelIds: ["mistral-large", "gpt-4o", "atlas-stub"],
+  },
+  {
+    task: "prompt.generate",
+    agentId: "copywriter",
+    label: "Prompt generation",
+    promptId: "prompt.generate.v1",
+    primaryModelId: "gpt-4o",
+    fallbackModelIds: ["claude-sonnet", "atlas-stub"],
+  },
+  {
+    task: "quiz.create",
+    agentId: "copywriter",
+    label: "Quiz creation",
+    promptId: "quiz.create.v1",
+    primaryModelId: "gemini-pro",
+    fallbackModelIds: ["gpt-4o", "atlas-stub"],
+  },
 ];
 
 function applyModuleOverrides(config: TaskRouteConfig): TaskRouteConfig {

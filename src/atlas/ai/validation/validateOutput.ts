@@ -1,4 +1,4 @@
-import type { AtlasTaskType, OutputSchema, ValidationIssue, ValidationResult } from "../types";
+import type { OutputSchema, ValidationIssue, ValidationResult } from "../types";
 
 function issue(
   code: string,
@@ -64,6 +64,4 @@ export function validateTokenLimits(
   return [];
 }
 
-export function buildCacheKey(task: AtlasTaskType, payload: unknown, locale?: string): string {
-  return `${task}:${locale ?? "default"}:${JSON.stringify(payload)}`;
-}
+export { buildCacheKey } from "../utils/hash";
