@@ -14,6 +14,7 @@ export type {
 export * from "./ai";
 export * from "./intelligence";
 export * from "./entity";
+export * from "./studio";
 export {
   factCheckerAgent,
   FactCheckerAgent,

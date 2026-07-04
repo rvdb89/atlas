@@ -1,105 +1,49 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Text } from "react-native";
 
-import AiTeamRoster from "@/components/studio/AiTeamRoster";
-import DraftList from "@/components/studio/DraftList";
-import ModelOrchestrationPanel from "@/components/studio/ModelOrchestrationPanel";
-import PipelineFlowBanner from "@/components/studio/PipelineFlowBanner";
-import StudioLayout from "@/components/studio/StudioLayout";
-import StudioNavGrid from "@/components/studio/StudioNavGrid";
-import { STUDIO_COLORS } from "@/components/studio/studioTheme";
-import { EDITOR_IN_CHIEF } from "@/studio/aiTeam";
-import { usePublicationStore, useStudioStats } from "@/studio/hooks/usePublicationStore";
+import {
+  StudioCard,
+  StudioPipelineBanner,
+  StudioScreen,
+  StudioSectionTitle,
+  StudioStatGrid,
+} from "@/atlas/studio/components";
+import { useStudioBootstrap, useStudioDashboard } from "@/atlas/studio/hooks";
 
 export default function StudioDashboardScreen() {
-  const { drafts, isGenerating } = usePublicationStore();
-  const stats = useStudioStats();
+  useStudioBootstrap();
+  const { stats, module } = useStudioDashboard();
 
   return (
-    <StudioLayout
-      title="Publishing Studio"
-      subtitle={`${EDITOR_IN_CHIEF.emoji} Jij bent ${EDITOR_IN_CHIEF.name}. Het AI Team produceert — jij keurt goed of af.`}
+    <StudioScreen
+      title="Atlas Studio"
+      subtitle={
+        module
+          ? `Internal cockpit for ${module.name}. Manage entities, AI tasks, intelligence, and publishing.`
+          : "Internal cockpit for Project Atlas verticals."
+      }
       backTo="/profile"
     >
-      <PipelineFlowBanner />
+      <StudioPipelineBanner />
 
-      <View style={styles.statsRow}>
-        <StatCard label="Drafts" value={String(stats.total)} />
-        <StatCard label="Review" value={String(stats.inReview)} />
-        <StatCard label="Doughbert" value={String(stats.averageBakingScore)} />
-      </View>
+      <StudioStatGrid
+        items={[
+          { label: "Entities", value: String(stats.entities) },
+          { label: "Drafts", value: String(stats.drafts) },
+          { label: "Published", value: String(stats.published) },
+          { label: "AI Tasks", value: String(stats.aiTasks) },
+          { label: "Quality Issues", value: String(stats.qualityIssues) },
+          { label: "Content Gaps", value: String(stats.contentGaps) },
+          { label: "Assets", value: String(stats.assets) },
+          { label: "Active Modules", value: String(stats.activeModules) },
+        ]}
+      />
 
-      {isGenerating ? (
-        <Text style={styles.generating}>Het AI Team is aan het werk…</Text>
-      ) : null}
-
-      <Text style={styles.sectionTitle}>AI Orchestration</Text>
-      <ModelOrchestrationPanel />
-
-      <Text style={styles.sectionTitle}>AI Team</Text>
-      <AiTeamRoster compact />
-
-      <Text style={styles.sectionTitle}>Redactie</Text>
-      <StudioNavGrid />
-
-      <Text style={styles.sectionTitle}>Recente drafts</Text>
-      <DraftList drafts={drafts.slice(0, 3)} />
-    </StudioLayout>
+      <StudioSectionTitle>Active module</StudioSectionTitle>
+      <StudioCard title={module?.name ?? "No module"} subtitle={module?.mission}>
+        <Text style={{ fontSize: 14, color: "#7A6652" }}>
+          Module id: {module?.id ?? "—"}
+        </Text>
+      </StudioCard>
+    </StudioScreen>
   );
 }
-
-function StatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.statCard}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  statsRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 20,
-  },
-
-  statCard: {
-    flex: 1,
-    backgroundColor: STUDIO_COLORS.warmWhite,
-    borderRadius: 20,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "rgba(184, 107, 56, 0.08)",
-  },
-
-  statValue: {
-    fontSize: 24,
-    fontWeight: "900",
-    color: STUDIO_COLORS.brown,
-  },
-
-  statLabel: {
-    marginTop: 4,
-    fontSize: 12,
-    fontWeight: "700",
-    color: STUDIO_COLORS.accentSoft,
-    textTransform: "uppercase",
-  },
-
-  generating: {
-    marginBottom: 16,
-    fontSize: 15,
-    fontWeight: "700",
-    color: STUDIO_COLORS.accent,
-  },
-
-  sectionTitle: {
-    marginTop: 24,
-    marginBottom: 14,
-    fontSize: 13,
-    fontWeight: "800",
-    color: STUDIO_COLORS.secondary,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-});

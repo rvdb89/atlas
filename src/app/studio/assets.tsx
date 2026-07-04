@@ -1,53 +1,49 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text } from "react-native";
 
-import StudioLayout from "@/components/studio/StudioLayout";
-import { STUDIO_COLORS } from "@/components/studio/studioTheme";
-import { usePublicationStore } from "@/studio/hooks/usePublicationStore";
+import {
+  StudioCard,
+  StudioEmptyState,
+  StudioScreen,
+  StudioSectionTitle,
+} from "@/atlas/studio/components";
+import { STUDIO_COLORS } from "@/atlas/studio/core/theme";
+import { useStudioBootstrap } from "@/atlas/studio/hooks";
+import { studioDataService } from "@/atlas/studio/services/studioDataService";
 
 export default function StudioAssetsScreen() {
-  const { drafts } = usePublicationStore();
-  const assets = drafts.flatMap((draft) =>
-    draft.visuals.map((asset) => ({ ...asset, draftTitle: draft.title })),
-  );
+  useStudioBootstrap();
+  const assets = studioDataService.listAssets();
 
   return (
-    <StudioLayout
-      title="Assets"
-      subtitle="Visual briefs van 🎨 Canvas — klaar voor AI image generation."
-    >
-      <View style={styles.list}>
-        {assets.length === 0 ? (
-          <Text style={styles.empty}>Nog geen visual briefs. Genereer content in AI Studio.</Text>
-        ) : (
-          assets.map((asset) => (
-            <View key={asset.id} style={styles.card}>
-              <Text style={styles.role}>
-                {asset.role} · {asset.label}
-              </Text>
-              <Text style={styles.draft}>{asset.draftTitle}</Text>
-              <Text style={styles.prompt}>{asset.prompt}</Text>
-              <Text style={styles.status}>{asset.status}</Text>
-            </View>
-          ))
-        )}
-      </View>
-    </StudioLayout>
+    <StudioScreen title="Assets" subtitle="Hero images, diagrams, galleries, and generated visual placeholders.">
+      {assets.length === 0 ? (
+        <StudioEmptyState
+          title="No assets yet"
+          message="Visual briefs appear here after publishing pipeline runs or AI visual tasks complete."
+        />
+      ) : (
+        assets.map((asset) => (
+          <StudioCard key={asset.id} compact>
+            <Text style={styles.role}>
+              {asset.kind} · {asset.role}
+            </Text>
+            <Text style={styles.title}>{asset.label}</Text>
+            <Text style={styles.source}>{asset.sourceTitle}</Text>
+            {asset.prompt ? <Text style={styles.prompt}>{asset.prompt}</Text> : null}
+            <Text style={styles.status}>{asset.status}</Text>
+          </StudioCard>
+        ))
+      )}
+
+      <StudioSectionTitle>Asset types</StudioSectionTitle>
+      <StudioCard>
+        <Text style={styles.body}>Hero · Diagram · Gallery · Generated visual · Infographic</Text>
+      </StudioCard>
+    </StudioScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  list: {
-    gap: 12,
-  },
-
-  card: {
-    backgroundColor: STUDIO_COLORS.warmWhite,
-    borderRadius: 24,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: "rgba(184, 107, 56, 0.08)",
-  },
-
   role: {
     fontSize: 12,
     fontWeight: "800",
@@ -55,11 +51,17 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
 
-  draft: {
+  title: {
     marginTop: 6,
     fontSize: 18,
     fontWeight: "900",
     color: STUDIO_COLORS.brown,
+  },
+
+  source: {
+    marginTop: 4,
+    fontSize: 13,
+    color: STUDIO_COLORS.secondary,
   },
 
   prompt: {
@@ -76,9 +78,9 @@ const styles = StyleSheet.create({
     color: STUDIO_COLORS.secondary,
   },
 
-  empty: {
-    fontSize: 16,
-    lineHeight: 24,
+  body: {
+    fontSize: 15,
+    lineHeight: 22,
     color: STUDIO_COLORS.secondary,
   },
 });
