@@ -1,6 +1,7 @@
-import { Text, View } from "react-native";
+import { Text } from "react-native";
 
 import type { DoughbertScienceKnowledge } from "@/types/knowledge";
+import { knowledgeLabels } from "@/i18n/knowledgeLabels";
 
 import KnowledgeField from "./KnowledgeField";
 import KnowledgeSection from "./KnowledgeSection";
@@ -12,7 +13,7 @@ type ScienceSectionProps = {
 
 export default function ScienceSection({ data }: ScienceSectionProps) {
   return (
-    <KnowledgeSection title="Doughbert Science">
+    <KnowledgeSection title={knowledgeLabels.sections.doughbertScience}>
       <Text style={knowledgeStyles.introText}>{data.introduction}</Text>
 
       {data.topics.map((topic, index) => (

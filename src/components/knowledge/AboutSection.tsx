@@ -1,4 +1,5 @@
 import type { AboutKnowledge } from "@/types/knowledge";
+import { knowledgeLabels } from "@/i18n/knowledgeLabels";
 
 import KnowledgeField from "./KnowledgeField";
 import KnowledgeSection from "./KnowledgeSection";
@@ -8,12 +9,14 @@ type AboutSectionProps = {
 };
 
 export default function AboutSection({ data }: AboutSectionProps) {
+  const labels = knowledgeLabels.about;
+
   return (
-    <KnowledgeSection title="About">
-      <KnowledgeField label="Geschiedenis" value={data.history} />
-      <KnowledgeField label="Oorsprong" value={data.origin} />
-      <KnowledgeField label="Karakter" value={data.character} />
-      <KnowledgeField label="Waarvoor geschikt" value={data.goodFor} isLast />
+    <KnowledgeSection title={knowledgeLabels.sections.about} defaultExpanded>
+      <KnowledgeField label={labels.history} value={data.history} />
+      <KnowledgeField label={labels.origin} value={data.origin} />
+      <KnowledgeField label={labels.character} value={data.character} />
+      <KnowledgeField label={labels.goodFor} value={data.goodFor} isLast />
     </KnowledgeSection>
   );
 }

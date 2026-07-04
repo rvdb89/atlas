@@ -88,7 +88,7 @@ const HOME_CARDS: HomeCardItem[] = [
 type NavItemConfig = {
   icon: string;
   label: string;
-  href: "/" | "/planner" | "/recipes" | "/starter" | "/profile";
+  href: "/" | "/planner" | "/recipes" | "/knowledge" | "/starter" | "/profile";
   active?: boolean;
 };
 
@@ -96,9 +96,24 @@ const NAV_ITEMS: NavItemConfig[] = [
   { icon: "🏠", label: "Home", href: "/", active: true },
   { icon: "🕘", label: "Planner", href: "/planner" },
   { icon: "📖", label: "Recepten", href: "/recipes" },
+  { icon: "📚", label: "Knowledge", href: "/knowledge" },
   { icon: "🫙", label: "Starter", href: "/starter" },
   { icon: "👤", label: "Profiel", href: "/profile" },
 ];
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+
+  if (hour >= 5 && hour < 12) {
+    return "Goedemorgen Bakker.";
+  }
+
+  if (hour >= 12 && hour < 18) {
+    return "Goedemiddag Bakker.";
+  }
+
+  return "Goedenavond Bakker.";
+}
 
 export default function HomeScreen() {
   const { width } = useWindowDimensions();
@@ -135,7 +150,7 @@ export default function HomeScreen() {
         >
           <View style={styles.heroFade} />
           <View style={[styles.heroOverlay, { paddingTop: heroTopPadding }]}>
-            <Text style={styles.greeting}>👋 Goedemorgen Bakker.</Text>
+            <Text style={styles.greeting}>👋 {getGreeting()}</Text>
             <Text style={styles.heroTitle}>
               Wat gaan wij{"\n"}vandaag maken?
             </Text>

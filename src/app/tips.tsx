@@ -1,21 +1,45 @@
-import { router } from "expo-router";
-import { StyleSheet, Text } from "react-native";
+import { router, type Href } from "expo-router";
+import { StyleSheet, View } from "react-native";
 
+import { KnowledgeCategoryCard } from "@/components/knowledge/KnowledgeCards";
 import ScreenLayout from "@/components/ScreenLayout";
+import { getTipsByCategory, tipCategoryList } from "@/data/tips";
 
 export default function TipsScreen() {
   return (
-    <ScreenLayout title="Recepten" onBack={() => router.back()}>
-      <Text style={styles.text}>Coming soon...</Text>
+    <ScreenLayout
+      backTo="/"
+      title="Tips & Tricks"
+      subtitle="Praktische tips, snelle oplossingen en slimme baktrucs — direct toepasbaar in je keuken."
+    >
+      <View style={styles.list}>
+        {tipCategoryList.map((category) => {
+          const tipCount = getTipsByCategory(category.id).length;
+
+          if (tipCount === 0) {
+            return null;
+          }
+
+          return (
+            <KnowledgeCategoryCard
+              key={category.id}
+              category={category}
+              articleCount={tipCount}
+              countSingular="tip"
+              countPlural="tips"
+              onPress={() =>
+                router.push(`/tips/category/${category.id}` as Href)
+              }
+            />
+          );
+        })}
+      </View>
     </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  text: {
-    marginTop: 10,
-    fontSize: 18,
-    color: "#746652",
-    textAlign: "center",
+  list: {
+    gap: 14,
   },
 });

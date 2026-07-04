@@ -1,4 +1,5 @@
 import type { FermentationScienceKnowledge } from "@/types/knowledge";
+import { knowledgeLabels } from "@/i18n/knowledgeLabels";
 
 import KnowledgeField from "./KnowledgeField";
 import KnowledgeSection from "./KnowledgeSection";
@@ -8,12 +9,14 @@ type FermentationSectionProps = {
 };
 
 export default function FermentationSection({ data }: FermentationSectionProps) {
+  const labels = knowledgeLabels.fermentation;
+
   return (
-    <KnowledgeSection title="Fermentation Science">
-      <KnowledgeField label="Bulkfermentatie" value={data.bulkFermentation} />
-      <KnowledgeField label="Koude fermentatie" value={data.coldFermentation} />
-      <KnowledgeField label="Wat gebeurt er biologisch?" value={data.biology} />
-      <KnowledgeField label="Waarom deze tijden?" value={data.whyTheseTimes} isLast />
+    <KnowledgeSection title={knowledgeLabels.sections.fermentationScience}>
+      <KnowledgeField label={labels.bulkFermentation} value={data.bulkFermentation} />
+      <KnowledgeField label={labels.coldFermentation} value={data.coldFermentation} />
+      <KnowledgeField label={labels.biology} value={data.biology} />
+      <KnowledgeField label={labels.whyTheseTimes} value={data.whyTheseTimes} isLast />
     </KnowledgeSection>
   );
 }

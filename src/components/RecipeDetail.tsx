@@ -10,7 +10,11 @@ import {
 } from "react-native";
 
 import ScreenLayout from "@/components/ScreenLayout";
-import { RecipeKnowledgeView } from "@/components/knowledge";
+import RecipeKnowledgeBiteCTA from "@/components/RecipeKnowledgeBiteCTA";
+import {
+  getKnowledgeBite,
+  getKnowledgeBiteForRecipe,
+} from "@/data/knowledgeBites";
 import { FLOUR_LABELS } from "@/data/recipes";
 import type {
   FlourKey,
@@ -51,8 +55,17 @@ function getFlourEntries(recipe: Recipe) {
   );
 }
 
+function resolveKnowledgeBiteRoute(recipe: Recipe): string | undefined {
+  if (recipe.knowledgeBiteId) {
+    return getKnowledgeBite(recipe.knowledgeBiteId)?.route;
+  }
+
+  return getKnowledgeBiteForRecipe(recipe.id)?.route;
+}
+
 export default function RecipeDetail({ recipe }: RecipeDetailProps) {
   const flourEntries = getFlourEntries(recipe);
+  const knowledgeBiteRoute = resolveKnowledgeBiteRoute(recipe);
 
   return (
     <ScreenLayout
@@ -127,8 +140,8 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
         </View>
       </Section>
 
-      {recipe.knowledge ? (
-        <RecipeKnowledgeView knowledge={recipe.knowledge} />
+      {knowledgeBiteRoute ? (
+        <RecipeKnowledgeBiteCTA route={knowledgeBiteRoute} returnTo={recipe.route} />
       ) : null}
 
       <Pressable

@@ -1,4 +1,5 @@
 import type { HydrationScienceKnowledge } from "@/types/knowledge";
+import { knowledgeLabels } from "@/i18n/knowledgeLabels";
 
 import KnowledgeField from "./KnowledgeField";
 import KnowledgeSection from "./KnowledgeSection";
@@ -8,21 +9,23 @@ type HydrationSectionProps = {
 };
 
 export default function HydrationSection({ data }: HydrationSectionProps) {
+  const labels = knowledgeLabels.hydration;
+
   return (
-    <KnowledgeSection title="Hydration Science">
-      <KnowledgeField label="Waarom deze hydratatie?" value={data.whyThisHydration} />
+    <KnowledgeSection title={knowledgeLabels.sections.hydrationScience}>
+      <KnowledgeField label={labels.whyThisHydration} value={data.whyThisHydration} />
       <KnowledgeField
-        label="Effect van lagere hydratatie"
+        label={labels.lowerHydrationEffect}
         value={data.lowerHydrationEffect}
       />
       <KnowledgeField
-        label="Effect van hogere hydratatie"
+        label={labels.higherHydrationEffect}
         value={data.higherHydrationEffect}
       />
-      <KnowledgeField label="Handling" value={data.handling} />
-      <KnowledgeField label="Ovenrijs" value={data.ovenSpring} />
-      <KnowledgeField label="Kruim" value={data.crumb} />
-      <KnowledgeField label="Korst" value={data.crust} isLast />
+      <KnowledgeField label={labels.handling} value={data.handling} />
+      <KnowledgeField label={labels.ovenSpring} value={data.ovenSpring} />
+      <KnowledgeField label={labels.crumb} value={data.crumb} />
+      <KnowledgeField label={labels.crust} value={data.crust} isLast />
     </KnowledgeSection>
   );
 }

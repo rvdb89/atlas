@@ -24,7 +24,7 @@ const HORIZONTAL_PADDING = 24;
 const BOTTOM_NAV_CONTENT_HEIGHT = 68;
 const SCROLL_EXTRA_PADDING = 48;
 
-type NavHref = "/" | "/planner" | "/recipes" | "/starter" | "/profile";
+type NavHref = "/" | "/planner" | "/recipes" | "/knowledge" | "/starter" | "/profile";
 
 type NavItemConfig = {
   icon: string;
@@ -36,6 +36,7 @@ const NAV_ITEMS: NavItemConfig[] = [
   { icon: "🏠", label: "Home", href: "/" },
   { icon: "🕘", label: "Planner", href: "/planner" },
   { icon: "📖", label: "Recepten", href: "/recipes" },
+  { icon: "📚", label: "Knowledge", href: "/knowledge" },
   { icon: "🫙", label: "Starter", href: "/starter" },
   { icon: "👤", label: "Profiel", href: "/profile" },
 ];
@@ -53,6 +54,7 @@ function resolveActiveNav(pathname: string): NavHref | null {
   if (pathname === "/") return "/";
   if (pathname.startsWith("/planner")) return "/planner";
   if (pathname === "/recipes") return "/recipes";
+  if (pathname.startsWith("/knowledge")) return "/knowledge";
   if (pathname === "/starter") return "/starter";
   if (pathname === "/profile") return "/profile";
 
