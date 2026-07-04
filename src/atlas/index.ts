@@ -12,6 +12,7 @@ export type {
   TaskRouteConfig as LegacyTaskRouteConfig,
 } from "./publishing/orchestration/types";
 export * from "./ai";
+export * from "./intelligence";
 export {
   factCheckerAgent,
   FactCheckerAgent,
