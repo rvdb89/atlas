@@ -13,6 +13,7 @@ export type {
 } from "./publishing/orchestration/types";
 export * from "./ai";
 export * from "./intelligence";
+export * from "./entity";
 export {
   factCheckerAgent,
   FactCheckerAgent,
