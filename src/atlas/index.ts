@@ -15,6 +15,10 @@ export * from "./ai";
 export * from "./intelligence";
 export * from "./entity";
 export * from "./studio";
+export * from "./workflows/proof-of-power";
+export * from "./workflows/registry";
+export * from "./diagnostics";
+export * from "./version";
 export {
   factCheckerAgent,
   FactCheckerAgent,

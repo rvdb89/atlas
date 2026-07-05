@@ -1,11 +1,20 @@
 import type { EntityModuleRegistration, EntityTypeRegistration, EntityTypeRegistry } from "./types";
 import { registerEntitySchema } from "../schemas/registry";
+import { recordStartupIssue } from "@/atlas/diagnostics/auditLog";
 
 const types = new Map<string, EntityTypeRegistration>();
 const modules = new Map<string, EntityModuleRegistration>();
 
 export const entityTypeRegistry: EntityTypeRegistry = {
   register(registration) {
+    if (types.has(registration.typeId)) {
+      recordStartupIssue({
+        code: "duplicate-entity-type",
+        severity: "error",
+        message: `Duplicate entity type registered: ${registration.typeId}`,
+        context: { typeId: registration.typeId },
+      });
+    }
     types.set(registration.typeId, registration);
     if (registration.schema) {
       registerEntitySchema(registration.schema);

@@ -1,9 +1,18 @@
 import type { AtlasModule } from "./types";
+import { recordStartupIssue } from "@/atlas/diagnostics/auditLog";
 
 let activeModule: AtlasModule | null = null;
 const registeredModules = new Map<string, AtlasModule>();
 
 export function registerModule(module: AtlasModule): void {
+  if (registeredModules.has(module.id)) {
+    recordStartupIssue({
+      code: "duplicate-module",
+      severity: "error",
+      message: `Duplicate module registered: ${module.id}`,
+      context: { moduleId: module.id },
+    });
+  }
   registeredModules.set(module.id, module);
 }
 

@@ -3,6 +3,8 @@ import { bootstrapAtlasAi } from "./ai/bootstrap";
 import { bootstrapAtlasIntelligence } from "./intelligence/bootstrap";
 import { bootstrapAtlasEntity } from "./entity/bootstrap";
 import { bootstrapAtlasStudio } from "./studio/core/bootstrap";
+import { runAtlasStartupChecks } from "./diagnostics/startupChecks";
+import { registerCoreWorkflows } from "./workflows/registry";
 import { registerDoughbertIntelligenceProviders } from "@/modules/doughbert/intelligence/providers";
 import { doughbertModule } from "@/modules/doughbert";
 
@@ -18,9 +20,19 @@ export function bootstrapAtlas(options?: { moduleId?: string }) {
   bootstrapAtlasEntity();
   bootstrapAtlasStudio();
   bootstrapAtlasIntelligence({ defaultModuleId: options?.moduleId ?? "doughbert" });
+  registerCoreWorkflows();
   registerModule(doughbertModule);
   activateModule(options?.moduleId ?? "doughbert");
   registerDoughbertIntelligenceProviders();
+
+  const startupIssues = runAtlasStartupChecks({ reset: true });
+  if (startupIssues.length > 0 && typeof __DEV__ !== "undefined" && __DEV__) {
+    console.warn(
+      `[Atlas Startup] ${startupIssues.length} issue(s) detected:`,
+      startupIssues.map((issue) => issue.message),
+    );
+  }
+
   bootstrapped = true;
 }
 

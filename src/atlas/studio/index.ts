@@ -14,3 +14,6 @@ export * from "./settings/store";
 export * from "./ai/mockTasks";
 export { publicationStore } from "./store/publicationStore";
 export { studioService } from "./services/studioService";
+export * from "./proof-of-power";
+export * from "./health";
+export * from "./developer";
