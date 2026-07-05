@@ -37,6 +37,9 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# Atlas OS local session state
+.atlas/
+
 example
 
 # generated native folders

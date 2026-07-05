@@ -1,56 +1,72 @@
-# Welcome to your Expo app 👋
+# Doughbert / Project Atlas
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Expo app with **Project Atlas** — a domain-independent AI operating layer for Studio, entities, intelligence, and publishing.
 
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Zero config quick start
 
 ```bash
-npm run reset-project
+git clone <repo>
+cd doughbert-app
+npm install
+npm run atlas
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Atlas OS handles environment checks, auto recovery, Expo web on port **8083**, browser launch, health monitoring, and session restore. No QR code. No manual port cleanup.
 
-### Other setup steps
+Optional (live Claude):
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+cp .env.example .env
+# add ANTHROPIC_API_KEY
+```
 
-## Learn more
+## Atlas OS commands
 
-To learn more about developing your project with Expo, look at the following resources:
+| Command | Description |
+|---------|-------------|
+| `npm run atlas` | Boot Atlas OS — live startup UI, auto recovery, watch mode |
+| `npm run atlas command` | Interactive command palette |
+| `npm run atlas inspect` | Modules, providers, routes, registries, deps |
+| `npm run atlas:health` | Platform health report |
+| `npm run atlas:doctor` | Diagnostics with fix suggestions |
+| `npm run atlas:clean` | Manual clean (Atlas auto-recovers by default) |
+| `npm run atlas:commit-check` | Pre-commit report |
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Legacy: `npm start`, `npm run dev`, `npm run health`, `npm run clean`
 
-## Join the community
+## Primary routes
 
-Join our community of developers creating universal apps.
+| Route | Purpose |
+|-------|---------|
+| `/studio/command-center` | Atlas cockpit (default launch) |
+| `/studio/health` | Health dashboard |
+| `/studio/proof-of-power` | Workflow demo |
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```
+http://localhost:8083/studio/command-center
+```
+
+## In-app developer tools
+
+- **Ctrl+Shift+D** — Atlas Developer Overlay (FPS, route, provider, memory)
+- **Ctrl+Shift+R** — Restart Atlas runtime without closing terminal
+- Toast notifications for route, registry, Claude, and health events
+
+## Git workflow
+
+```bash
+git status
+git add .
+npm run atlas:commit-check
+git commit -m "your message"
+git push
+```
+
+## Architecture notes
+
+Atlas OS CLI lives in `scripts/atlas/os/` with extension points for future Docker, multi-project, cloud sync, remote agents, CI dashboard, and telemetry.
+
+## Tech stack
+
+- Expo Router v57 · React Native · TypeScript
+- Project Atlas (`src/atlas/`)

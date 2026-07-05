@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "paths": {
+      "@/*": ["../src/*"],
+      "@/atlas/*": ["../src/atlas/*"],
+      "@/modules/*": ["../src/modules/*"],
+      "@/assets/*": ["../assets/*"]
+    }
+  },
+  "include": ["./**/*.ts", "./env.d.ts"],
+  "exclude": ["../node_modules"]
+}

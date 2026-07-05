@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
 export default function PageNav({ backTo }: Props) {
   return (
     <View style={styles.container}>
-      <Pressable onPress={() => router.replace(backTo)}>
+      <Pressable onPress={() => router.replace(backTo as Href)}>
         <Text style={styles.link}>← Terug</Text>
       </Pressable>
 
