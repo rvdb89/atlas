@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "dotenv": "^16.6.1",
     "tsx": "^4.23.0",
     "typescript": "~6.0.3"
   },

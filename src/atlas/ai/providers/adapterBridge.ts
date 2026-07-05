@@ -4,6 +4,8 @@ import type { AiProviderAdapter } from "../interfaces/provider";
 import { ProviderUnavailableError } from "../interfaces/provider";
 import type { AiProviderRequest, AiProviderResponse } from "../interfaces/providerRequest";
 import { getTaskHandler } from "../tasks/handlerRegistry";
+import { recordClaudeTask } from "./claudeRuntimeState";
+import { logProviderExecution } from "./providerRuntimeLogger";
 import type { AiProvider } from "./interfaces";
 
 function shouldUseStructuredOutput(schema: OutputSchema): boolean {
@@ -71,10 +73,21 @@ export function wrapAiProvider(provider: AiProvider): AiProviderAdapter {
 
     async execute<T>(request: AiProviderRequest): Promise<AiProviderResponse<T>> {
       const aiRequest = mapToAiRequest(request);
+      const started = Date.now();
 
       try {
         if (shouldUseStructuredOutput(request.outputSchema)) {
           const response = await provider.generateStructured<T>(aiRequest);
+          if (provider.id === "claude") {
+            recordClaudeTask(request.task, request.modelId, response.metadata?.transport === "live" ? "live" : "mock");
+          }
+          logProviderExecution({
+            provider: provider.id,
+            task: request.task,
+            model: request.modelId,
+            durationMs: Date.now() - started,
+            fallbackUsed: Boolean(response.metadata?.fallbackUsed),
+          });
           return mapProviderResponse(provider.id, response);
         }
 
@@ -89,8 +102,34 @@ export function wrapAiProvider(provider: AiProvider): AiProviderAdapter {
           return fallbackHandler(request) as Promise<AiProviderResponse<T>>;
         }
 
+        if (provider.id === "claude") {
+          recordClaudeTask(request.task, request.modelId, response.metadata?.transport === "live" ? "live" : "mock");
+        }
+
+        logProviderExecution({
+          provider: provider.id,
+          task: request.task,
+          model: request.modelId,
+          durationMs: Date.now() - started,
+          fallbackUsed: Boolean(response.metadata?.fallbackUsed),
+        });
+
         return mapProviderResponse(provider.id, response) as AiProviderResponse<T>;
       } catch (error) {
+        if (provider.id === "mock") {
+          const fallbackHandler = getTaskHandler(request.task);
+          if (fallbackHandler) {
+            logProviderExecution({
+              provider: "mock",
+              task: request.task,
+              model: request.modelId,
+              durationMs: Date.now() - started,
+              fallbackUsed: true,
+            });
+            return fallbackHandler(request) as Promise<AiProviderResponse<T>>;
+          }
+        }
+
         const message = error instanceof Error ? error.message : "Provider execution failed";
         throw new ProviderUnavailableError(provider.id, request.modelId, message);
       }

@@ -1,4 +1,6 @@
 import type { AtlasTaskType } from "../types";
+import { isAnthropicConfigured } from "@/atlas/config/env";
+import { DEFAULT_CLAUDE_MODEL } from "./claudeConfig";
 
 export type TaskProviderConfig = {
   task: AtlasTaskType;
@@ -19,12 +21,21 @@ const DEFAULTS = {
   maxTokens: 4096,
 };
 
+/** Tasks routed live to Claude when ANTHROPIC_API_KEY is configured. */
+export const CLAUDE_LIVE_TASKS: AtlasTaskType[] = [
+  "knowledge.write",
+  "fact.check",
+  "quality.score",
+  "writing.improve",
+  "research.summarize",
+];
+
 /** Fully configurable task → provider routing table. */
 export const TASK_PROVIDER_CONFIG: Record<AtlasTaskType, TaskProviderConfig> = {
   "knowledge.write": {
     task: "knowledge.write",
     providerId: "claude",
-    modelId: "claude-sonnet",
+    modelId: DEFAULT_CLAUDE_MODEL,
     temperature: 0.7,
     maxTokens: 4096,
     retries: 2,
@@ -44,7 +55,7 @@ export const TASK_PROVIDER_CONFIG: Record<AtlasTaskType, TaskProviderConfig> = {
   "writing.improve": {
     task: "writing.improve",
     providerId: "claude",
-    modelId: "claude-sonnet",
+    modelId: DEFAULT_CLAUDE_MODEL,
     temperature: 0.5,
     maxTokens: 3000,
     retries: 2,
@@ -84,7 +95,7 @@ export const TASK_PROVIDER_CONFIG: Record<AtlasTaskType, TaskProviderConfig> = {
   "fact.check": {
     task: "fact.check",
     providerId: "claude",
-    modelId: "claude-sonnet",
+    modelId: DEFAULT_CLAUDE_MODEL,
     temperature: 0.2,
     maxTokens: 2048,
     retries: 2,
@@ -123,13 +134,13 @@ export const TASK_PROVIDER_CONFIG: Record<AtlasTaskType, TaskProviderConfig> = {
   },
   "research.summarize": {
     task: "research.summarize",
-    providerId: "gemini",
-    modelId: "gemini-pro",
+    providerId: "claude",
+    modelId: DEFAULT_CLAUDE_MODEL,
     temperature: 0.5,
     maxTokens: 2048,
     retries: 2,
     timeoutMs: 20_000,
-    fallbackModelIds: ["claude-sonnet", "atlas-stub"],
+    fallbackModelIds: ["atlas-mock", "atlas-stub"],
   },
   "knowledge.review": {
     task: "knowledge.review",
@@ -173,13 +184,13 @@ export const TASK_PROVIDER_CONFIG: Record<AtlasTaskType, TaskProviderConfig> = {
   },
   "quality.score": {
     task: "quality.score",
-    providerId: "openai",
-    modelId: "gpt-4o",
+    providerId: "claude",
+    modelId: DEFAULT_CLAUDE_MODEL,
     temperature: 0.2,
     maxTokens: 1024,
     retries: 2,
     timeoutMs: 15_000,
-    fallbackModelIds: ["atlas-stub"],
+    fallbackModelIds: ["atlas-mock", "atlas-stub"],
   },
   "prompt.generate": {
     task: "prompt.generate",
@@ -202,6 +213,21 @@ export const TASK_PROVIDER_CONFIG: Record<AtlasTaskType, TaskProviderConfig> = {
     fallbackModelIds: ["gpt-4o", "atlas-stub"],
   },
 };
+
+export function resolveEffectiveTaskProviderConfig(task: AtlasTaskType): TaskProviderConfig {
+  const config = getTaskProviderConfig(task);
+
+  if (config.providerId === "claude" && !isAnthropicConfigured()) {
+    return {
+      ...config,
+      providerId: "mock",
+      modelId: "atlas-mock",
+      fallbackModelIds: ["atlas-stub", ...(config.fallbackModelIds ?? [])],
+    };
+  }
+
+  return config;
+}
 
 export function getTaskProviderConfig(task: AtlasTaskType): TaskProviderConfig {
   const config = TASK_PROVIDER_CONFIG[task];

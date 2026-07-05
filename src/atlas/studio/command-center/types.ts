@@ -15,6 +15,10 @@ export type CommandCenterProviderRow = {
   configuration: string;
   status: CommandCenterStatus;
   latencyMs?: number;
+  configured?: boolean;
+  mode?: "live" | "mock";
+  health?: "healthy" | "not configured" | "error";
+  lastTask?: string;
 };
 
 export type CommandCenterWorkflowRow = {

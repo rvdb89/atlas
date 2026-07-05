@@ -1,7 +1,7 @@
 import type { AtlasTaskType } from "../types";
 import type { CoreAgentId } from "@/atlas/publishing/plugin/types";
 import { tryGetActiveModule } from "@/atlas/publishing/plugin/registry";
-import { getTaskProviderConfig } from "../providers/provider-config";
+import { getTaskProviderConfig, resolveEffectiveTaskProviderConfig } from "../providers/provider-config";
 
 export type TaskRouteConfig = {
   task: AtlasTaskType;
@@ -186,7 +186,7 @@ export function getTaskRouteConfig(task: AtlasTaskType): TaskRouteConfig {
   const config = getTaskRouteConfigs().find((entry) => entry.task === task);
   if (!config) throw new Error(`No AI route for task: ${task}`);
 
-  const providerConfig = getTaskProviderConfig(task);
+  const providerConfig = resolveEffectiveTaskProviderConfig(task);
   return {
     ...config,
     primaryModelId: providerConfig.modelId,

@@ -1,4 +1,6 @@
 import { aiTelemetryStore } from "@/atlas/ai/telemetry/TelemetryStore";
+import { getClaudeRuntimeState } from "@/atlas/ai/providers/claudeRuntimeState";
+import { isAnthropicConfigured } from "@/atlas/config/env";
 import { listTaskRegistryEntries } from "@/atlas/ai/registry/taskRegistry";
 import { getCachedLiveProviderHealth, listLiveProviders } from "@/atlas/ai/providers/ProviderRegistry";
 import { getAtlasHealthSnapshot } from "@/atlas/diagnostics";
@@ -51,21 +53,45 @@ function mapProviderStatus(available: boolean, hasApiKey: boolean, providerId: s
 }
 
 function buildProviderRows(): CommandCenterProviderRow[] {
+  const claudeRuntime = getClaudeRuntimeState();
+  const anthropicConfigured = isAnthropicConfigured();
   const cached = getCachedLiveProviderHealth();
   const live = cached.length > 0 ? cached : listLiveProviders().map((provider) => ({
     id: provider.id,
     label: provider.label,
     available: true,
-    latencyMs: 0,
-    hasApiKey: false,
-    transportMode: "mock" as const,
+    latencyMs: claudeRuntime.latencyMs ?? 0,
+    hasApiKey: anthropicConfigured,
+    transportMode: anthropicConfigured ? ("live" as const) : ("mock" as const),
   }));
 
   const rows: CommandCenterProviderRow[] = live.map((provider) => {
+    if (provider.id === "claude") {
+      return {
+        id: provider.id,
+        label: provider.label,
+        configuration: anthropicConfigured ? "live API configured" : "Claude not configured",
+        status: anthropicConfigured
+          ? claudeRuntime.health === "error"
+            ? "warning"
+            : "healthy"
+          : "mock",
+        latencyMs: claudeRuntime.latencyMs ?? provider.latencyMs,
+        configured: anthropicConfigured,
+        mode: anthropicConfigured ? claudeRuntime.mode : "mock",
+        health: anthropicConfigured
+          ? claudeRuntime.health === "error"
+            ? "error"
+            : "healthy"
+          : "not configured",
+        lastTask: claudeRuntime.lastTask,
+      };
+    }
+
     let configuration = "not configured";
     if (provider.hasApiKey) {
       configuration = "live API configured";
-    } else if (provider.id === "claude" || provider.id === "mock") {
+    } else if (provider.id === "mock") {
       configuration = "configured mock";
     }
 
@@ -75,6 +101,9 @@ function buildProviderRows(): CommandCenterProviderRow[] {
       configuration,
       status: mapProviderStatus(provider.available, provider.hasApiKey, provider.id),
       latencyMs: provider.latencyMs,
+      configured: provider.hasApiKey,
+      mode: provider.hasApiKey ? "live" : "mock",
+      health: provider.hasApiKey ? "healthy" : "not configured",
     };
   });
 
@@ -122,26 +151,37 @@ function buildRecentTasks(): CommandCenterRecentTask[] {
 
 function buildAlerts(providers: CommandCenterProviderRow[]): CommandCenterAlert[] {
   const alerts: CommandCenterAlert[] = [];
-  const liveConnected = providers.some((provider) => provider.configuration === "live API configured");
+  const claude = providers.find((provider) => provider.id === "claude");
+  const liveConnected = providers.some((provider) => provider.configured && provider.mode === "live");
+
+  if (claude && !claude.configured) {
+    alerts.push({
+      id: "alert-claude-not-configured",
+      level: "warning",
+      message: "Claude not configured — mock mode active",
+    });
+  }
 
   if (!liveConnected) {
     alerts.push({
       id: "alert-no-live-providers",
-      level: "warning",
+      level: "info",
       message: "No live providers connected yet",
     });
   }
 
-  alerts.push({
-    id: "alert-claude-sprint-10",
-    level: "info",
-    message: "Claude API planned for Sprint 10",
-  });
+  if (claude?.configured && claude.mode === "live") {
+    alerts.push({
+      id: "alert-claude-live",
+      level: "info",
+      message: "Claude live mode active",
+    });
+  }
 
   alerts.push({
     id: "alert-mock-mode",
     level: "info",
-    message: "Mock mode active",
+    message: claude?.configured ? "Live + mock fallback enabled" : "Mock mode active",
   });
 
   const startupIssues = getAtlasHealthSnapshot().startupIssues;

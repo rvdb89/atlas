@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 import { bootstrapAtlas } from "../src/atlas/bootstrap";
 import {
   printAtlasHealthChecks,
