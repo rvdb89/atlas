@@ -56,6 +56,8 @@
     "atlas:clean": "bash scripts/atlas-clean.sh",
     "atlas:doctor": "tsx scripts/atlas-doctor.ts",
     "atlas:commit-check": "tsx scripts/commit-check.ts",
+    "atlas:audit": "tsx scripts/atlas-audit.ts",
+    "atlas:brief": "tsx scripts/atlas-brief.ts",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",

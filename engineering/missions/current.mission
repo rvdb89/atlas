@@ -1,0 +1,22 @@
+Mission:
+ENG-002
+
+Title:
+Mission Brief Generator
+
+Goal:
+Atlas genereert zelfstandig complete Architecture Briefs vanuit compacte Mission Cards.
+
+Focus:
+Brief Generator
+Mission Card parser
+Brief templates
+Markdown output
+
+Constraints:
+Geen breaking changes
+Geen AI of Claude API
+Alles lokaal en rule-based
+
+Success:
+Mission Brief Generator volledig operationeel.

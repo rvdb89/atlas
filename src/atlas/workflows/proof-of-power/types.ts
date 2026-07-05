@@ -1,4 +1,5 @@
 import type { AiTaskName } from "@/atlas/ai/types";
+import type { ContextSnapshot } from "@/atlas/brain/context";
 import type { AtlasEntity } from "@/atlas/entity/core/types";
 import type { ExecutionPlan } from "@/atlas/brain/planner/planner.types";
 import type { PublicationDraft } from "@/atlas/publishing/types";
@@ -71,6 +72,7 @@ export type ProofOfPowerResult = {
   runId: string;
   input: ProofOfPowerInput;
   executionPlan: ExecutionPlan;
+  contextSnapshot: ContextSnapshot;
   steps: WorkflowStep[];
   entity: AtlasEntity;
   draft: PublicationDraft;

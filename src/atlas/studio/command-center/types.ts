@@ -88,6 +88,25 @@ export type CommandCenterMemoryView = {
   }>;
 };
 
+export type CommandCenterAuditorView = {
+  lastAuditAt: string;
+  recommendation: "APPROVED" | "APPROVED_WITH_NOTES" | "BLOCKED";
+  overallScore: number;
+  warnings: number;
+  blockers: number;
+  reportPath: string;
+  sprintTitle: string;
+  nextAction: string;
+};
+
+export type CommandCenterMissionGeneratorView = {
+  lastMission: string;
+  lastGeneratedBrief: string;
+  templateUsed: string;
+  status: "generated" | "idle" | "error";
+  generatedAt: string;
+};
+
 export type CommandCenterSnapshot = {
   collectedAt: string;
   summary: CommandCenterSummary;
@@ -100,4 +119,6 @@ export type CommandCenterSnapshot = {
   publishing: CommandCenterPublishingView;
   planner: CommandCenterPlannerView;
   memory: CommandCenterMemoryView;
+  auditor: CommandCenterAuditorView;
+  missionGenerator: CommandCenterMissionGeneratorView;
 };

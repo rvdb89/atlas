@@ -10,6 +10,7 @@ import { tryGetActiveModule } from "@/atlas/publishing/plugin/registry";
 
 import { getPlannerSnapshot } from "@/atlas/brain/planner/PlannerEngine";
 import { getMemorySnapshot } from "@/atlas/brain/memory";
+import { getContextHealthSnapshot, getContextSnapshot } from "@/atlas/brain/context";
 import { loadCommandCenterSnapshot } from "../../command-center/commandCenterDataService";
 import type { CommandCenterSnapshot } from "../../command-center/types";
 import { studioDataService } from "../../services/studioDataService";
@@ -171,6 +172,29 @@ export function AtlasMemoryWidget(_props: MissionControlWidgetProps) {
       ))}
       <View style={styles.row}>
         <StatusBadge label={`Memory ${snapshot.health}`} tone={snapshot.health === "healthy" ? "healthy" : "info"} />
+      </View>
+    </WidgetFrame>
+  );
+}
+
+export function AtlasContextWidget(_props: MissionControlWidgetProps) {
+  const snapshot = getContextSnapshot();
+  const planner = getPlannerSnapshot();
+  const health = getContextHealthSnapshot(snapshot);
+  const goal = snapshot?.goal ?? planner.currentPlan?.goal ?? "No active goal";
+
+  return (
+    <WidgetFrame title="Current Context">
+      <Metric label="Current goal" value={goal.length > 42 ? `${goal.slice(0, 42)}…` : goal} />
+      <View style={styles.metrics}>
+        <Metric label="Memories" value={health.memoryCount} />
+        <Metric label="Entities" value={health.entityCount} />
+        <Metric label="Providers" value={health.providerCount} />
+      </View>
+      <Text style={styles.copy}>Module · {health.moduleLabel}</Text>
+      <Text style={styles.copy}>Planner · {health.plannerStatus}</Text>
+      <View style={styles.row}>
+        <StatusBadge label={`Context ${health.health}`} tone={health.health === "healthy" ? "healthy" : "info"} />
       </View>
     </WidgetFrame>
   );

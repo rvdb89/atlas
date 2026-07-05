@@ -6,6 +6,8 @@ import {
   updatePlanStepByWorkflowId,
 } from "@/atlas/brain/planner";
 import { saveWorkflowMemory } from "@/atlas/brain/memory";
+import { contextEngine } from "@/atlas/brain/context";
+import type { ContextSnapshot } from "@/atlas/brain/context";
 import type { ExecutionPlan } from "@/atlas/brain/planner/planner.types";
 
 import type {
@@ -19,16 +21,50 @@ import { runProofOfPowerWorkflowBody } from "./runProofOfPowerWorkflowBody";
 export { PROOF_OF_POWER_STEPS } from "./stepDefinitions";
 export { createProofOfPowerGoal, planProofOfPowerExecution } from "./planProofOfPower";
 
-/** End-to-end workflow — Atlas plans first, then executes. */
+/** End-to-end workflow — Atlas plans, loads memory context, then executes. */
 export async function runProofOfPowerWorkflow(
   input: ProofOfPowerInput,
   onProgress?: WorkflowProgressCallback,
   onPlan?: (plan: ExecutionPlan) => void,
+  onContext?: (snapshot: ContextSnapshot) => void,
 ): Promise<ProofOfPowerResult> {
   const planningResult = planProofOfPowerExecution(input);
   assertPlanningResult(planningResult);
   const executionPlan = planningResult.plan;
   onPlan?.(executionPlan);
+
+  const contextResult = contextEngine.createSnapshot({
+    goal: executionPlan.goal,
+    executionPlan,
+    topic: input.topic,
+    workflowId: "proof-of-power",
+    moduleId: input.moduleId,
+    moduleLabel: input.moduleLabel,
+    language: input.language,
+  });
+
+  const contextSnapshot =
+    contextResult.ok && contextResult.data
+      ? contextResult.data
+      : ({
+          goal: executionPlan.goal,
+          relevantMemories: [],
+          relevantEntities: [],
+          relevantKnowledge: [],
+          relevantWorkflows: [],
+          currentLanguage: input.language,
+          currentModule: { id: input.moduleId, label: input.moduleLabel },
+          currentUser: { id: "atlas-user", label: "Atlas Developer" },
+          workspace: "Atlas Studio",
+          environment: "development",
+          plannerOutput: executionPlan,
+          loadedProviders: [],
+          health: "partial",
+          timestamp: new Date().toISOString(),
+        } satisfies ContextSnapshot);
+
+  onContext?.(contextSnapshot);
+
   markPlanExecuting(executionPlan.id);
 
   try {
@@ -51,7 +87,10 @@ export async function runProofOfPowerWorkflow(
       status: executionPlan.status,
       completedAt: result.completedAt,
     });
-    return result;
+    return {
+      ...result,
+      contextSnapshot,
+    };
   } catch (error) {
     markPlanFailed(executionPlan.id);
     throw error;

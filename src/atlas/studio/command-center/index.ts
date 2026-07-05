@@ -8,5 +8,7 @@ export { default as ModuleStatusPanel } from "./ModuleStatusPanel";
 export { default as QualityPanel } from "./QualityPanel";
 export { default as PlannerStatusPanel } from "./PlannerStatusPanel";
 export { default as MemoryStatusPanel } from "./MemoryStatusPanel";
+export { default as AuditorStatusPanel } from "./AuditorStatusPanel";
+export { default as MissionGeneratorStatusPanel } from "./MissionGeneratorStatusPanel";
 export * from "./types";
 export * from "./commandCenterDataService";

@@ -5,6 +5,7 @@ import {
   PROOF_OF_POWER_STEPS,
   runProofOfPowerWorkflow,
 } from "@/atlas/workflows/proof-of-power";
+import type { ContextSnapshot } from "@/atlas/brain/context";
 import type { ExecutionPlan } from "@/atlas/brain/planner/planner.types";
 import type {
   ProofOfPowerContentType,
@@ -25,6 +26,7 @@ import { studioDataService } from "../services/studioDataService";
 import ProofOfPowerPreview from "./ProofOfPowerPreview";
 import ProofOfPowerTimeline from "./ProofOfPowerTimeline";
 import ExecutionPlanViewer from "./ExecutionPlanViewer";
+import ContextSnapshotViewer from "./ContextSnapshotViewer";
 
 const CONTENT_TYPES: ProofOfPowerContentType[] = [
   "Knowledge Bite",
@@ -59,6 +61,7 @@ export default function ProofOfPowerScreen() {
   const [error, setError] = useState<string | undefined>();
   const [steps, setSteps] = useState<WorkflowStep[]>(createPendingSteps());
   const [executionPlan, setExecutionPlan] = useState<ExecutionPlan | undefined>();
+  const [contextSnapshot, setContextSnapshot] = useState<ContextSnapshot | undefined>();
   const [result, setResult] = useState<ProofOfPowerResult | undefined>();
 
   const moduleLabel = modules.find((module) => module.id === moduleId)?.label ?? moduleId;
@@ -73,6 +76,7 @@ export default function ProofOfPowerScreen() {
     setRunning(true);
     setResult(undefined);
     setExecutionPlan(undefined);
+    setContextSnapshot(undefined);
     setSteps(createPendingSteps());
 
     const input: ProofOfPowerInput = {
@@ -84,7 +88,12 @@ export default function ProofOfPowerScreen() {
     };
 
     try {
-      const workflowResult = await runProofOfPowerWorkflow(input, setSteps, setExecutionPlan);
+      const workflowResult = await runProofOfPowerWorkflow(
+        input,
+        setSteps,
+        setExecutionPlan,
+        setContextSnapshot,
+      );
       setResult(workflowResult);
     } catch (workflowError) {
       setError(workflowError instanceof Error ? workflowError.message : "Workflow mislukt");
@@ -96,7 +105,7 @@ export default function ProofOfPowerScreen() {
   return (
     <StudioScreen
       title="Proof of Power"
-      subtitle="Atlas plans first, then executes: Input → Planner → Execution Plan → Workflow → Output."
+      subtitle="Atlas plans, loads context, then executes: Input → Planner → Memory → Context → Execution Plan → Workflow → Output."
     >
       <StudioSectionTitle>Workflow input</StudioSectionTitle>
       <StudioCard>
@@ -162,6 +171,13 @@ export default function ProofOfPowerScreen() {
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </StudioCard>
+
+      {contextSnapshot ? (
+        <>
+          <StudioSectionTitle>Context Snapshot</StudioSectionTitle>
+          <ContextSnapshotViewer snapshot={contextSnapshot} />
+        </>
+      ) : null}
 
       {executionPlan ? (
         <>

@@ -7,6 +7,7 @@ import { runAtlasStartupChecks } from "./diagnostics/startupChecks";
 import { registerCoreWorkflows } from "./workflows/registry";
 import { bootstrapAtlasPlanner } from "./brain/planner/bootstrap";
 import { bootstrapAtlasMemory } from "./brain/memory/bootstrap";
+import { bootstrapAtlasContext } from "./brain/context/bootstrap";
 import { registerDoughbertIntelligenceProviders } from "@/modules/doughbert/intelligence/providers";
 import { doughbertModule } from "@/modules/doughbert";
 
@@ -23,6 +24,7 @@ export function bootstrapAtlas(options?: { moduleId?: string }) {
   bootstrapAtlasStudio();
   bootstrapAtlasPlanner();
   bootstrapAtlasMemory();
+  bootstrapAtlasContext();
   bootstrapAtlasIntelligence({ defaultModuleId: options?.moduleId ?? "doughbert" });
   registerCoreWorkflows();
   registerModule(doughbertModule);

@@ -22,6 +22,7 @@ import {
   AlertsWidget,
   AtlasHealthWidget,
   AtlasMemoryWidget,
+  AtlasContextWidget,
   AtlasPlannerWidget,
   ClaudeStatusWidget,
   EntitiesWidget,
@@ -37,6 +38,8 @@ import { InspectorPanel, Metric } from "../design-system";
 import { studioDataService } from "../../services/studioDataService";
 import { STUDIO_COLORS } from "../../core/theme";
 import { memoryEngine } from "@/atlas/brain/memory";
+import { contextEngine } from "@/atlas/brain/context";
+import { getPlannerSnapshot } from "@/atlas/brain/planner/PlannerEngine";
 import { pushAtlasDevNotification } from "@/atlas/studio/developer/devEvents";
 
 let registered = false;
@@ -111,6 +114,63 @@ export function registerAtlasOsDefaults(): void {
         nav(ctx, "/studio/command-center");
       },
     },
+    {
+      id: "open-current-context",
+      label: "Open Current Context",
+      group: "Context",
+      keywords: ["goal", "snapshot"],
+      run: (ctx) => nav(ctx, "/studio"),
+    },
+    {
+      id: "refresh-context",
+      label: "Refresh Context",
+      group: "Context",
+      run: (ctx) => {
+        const planner = getPlannerSnapshot();
+        const goal = planner.currentPlan?.goal ?? "Atlas idle context";
+        contextEngine.createSnapshot({
+          goal,
+          executionPlan: planner.currentPlan,
+        });
+        pushAtlasDevNotification({
+          kind: "registry",
+          title: "Context refreshed",
+          message: goal,
+        });
+        ctx.refresh();
+        ctx.closePalette();
+      },
+    },
+    {
+      id: "inspect-context",
+      label: "Inspect Context",
+      group: "Context",
+      run: (ctx) => {
+        const snapshot = contextEngine.getSnapshot();
+        pushAtlasDevNotification({
+          kind: "registry",
+          title: "Context inspect",
+          message: snapshot
+            ? `${snapshot.relevantMemories.length} memories · ${snapshot.loadedProviders.length} providers · ${snapshot.health}`
+            : "No context snapshot loaded",
+        });
+        ctx.closePalette();
+      },
+    },
+    {
+      id: "context-health",
+      label: "Context Health",
+      group: "Context",
+      run: (ctx) => {
+        const snapshot = contextEngine.getSnapshot();
+        pushAtlasDevNotification({
+          kind: "health",
+          title: "Context health",
+          message: snapshot ? `${snapshot.health} · ${snapshot.goal}` : "empty · no active context",
+        });
+        nav(ctx, "/studio");
+      },
+    },
   ];
 
   for (const command of commands) {
@@ -142,15 +202,16 @@ export function registerAtlasOsDefaults(): void {
     { id: "atlas-health", title: "Atlas Health", order: 1, span: "half" as const, component: AtlasHealthWidget },
     { id: "atlas-planner", title: "Atlas Planner", order: 2, span: "half" as const, component: AtlasPlannerWidget },
     { id: "atlas-memory", title: "Atlas Memory", order: 3, span: "half" as const, component: AtlasMemoryWidget },
-    { id: "claude-status", title: "Claude Status", order: 4, span: "half" as const, component: ClaudeStatusWidget },
-    { id: "active-workflows", title: "Active Workflows", order: 5, span: "half" as const, component: ActiveWorkflowsWidget },
-    { id: "publishing-queue", title: "Publishing Queue", order: 6, span: "half" as const, component: PublishingQueueWidget },
-    { id: "recent-activity", title: "Recent Activity", order: 7, span: "full" as const, component: RecentActivityWidget },
-    { id: "alerts", title: "Alerts", order: 8, span: "half" as const, component: AlertsWidget },
-    { id: "knowledge-growth", title: "Knowledge Growth", order: 9, span: "half" as const, component: KnowledgeGrowthWidget },
-    { id: "entities", title: "Entities", order: 10, span: "half" as const, component: EntitiesWidget },
-    { id: "providers", title: "Providers", order: 11, span: "half" as const, component: ProvidersWidget },
-    { id: "performance", title: "Performance", order: 12, span: "full" as const, component: PerformanceWidget },
+    { id: "atlas-context", title: "Current Context", order: 4, span: "half" as const, component: AtlasContextWidget },
+    { id: "claude-status", title: "Claude Status", order: 5, span: "half" as const, component: ClaudeStatusWidget },
+    { id: "active-workflows", title: "Active Workflows", order: 6, span: "half" as const, component: ActiveWorkflowsWidget },
+    { id: "publishing-queue", title: "Publishing Queue", order: 7, span: "half" as const, component: PublishingQueueWidget },
+    { id: "recent-activity", title: "Recent Activity", order: 8, span: "full" as const, component: RecentActivityWidget },
+    { id: "alerts", title: "Alerts", order: 9, span: "half" as const, component: AlertsWidget },
+    { id: "knowledge-growth", title: "Knowledge Growth", order: 10, span: "half" as const, component: KnowledgeGrowthWidget },
+    { id: "entities", title: "Entities", order: 11, span: "half" as const, component: EntitiesWidget },
+    { id: "providers", title: "Providers", order: 12, span: "half" as const, component: ProvidersWidget },
+    { id: "performance", title: "Performance", order: 13, span: "full" as const, component: PerformanceWidget },
   ];
 
   for (const widget of widgets) {

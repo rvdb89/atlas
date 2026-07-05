@@ -1,0 +1,19 @@
+Mission:
+BRAIN-004
+
+Title:
+Decision Engine
+
+Goal:
+Atlas leert beslissingen nemen.
+
+Focus:
+Decision Engine
+Decision Policies
+Decision Registry
+
+Constraints:
+Geen breaking changes
+
+Success:
+Decision Engine volledig operationeel.

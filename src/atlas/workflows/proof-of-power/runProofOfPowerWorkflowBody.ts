@@ -1,7 +1,5 @@
 import { createEntity, updateEntity } from "@/atlas/entity/factory/EntityFactory";
-import { executeNamedTask } from "@/atlas/ai/core/Orchestrator";
-import { isAnthropicConfigured } from "@/atlas/config/env";
-import { DEFAULT_CLAUDE_MODEL } from "@/atlas/ai/providers/claudeConfig";
+import { executeNamedTask, formatTaskExecutionLog } from "@/atlas/ai/core/Orchestrator";
 import { createRelationId } from "@/atlas/entity/utils/id";
 import { slugify } from "@/atlas/entity/utils/slug";
 import { emitSignal } from "@/atlas/intelligence/signals/bus";
@@ -173,7 +171,7 @@ export async function runProofOfPowerWorkflowBody(
   onProgress: WorkflowProgressCallback | undefined,
   executionPlan: ExecutionPlan,
   updatePlanStep?: (workflowStepId: string, status: "running" | "completed" | "failed") => void,
-): Promise<ProofOfPowerResult> {
+): Promise<Omit<ProofOfPowerResult, "contextSnapshot">> {
   const runId = `pop-${Date.now()}`;
   const startedAt = new Date().toISOString();
   const mockContent = buildMockPipelineContent(input);
@@ -266,44 +264,38 @@ export async function runProofOfPowerWorkflowBody(
     steps,
     "copywriter-draft",
     async () => {
-      if (isAnthropicConfigured()) {
-        try {
-          const execution = await executeNamedTask({
-            taskName: "GenerateKnowledgeArticle",
-            moduleId: input.moduleId,
-            payload: {
+      try {
+        const execution = await executeNamedTask({
+          taskName: "GenerateKnowledgeArticle",
+          moduleId: input.moduleId,
+          payload: {
+            topic: input.topic,
+            brief: {
+              id: `pop-brief-${runId}`,
               topic: input.topic,
-              brief: {
-                id: `pop-brief-${runId}`,
-                topic: input.topic,
-                contentType: mapContentType(input.contentType),
-                locale: mapLocale(input.language),
-              },
+              contentType: mapContentType(input.contentType),
+              locale: mapLocale(input.language),
             },
-            settings: {
-              maxTokens: 2048,
-              temperature: 0.7,
-            },
-            skipCache: true,
-          });
+          },
+          settings: {
+            maxTokens: 2048,
+            temperature: 0.7,
+          },
+          skipCache: true,
+        });
 
-          const output =
-            typeof execution.output === "string"
-              ? execution.output
-              : JSON.stringify(execution.output, null, 2);
+        const output =
+          typeof execution.output === "string"
+            ? execution.output
+            : JSON.stringify(execution.output, null, 2);
 
-          copyBody = output;
-          pipelineLog.push(
-            `Copy draft via Claude (${DEFAULT_CLAUDE_MODEL}, ${execution.durationMs}ms, fallback=${execution.usedFallback ? "yes" : "no"})`,
-          );
-          return output;
-        } catch (error) {
-          pipelineLog.push(
-            `Copy draft Claude fallback to mock: ${error instanceof Error ? error.message : "unknown error"}`,
-          );
-        }
-      } else {
-        pipelineLog.push("Copy draft mock mode — ANTHROPIC_API_KEY not configured");
+        copyBody = output;
+        pipelineLog.push(`Copy draft via ${formatTaskExecutionLog(execution)}`);
+        return output;
+      } catch (error) {
+        pipelineLog.push(
+          `Copy draft orchestrator fallback to mock: ${error instanceof Error ? error.message : "unknown error"}`,
+        );
       }
 
       pipelineLog.push(`Copy draft ready: ${mockContent.title}`);

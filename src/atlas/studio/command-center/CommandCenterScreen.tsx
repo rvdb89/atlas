@@ -9,6 +9,8 @@ import { useStudioBootstrap } from "../hooks/useStudioBootstrap";
 import { loadCommandCenterSnapshot } from "./commandCenterDataService";
 import ModuleStatusPanel from "./ModuleStatusPanel";
 import MemoryStatusPanel from "./MemoryStatusPanel";
+import AuditorStatusPanel from "./AuditorStatusPanel";
+import MissionGeneratorStatusPanel from "./MissionGeneratorStatusPanel";
 import PlannerStatusPanel from "./PlannerStatusPanel";
 import ProviderStatusPanel from "./ProviderStatusPanel";
 import QualityPanel from "./QualityPanel";
@@ -58,6 +60,12 @@ export default function CommandCenterScreen() {
 
           <StudioSectionTitle>Atlas Memory</StudioSectionTitle>
           <MemoryStatusPanel memory={snapshot.memory} />
+
+          <StudioSectionTitle>Atlas Auditor</StudioSectionTitle>
+          <AuditorStatusPanel auditor={snapshot.auditor} />
+
+          <StudioSectionTitle>Mission Generator</StudioSectionTitle>
+          <MissionGeneratorStatusPanel missionGenerator={snapshot.missionGenerator} />
 
           <StudioSectionTitle>Platform overview</StudioSectionTitle>
           <ProviderStatusPanel providers={snapshot.providers} />
