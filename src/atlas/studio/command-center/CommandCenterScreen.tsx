@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { StudioScreen, StudioSectionTitle, StudioStatGrid } from "../components";
+import CommandCenterActionsPanel from "../os/command-center/CommandCenterActionsPanel";
+import ActivityFeed from "../os/activity/ActivityFeed";
 import { STUDIO_COLORS } from "../core/theme";
 import { useStudioBootstrap } from "../hooks/useStudioBootstrap";
 import { loadCommandCenterSnapshot } from "./commandCenterDataService";
@@ -36,6 +38,8 @@ export default function CommandCenterScreen() {
         </View>
       ) : (
         <>
+          <CommandCenterActionsPanel />
+
           <StudioStatGrid
             items={[
               { label: "Atlas Health", value: snapshot.summary.atlasHealth },
@@ -54,6 +58,9 @@ export default function CommandCenterScreen() {
           <SystemAlertsPanel alerts={snapshot.alerts} />
           <ModuleStatusPanel modules={snapshot.modules} />
           <QualityPanel quality={snapshot.quality} publishing={snapshot.publishing} />
+
+          <StudioSectionTitle>Recent Activity</StudioSectionTitle>
+          <ActivityFeed />
         </>
       )}
     </StudioScreen>

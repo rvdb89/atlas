@@ -11,7 +11,16 @@ npm install
 npm run atlas
 ```
 
-Atlas OS handles environment checks, auto recovery, Expo web on port **8083**, browser launch, health monitoring, and session restore. No QR code. No manual port cleanup.
+Atlas OS handles environment checks, auto recovery, Expo web on port **8083**, browser launch, health monitoring, and session restore. Opens **Mission Control** at `/studio`.
+
+## Atlas Studio OS (Sprint 12)
+
+- **Mission Control** — `/studio` widget cockpit (plugin registry)
+- **Command Palette** — `⌘K` / `Ctrl+K` global overlay
+- **Global Search** — searchable via palette (mock providers, extensible)
+- **Quick Actions** — floating `＋` button bottom-right
+- **Status Bar** — version, Claude, module, memory, health
+- **Layout** — sidebar · content · inspector (desktop-first)
 
 Optional (live Claude):
 

@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PageNav from "@/components/PageNav";
 import { STUDIO_COLORS, STUDIO_SPACING } from "../core/theme";
 import { ATLAS_STUDIO_NAV } from "../navigation/routes";
+import { useOptionalStudioOs } from "../os/StudioOsContext";
 import StudioNavRail from "./StudioNavRail";
 
 type StudioScreenProps = {
@@ -24,6 +25,8 @@ export default function StudioScreen({
   children,
 }: StudioScreenProps) {
   const insets = useSafeAreaInsets();
+  const studioOs = useOptionalStudioOs();
+  const showNavigation = showNav && !studioOs;
 
   return (
     <View style={styles.screen}>
@@ -47,7 +50,7 @@ export default function StudioScreen({
         <Text style={styles.title}>{title}</Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
 
-        {showNav ? <StudioNavRail items={ATLAS_STUDIO_NAV} /> : null}
+        {showNavigation ? <StudioNavRail items={ATLAS_STUDIO_NAV} /> : null}
 
         {children}
       </ScrollView>
