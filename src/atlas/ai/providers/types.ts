@@ -1,3 +1,16 @@
 export type { AiProviderAdapter, ProviderRegistry } from "../interfaces/provider";
 export { ProviderUnavailableError } from "../interfaces/provider";
 export type { AiProviderRequest, AiProviderResponse } from "../interfaces/providerRequest";
+export * from "./interfaces";
+export * from "./ProviderRegistry";
+export * from "./provider-config";
+export * from "./adapterBridge";
+export * from "./liveBootstrap";
+export * from "./ClaudeProvider";
+export * from "./OpenAIProvider";
+export * from "./GeminiProvider";
+export * from "./OllamaProvider";
+export * from "./AtlasMockProvider";
+export * from "./LiveProviderBase";
+export * from "./transport/types";
+export { createMockTransport, createLiveTransport } from "./transport/mockTransport";

@@ -9,6 +9,8 @@ export * from "./providers/types";
 export * from "./providers/registry";
 export * from "./providers/adapters";
 export * from "./providers/bootstrap";
+export * from "./providers/provider-config";
+export * from "./providers/ProviderRegistry";
 export * from "./prompts/library";
 export * from "./prompts/registry";
 export * from "./validation/validateOutput";

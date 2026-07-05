@@ -1,6 +1,7 @@
 import type { AtlasTaskType } from "../types";
 import type { CoreAgentId } from "@/atlas/publishing/plugin/types";
 import { tryGetActiveModule } from "@/atlas/publishing/plugin/registry";
+import { getTaskProviderConfig } from "../providers/provider-config";
 
 export type TaskRouteConfig = {
   task: AtlasTaskType;
@@ -9,7 +10,13 @@ export type TaskRouteConfig = {
   promptId: string;
   primaryModelId: string;
   fallbackModelIds: string[];
-  defaultSettings?: { temperature?: number; maxTokens?: number };
+  defaultSettings?: {
+    temperature?: number;
+    maxTokens?: number;
+    retries?: number;
+    timeoutMs?: number;
+    providerId?: string;
+  };
 };
 
 const BASE_ROUTES: TaskRouteConfig[] = [
@@ -178,7 +185,20 @@ export function getTaskRouteConfigs(): TaskRouteConfig[] {
 export function getTaskRouteConfig(task: AtlasTaskType): TaskRouteConfig {
   const config = getTaskRouteConfigs().find((entry) => entry.task === task);
   if (!config) throw new Error(`No AI route for task: ${task}`);
-  return config;
+
+  const providerConfig = getTaskProviderConfig(task);
+  return {
+    ...config,
+    primaryModelId: providerConfig.modelId,
+    fallbackModelIds: providerConfig.fallbackModelIds ?? config.fallbackModelIds,
+    defaultSettings: {
+      temperature: providerConfig.temperature ?? config.defaultSettings?.temperature,
+      maxTokens: providerConfig.maxTokens ?? config.defaultSettings?.maxTokens,
+      retries: providerConfig.retries,
+      timeoutMs: providerConfig.timeoutMs,
+      providerId: providerConfig.providerId,
+    },
+  };
 }
 
 export function getTasksForAgent(agentId: CoreAgentId): TaskRouteConfig[] {

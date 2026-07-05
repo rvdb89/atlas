@@ -40,6 +40,24 @@ export type RegisteredProviderInfo = {
   vendor?: string;
 };
 
+export type LiveProviderHealthInfo = {
+  id: string;
+  label: string;
+  available: boolean;
+  latencyMs: number;
+  message?: string;
+  transportMode: "mock" | "live";
+  hasApiKey: boolean;
+  modelCount: number;
+  models: string[];
+  capabilities: {
+    textGeneration: boolean;
+    structuredOutput: boolean;
+    imageGeneration: boolean;
+    streaming: boolean;
+  };
+};
+
 export type PublishingHandlerInfo = {
   id: string;
   kind: "task-handler" | "publishing-agent";
@@ -60,6 +78,7 @@ export type AtlasDiagnosticsSnapshot = {
   memoryEntryCount: number;
   cacheEntryCount: number;
   startupIssues: StartupIssue[];
+  liveProviders: LiveProviderHealthInfo[];
 };
 
 export type AtlasHealthCheckResult = {
@@ -86,4 +105,5 @@ export type AtlasHealthSnapshot = {
   subsystems: AtlasSubsystemHealth[];
   startupIssues: StartupIssue[];
   checks: AtlasHealthCheckResult[];
+  liveProviders: LiveProviderHealthInfo[];
 };

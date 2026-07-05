@@ -1,7 +1,9 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import { refreshLiveProviderHealth } from "@/atlas/ai/providers/ProviderRegistry";
 import { getAtlasHealthSnapshot } from "@/atlas/diagnostics";
+import type { LiveProviderHealthInfo } from "@/atlas/diagnostics/types";
 import {
   StudioCard,
   StudioScreen,
@@ -10,19 +12,45 @@ import {
 } from "@/atlas/studio/components";
 import { STUDIO_COLORS } from "@/atlas/studio/core/theme";
 import { useStudioBootstrap } from "@/atlas/studio/hooks";
-import { StudioHealthCard } from "@/atlas/studio/health";
+import { StudioHealthCard, StudioProviderHealthCard } from "@/atlas/studio/health";
 
 export default function StudioHealthScreen() {
   useStudioBootstrap();
   const snapshot = useMemo(() => getAtlasHealthSnapshot(), []);
+  const [liveProviders, setLiveProviders] = useState<LiveProviderHealthInfo[]>(snapshot.liveProviders);
+
+  useEffect(() => {
+    refreshLiveProviderHealth().then((providers) => {
+      setLiveProviders(
+        providers.map((provider) => ({
+          id: provider.id,
+          label: provider.label,
+          available: provider.available,
+          latencyMs: provider.latencyMs,
+          message: provider.message,
+          transportMode: provider.transportMode,
+          hasApiKey: provider.hasApiKey,
+          modelCount: provider.modelCount,
+          models: provider.models,
+          capabilities: {
+            textGeneration: provider.capabilities.textGeneration,
+            structuredOutput: provider.capabilities.structuredOutput,
+            imageGeneration: provider.capabilities.imageGeneration,
+            streaming: provider.capabilities.streaming,
+          },
+        })),
+      );
+    });
+  }, []);
 
   const healthyCount = snapshot.subsystems.filter((item) => item.status === "healthy").length;
   const issueCount = snapshot.startupIssues.length;
+  const healthyProviders = liveProviders.filter((provider) => provider.available).length;
 
   return (
     <StudioScreen
       title="Atlas Health"
-      subtitle="Platform diagnostics for Studio, engines, registries, and developer tooling."
+      subtitle="Platform diagnostics for Studio, engines, registries, providers, and developer tooling."
     >
       <StudioStatGrid
         items={[
@@ -47,6 +75,11 @@ export default function StudioHealthScreen() {
           </View>
         ))}
       </StudioCard>
+
+      <StudioSectionTitle>{`AI Providers · ${healthyProviders}/${liveProviders.length}`}</StudioSectionTitle>
+      {liveProviders.map((provider) => (
+        <StudioProviderHealthCard key={provider.id} provider={provider} />
+      ))}
 
       {issueCount > 0 ? (
         <>

@@ -2,6 +2,7 @@ import type { AtlasTaskType, TaskRoutingDecision } from "../types";
 import { resolveTaskTypeName } from "../types";
 import { getModelProfile } from "../models/profiles";
 import { getTaskRouteConfig } from "../tasks/routes";
+import { getTaskProviderConfig } from "../providers/provider-config";
 import { TASK_PROMPT_IDS } from "../prompts/library";
 import { modelRegistry } from "../registry/modelRegistry";
 
@@ -72,6 +73,7 @@ function buildProviderChain(primaryId: string, fallbackIds: string[]): string[] 
 
 export function routeTask(task: AtlasTaskType): TaskRoutingDecision {
   const config = getTaskRouteConfig(task);
+  const providerConfig = getTaskProviderConfig(task);
   const baseChain = buildProviderChain(config.primaryModelId, config.fallbackModelIds);
   const { chain, loadBalanced } = applyLoadBalancing(task, baseChain);
 
@@ -84,6 +86,7 @@ export function routeTask(task: AtlasTaskType): TaskRoutingDecision {
     taskName: resolveTaskTypeName(task),
     agentId: config.agentId,
     primaryModelId: chain[0],
+    primaryProviderId: providerConfig.providerId,
     fallbackModelIds: chain.slice(1),
     providerChain: chain,
     promptId: config.promptId ?? TASK_PROMPT_IDS[task],

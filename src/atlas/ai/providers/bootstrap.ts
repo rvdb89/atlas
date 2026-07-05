@@ -1,12 +1,10 @@
 import { registerProvider } from "./registry";
-import { ALL_PROVIDERS } from "./adapters";
+import { bootstrapLiveProviders } from "./liveBootstrap";
 
 let initialized = false;
 
 export function bootstrapAiProviders(): void {
   if (initialized) return;
-  for (const adapter of ALL_PROVIDERS) {
-    registerProvider(adapter);
-  }
+  bootstrapLiveProviders();
   initialized = true;
 }

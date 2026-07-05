@@ -88,6 +88,9 @@ export type AiTaskSettings = {
   maxTokens?: number;
   topP?: number;
   locale?: string;
+  retries?: number;
+  timeoutMs?: number;
+  providerId?: string;
 };
 
 export type JsonSchemaField = {
@@ -142,6 +145,7 @@ export type TaskRoutingDecision = {
   taskName?: AiTaskName;
   agentId?: CoreAgentId;
   primaryModelId: string;
+  primaryProviderId?: string;
   fallbackModelIds: string[];
   providerChain: string[];
   promptId: string;

@@ -1,4 +1,5 @@
 import { listProviders } from "@/atlas/ai/providers/registry";
+import { getCachedLiveProviderHealth, listLiveProviders } from "@/atlas/ai/providers/ProviderRegistry";
 import { listTaskRegistryEntries } from "@/atlas/ai/registry/taskRegistry";
 import { listTaskHandlers } from "@/atlas/ai/tasks/handlerRegistry";
 import { listCacheEntries } from "@/atlas/ai/cache/memoryCache";
@@ -10,7 +11,7 @@ import { ATLAS_BUILD, ATLAS_VERSION } from "@/atlas/version";
 import { listWorkflows } from "@/atlas/workflows/registry";
 
 import { getStartupIssues } from "./auditLog";
-import type { AtlasDiagnosticsSnapshot, PublishingHandlerInfo } from "./types";
+import type { AtlasDiagnosticsSnapshot, LiveProviderHealthInfo, PublishingHandlerInfo } from "./types";
 
 const PUBLISHING_AGENT_HANDLERS: PublishingHandlerInfo[] = [
   { id: "copywriter", kind: "publishing-agent", label: "Copywriter Agent" },
@@ -28,6 +29,7 @@ export function collectAtlasDiagnostics(): AtlasDiagnosticsSnapshot {
   const aiTasks = listTaskRegistryEntries();
   const workflows = listWorkflows();
   const providers = listProviders();
+  const liveProviderHealth = getCachedLiveProviderHealth();
   const taskHandlers = listTaskHandlers();
 
   const publishingHandlers: PublishingHandlerInfo[] = [
@@ -69,10 +71,53 @@ export function collectAtlasDiagnostics(): AtlasDiagnosticsSnapshot {
       id: provider.id,
       label: provider.id,
     })),
+    liveProviders: buildLiveProviderHealth(liveProviderHealth),
     publishingHandlers,
     entityCount: getEntityCount(),
     memoryEntryCount: listMemoryEntries().length,
     cacheEntryCount: listCacheEntries().length,
     startupIssues: getStartupIssues(),
   };
+}
+
+function buildLiveProviderHealth(
+  cached: ReturnType<typeof getCachedLiveProviderHealth>,
+): LiveProviderHealthInfo[] {
+  if (cached.length > 0) {
+    return cached.map((entry) => ({
+      id: entry.id,
+      label: entry.label,
+      available: entry.available,
+      latencyMs: entry.latencyMs,
+      message: entry.message,
+      transportMode: entry.transportMode,
+      hasApiKey: entry.hasApiKey,
+      modelCount: entry.modelCount,
+      models: entry.models,
+      capabilities: {
+        textGeneration: entry.capabilities.textGeneration,
+        structuredOutput: entry.capabilities.structuredOutput,
+        imageGeneration: entry.capabilities.imageGeneration,
+        streaming: entry.capabilities.streaming,
+      },
+    }));
+  }
+
+  return listLiveProviders().map((provider) => ({
+    id: provider.id,
+    label: provider.label,
+    available: true,
+    latencyMs: 0,
+    message: "Health pending",
+    transportMode: "mock",
+    hasApiKey: false,
+    modelCount: provider.capabilities.models.length,
+    models: provider.capabilities.models.map((model) => model.id),
+    capabilities: {
+      textGeneration: provider.capabilities.textGeneration,
+      structuredOutput: provider.capabilities.structuredOutput,
+      imageGeneration: provider.capabilities.imageGeneration,
+      streaming: provider.capabilities.streaming,
+    },
+  }));
 }

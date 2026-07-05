@@ -128,5 +128,6 @@ export function getAtlasHealthSnapshot(): AtlasHealthSnapshot {
     subsystems,
     startupIssues: diagnostics.startupIssues,
     checks,
+    liveProviders: diagnostics.liveProviders,
   };
 }
