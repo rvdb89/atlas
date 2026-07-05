@@ -9,6 +9,7 @@ export type StudioRouteItem = {
 /** Domain-independent Atlas Studio navigation. */
 export const ATLAS_STUDIO_NAV: StudioRouteItem[] = [
   { id: "dashboard", emoji: "◆", title: "Dashboard", route: "/studio", description: "Platform overview" },
+  { id: "command", emoji: "⌘", title: "Command Center", route: "/studio/command-center", description: "Central cockpit" },
   { id: "entities", emoji: "⬡", title: "Entities", route: "/studio/entities", description: "Entity catalog" },
   { id: "ai", emoji: "✦", title: "AI Studio", route: "/studio/ai-studio", description: "Run AI tasks" },
   { id: "proof", emoji: "⚡", title: "Proof of Power", route: "/studio/proof-of-power", description: "End-to-end demo" },

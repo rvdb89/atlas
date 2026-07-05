@@ -17,3 +17,4 @@ export { studioService } from "./services/studioService";
 export * from "./proof-of-power";
 export * from "./health";
 export * from "./developer";
+export * from "./command-center";
