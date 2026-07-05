@@ -1,0 +1,78 @@
+import type { WorkflowStepDefinition } from "./types";
+
+export const PROOF_OF_POWER_STEPS: WorkflowStepDefinition[] = [
+  {
+    id: "create-entity",
+    label: "Create Entity",
+    description: "Register topic as Atlas entity",
+    system: "entity",
+  },
+  {
+    id: "intelligence-scan",
+    label: "Intelligence Scan",
+    description: "Analyze signals and content gaps",
+    system: "intelligence",
+  },
+  {
+    id: "research",
+    label: "Research",
+    description: "Gather context and references",
+    system: "orchestrator",
+    taskName: "ResearchTopic",
+    agentId: "atlas",
+  },
+  {
+    id: "copywriter-draft",
+    label: "Copywriter Draft",
+    description: "Generate editorial copy",
+    system: "orchestrator",
+    taskName: "GenerateKnowledgeArticle",
+    agentId: "baker",
+  },
+  {
+    id: "visual-plan",
+    label: "Visual Plan",
+    description: "Plan hero, detail and infographic assets",
+    system: "orchestrator",
+    taskName: "GenerateVisual",
+    agentId: "canvas",
+  },
+  {
+    id: "fact-check",
+    label: "Fact Check",
+    description: "Verify factual claims",
+    system: "orchestrator",
+    taskName: "FactCheck",
+    agentId: "proof",
+  },
+  {
+    id: "link-engine",
+    label: "Link Engine",
+    description: "Suggest internal relations",
+    system: "orchestrator",
+    taskName: "GenerateSEO",
+    agentId: "atlas",
+  },
+  {
+    id: "quality-score",
+    label: "Quality Score",
+    description: "Score draft quality",
+    system: "orchestrator",
+    taskName: "ScoreQuality",
+    agentId: "test-kitchen",
+  },
+  {
+    id: "review-draft",
+    label: "Review Draft",
+    description: "Prepare for editorial review",
+    system: "orchestrator",
+    taskName: "ReviewContent",
+    agentId: "proof",
+  },
+  {
+    id: "ready-to-publish",
+    label: "Ready to Publish",
+    description: "Draft queued for review",
+    system: "entity",
+  },
+];

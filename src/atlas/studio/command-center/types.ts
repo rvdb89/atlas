@@ -66,6 +66,28 @@ export type CommandCenterPublishingView = {
   archived: number;
 };
 
+export type CommandCenterPlannerView = {
+  status: string;
+  currentPlanGoal: string | null;
+  nextStep: string | null;
+  queueLength: number;
+  plannerId: string | null;
+};
+
+export type CommandCenterMemoryView = {
+  total: number;
+  workflows: number;
+  projects: number;
+  preferences: number;
+  health: string;
+  recent: Array<{
+    id: string;
+    title: string;
+    type: string;
+    importance: number;
+  }>;
+};
+
 export type CommandCenterSnapshot = {
   collectedAt: string;
   summary: CommandCenterSummary;
@@ -76,4 +98,6 @@ export type CommandCenterSnapshot = {
   modules: CommandCenterModuleRow[];
   quality: CommandCenterQualityView;
   publishing: CommandCenterPublishingView;
+  planner: CommandCenterPlannerView;
+  memory: CommandCenterMemoryView;
 };

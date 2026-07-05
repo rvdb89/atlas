@@ -8,9 +8,13 @@ import { listRegisteredModules, tryGetActiveModule } from "@/atlas/publishing/pl
 import { listWorkflows } from "@/atlas/workflows/registry";
 import { publicationStore } from "../store/publicationStore";
 import { studioDataService } from "../services/studioDataService";
+import { getPlannerSnapshot } from "@/atlas/brain/planner/PlannerEngine";
+import { getMemorySnapshot } from "@/atlas/brain/memory";
 import type {
   CommandCenterAlert,
+  CommandCenterMemoryView,
   CommandCenterModuleRow,
+  CommandCenterPlannerView,
   CommandCenterProviderRow,
   CommandCenterPublishingView,
   CommandCenterQualityView,
@@ -284,6 +288,34 @@ function buildSummary(
   };
 }
 
+function buildPlannerView(): CommandCenterPlannerView {
+  const snapshot = getPlannerSnapshot();
+  return {
+    status: snapshot.plannerStatus,
+    currentPlanGoal: snapshot.currentPlan?.goal ?? null,
+    nextStep: snapshot.nextStep?.label ?? null,
+    queueLength: snapshot.executionQueue.length,
+    plannerId: snapshot.currentPlan?.plannerId ?? null,
+  };
+}
+
+function buildMemoryView(): CommandCenterMemoryView {
+  const snapshot = getMemorySnapshot();
+  return {
+    total: snapshot.total,
+    workflows: snapshot.workflows,
+    projects: snapshot.projects,
+    preferences: snapshot.preferences,
+    health: snapshot.health,
+    recent: snapshot.recent.map((entry) => ({
+      id: entry.id,
+      title: entry.title,
+      type: entry.type,
+      importance: entry.importance,
+    })),
+  };
+}
+
 /** Aggregate Command Center data from existing Atlas layers. */
 export async function loadCommandCenterSnapshot(): Promise<CommandCenterSnapshot> {
   studioDataService.getDashboardStats();
@@ -295,6 +327,8 @@ export async function loadCommandCenterSnapshot(): Promise<CommandCenterSnapshot
   const modules = buildModules();
   const quality = await buildQualityView();
   const publishing = buildPublishingView();
+  const planner = buildPlannerView();
+  const memory = buildMemoryView();
   const summary = buildSummary(providers, workflows, alerts, quality.averageScore);
 
   return {
@@ -307,6 +341,8 @@ export async function loadCommandCenterSnapshot(): Promise<CommandCenterSnapshot
     modules,
     quality,
     publishing,
+    planner,
+    memory,
   };
 }
 

@@ -5,6 +5,7 @@ import {
   PROOF_OF_POWER_STEPS,
   runProofOfPowerWorkflow,
 } from "@/atlas/workflows/proof-of-power";
+import type { ExecutionPlan } from "@/atlas/brain/planner/planner.types";
 import type {
   ProofOfPowerContentType,
   ProofOfPowerInput,
@@ -23,6 +24,7 @@ import { useStudioBootstrap } from "../hooks/useStudioBootstrap";
 import { studioDataService } from "../services/studioDataService";
 import ProofOfPowerPreview from "./ProofOfPowerPreview";
 import ProofOfPowerTimeline from "./ProofOfPowerTimeline";
+import ExecutionPlanViewer from "./ExecutionPlanViewer";
 
 const CONTENT_TYPES: ProofOfPowerContentType[] = [
   "Knowledge Bite",
@@ -56,6 +58,7 @@ export default function ProofOfPowerScreen() {
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [steps, setSteps] = useState<WorkflowStep[]>(createPendingSteps());
+  const [executionPlan, setExecutionPlan] = useState<ExecutionPlan | undefined>();
   const [result, setResult] = useState<ProofOfPowerResult | undefined>();
 
   const moduleLabel = modules.find((module) => module.id === moduleId)?.label ?? moduleId;
@@ -69,6 +72,7 @@ export default function ProofOfPowerScreen() {
     setError(undefined);
     setRunning(true);
     setResult(undefined);
+    setExecutionPlan(undefined);
     setSteps(createPendingSteps());
 
     const input: ProofOfPowerInput = {
@@ -80,7 +84,7 @@ export default function ProofOfPowerScreen() {
     };
 
     try {
-      const workflowResult = await runProofOfPowerWorkflow(input, setSteps);
+      const workflowResult = await runProofOfPowerWorkflow(input, setSteps, setExecutionPlan);
       setResult(workflowResult);
     } catch (workflowError) {
       setError(workflowError instanceof Error ? workflowError.message : "Workflow mislukt");
@@ -92,7 +96,7 @@ export default function ProofOfPowerScreen() {
   return (
     <StudioScreen
       title="Proof of Power"
-      subtitle="End-to-end Atlas demo: één onderwerp → entity → AI-stappen → review-ready draft."
+      subtitle="Atlas plans first, then executes: Input → Planner → Execution Plan → Workflow → Output."
     >
       <StudioSectionTitle>Workflow input</StudioSectionTitle>
       <StudioCard>
@@ -152,12 +156,19 @@ export default function ProofOfPowerScreen() {
               <Text style={styles.runLabel}>Atlas workflow running…</Text>
             </View>
           ) : (
-            <Text style={styles.runLabel}>Run Atlas Workflow</Text>
+            <Text style={styles.runLabel}>Plan & Run Atlas Workflow</Text>
           )}
         </Pressable>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </StudioCard>
+
+      {executionPlan ? (
+        <>
+          <StudioSectionTitle>Execution Plan</StudioSectionTitle>
+          <ExecutionPlanViewer plan={executionPlan} />
+        </>
+      ) : null}
 
       <StudioSectionTitle>Workflow timeline</StudioSectionTitle>
       <ProofOfPowerTimeline steps={steps} />

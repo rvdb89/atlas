@@ -1,5 +1,6 @@
 import type { AiTaskName } from "@/atlas/ai/types";
 import type { AtlasEntity } from "@/atlas/entity/core/types";
+import type { ExecutionPlan } from "@/atlas/brain/planner/planner.types";
 import type { PublicationDraft } from "@/atlas/publishing/types";
 
 export type WorkflowStepStatus = "pending" | "running" | "completed" | "failed";
@@ -69,6 +70,7 @@ export type ProofOfPowerMockContent = {
 export type ProofOfPowerResult = {
   runId: string;
   input: ProofOfPowerInput;
+  executionPlan: ExecutionPlan;
   steps: WorkflowStep[];
   entity: AtlasEntity;
   draft: PublicationDraft;

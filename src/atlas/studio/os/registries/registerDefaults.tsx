@@ -7,6 +7,7 @@ import { quickActionRegistry } from "./quickActionRegistry";
 import { searchProviderRegistry } from "./searchProviderRegistry";
 import { widgetRegistry } from "./widgetRegistry";
 import { MOCK_STUDIO_ACTIVITY } from "../data/mockActivity";
+import { searchAtlasMemory } from "../data/memorySearch";
 import {
   searchMockAssets,
   searchMockEntities,
@@ -20,6 +21,8 @@ import {
   ActiveWorkflowsWidget,
   AlertsWidget,
   AtlasHealthWidget,
+  AtlasMemoryWidget,
+  AtlasPlannerWidget,
   ClaudeStatusWidget,
   EntitiesWidget,
   KnowledgeGrowthWidget,
@@ -33,6 +36,8 @@ import type { StudioOsCommandContext } from "../types";
 import { InspectorPanel, Metric } from "../design-system";
 import { studioDataService } from "../../services/studioDataService";
 import { STUDIO_COLORS } from "../../core/theme";
+import { memoryEngine } from "@/atlas/brain/memory";
+import { pushAtlasDevNotification } from "@/atlas/studio/developer/devEvents";
 
 let registered = false;
 
@@ -60,6 +65,52 @@ export function registerAtlasOsDefaults(): void {
     { id: "search-workflow", label: "Search Workflow", group: "Search", run: (ctx) => ctx.openSearch() },
     { id: "search-module", label: "Search Module", group: "Search", run: (ctx) => ctx.openSearch() },
     { id: "open-mission-control", label: "Open Mission Control", group: "Navigation", run: (ctx) => nav(ctx, "/studio") },
+    { id: "search-memory", label: "Search Memory", group: "Memory", keywords: ["remember", "recall"], run: (ctx) => ctx.openSearch() },
+    {
+      id: "create-memory",
+      label: "Create Memory",
+      group: "Memory",
+      run: (ctx) => {
+        memoryEngine.saveMemory({
+          type: "knowledge",
+          title: "Atlas Studio note",
+          summary: "Manual memory entry created from Command Palette",
+          content: JSON.stringify({ createdFrom: "command-palette", at: new Date().toISOString() }),
+          tags: ["manual", "studio"],
+          source: "atlas.studio.command-palette",
+          importance: 5,
+          confidence: 0.75,
+        });
+        pushAtlasDevNotification({
+          kind: "registry",
+          title: "Memory created",
+          message: "New knowledge memory saved locally",
+        });
+        ctx.closePalette();
+      },
+    },
+    {
+      id: "open-recent-memory",
+      label: "Open Recent Memory",
+      group: "Memory",
+      run: (ctx) => {
+        nav(ctx, "/studio/command-center");
+      },
+    },
+    {
+      id: "memory-health",
+      label: "Memory Health",
+      group: "Memory",
+      run: (ctx) => {
+        const snapshot = memoryEngine.getSnapshot();
+        pushAtlasDevNotification({
+          kind: "health",
+          title: "Memory health",
+          message: `${snapshot.total} memories · ${snapshot.health}`,
+        });
+        nav(ctx, "/studio/command-center");
+      },
+    },
   ];
 
   for (const command of commands) {
@@ -74,6 +125,7 @@ export function registerAtlasOsDefaults(): void {
     { id: "workflows", label: "Workflows", search: searchMockWorkflows },
     { id: "providers", label: "Providers", search: searchMockProviders },
     { id: "assets", label: "Assets", search: searchMockAssets },
+    { id: "memory", label: "Memory", search: searchAtlasMemory },
   ];
 
   for (const provider of searchProviders) {
@@ -88,15 +140,17 @@ export function registerAtlasOsDefaults(): void {
 
   const widgets = [
     { id: "atlas-health", title: "Atlas Health", order: 1, span: "half" as const, component: AtlasHealthWidget },
-    { id: "claude-status", title: "Claude Status", order: 2, span: "half" as const, component: ClaudeStatusWidget },
-    { id: "active-workflows", title: "Active Workflows", order: 3, span: "half" as const, component: ActiveWorkflowsWidget },
-    { id: "publishing-queue", title: "Publishing Queue", order: 4, span: "half" as const, component: PublishingQueueWidget },
-    { id: "recent-activity", title: "Recent Activity", order: 5, span: "full" as const, component: RecentActivityWidget },
-    { id: "alerts", title: "Alerts", order: 6, span: "half" as const, component: AlertsWidget },
-    { id: "knowledge-growth", title: "Knowledge Growth", order: 7, span: "half" as const, component: KnowledgeGrowthWidget },
-    { id: "entities", title: "Entities", order: 8, span: "half" as const, component: EntitiesWidget },
-    { id: "providers", title: "Providers", order: 9, span: "half" as const, component: ProvidersWidget },
-    { id: "performance", title: "Performance", order: 10, span: "full" as const, component: PerformanceWidget },
+    { id: "atlas-planner", title: "Atlas Planner", order: 2, span: "half" as const, component: AtlasPlannerWidget },
+    { id: "atlas-memory", title: "Atlas Memory", order: 3, span: "half" as const, component: AtlasMemoryWidget },
+    { id: "claude-status", title: "Claude Status", order: 4, span: "half" as const, component: ClaudeStatusWidget },
+    { id: "active-workflows", title: "Active Workflows", order: 5, span: "half" as const, component: ActiveWorkflowsWidget },
+    { id: "publishing-queue", title: "Publishing Queue", order: 6, span: "half" as const, component: PublishingQueueWidget },
+    { id: "recent-activity", title: "Recent Activity", order: 7, span: "full" as const, component: RecentActivityWidget },
+    { id: "alerts", title: "Alerts", order: 8, span: "half" as const, component: AlertsWidget },
+    { id: "knowledge-growth", title: "Knowledge Growth", order: 9, span: "half" as const, component: KnowledgeGrowthWidget },
+    { id: "entities", title: "Entities", order: 10, span: "half" as const, component: EntitiesWidget },
+    { id: "providers", title: "Providers", order: 11, span: "half" as const, component: ProvidersWidget },
+    { id: "performance", title: "Performance", order: 12, span: "full" as const, component: PerformanceWidget },
   ];
 
   for (const widget of widgets) {

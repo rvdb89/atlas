@@ -6,5 +6,7 @@ export { default as RecentTasksPanel } from "./RecentTasksPanel";
 export { default as SystemAlertsPanel } from "./SystemAlertsPanel";
 export { default as ModuleStatusPanel } from "./ModuleStatusPanel";
 export { default as QualityPanel } from "./QualityPanel";
+export { default as PlannerStatusPanel } from "./PlannerStatusPanel";
+export { default as MemoryStatusPanel } from "./MemoryStatusPanel";
 export * from "./types";
 export * from "./commandCenterDataService";

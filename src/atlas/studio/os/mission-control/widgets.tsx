@@ -8,6 +8,8 @@ import { listProviders } from "@/atlas/ai/providers/registry";
 import { listWorkflows } from "@/atlas/workflows/registry";
 import { tryGetActiveModule } from "@/atlas/publishing/plugin/registry";
 
+import { getPlannerSnapshot } from "@/atlas/brain/planner/PlannerEngine";
+import { getMemorySnapshot } from "@/atlas/brain/memory";
 import { loadCommandCenterSnapshot } from "../../command-center/commandCenterDataService";
 import type { CommandCenterSnapshot } from "../../command-center/types";
 import { studioDataService } from "../../services/studioDataService";
@@ -147,6 +149,51 @@ export function PerformanceWidget(_props: MissionControlWidgetProps) {
     <WidgetFrame title="Performance">
       <Metric label="AI Tasks" value={studioDataService.getDashboardStats().aiTasks} />
       <Text style={styles.copy}>Active module · {module?.name ?? "None"}</Text>
+    </WidgetFrame>
+  );
+}
+
+export function AtlasMemoryWidget(_props: MissionControlWidgetProps) {
+  const snapshot = getMemorySnapshot();
+
+  return (
+    <WidgetFrame title="Atlas Memory">
+      <Metric label="Total memories" value={snapshot.total} />
+      <View style={styles.metrics}>
+        <Metric label="Workflows" value={snapshot.workflows} />
+        <Metric label="Projects" value={snapshot.projects} />
+        <Metric label="Preferences" value={snapshot.preferences} />
+      </View>
+      {snapshot.recent.slice(0, 2).map((entry) => (
+        <Text key={entry.id} style={styles.copy}>
+          • {entry.title}
+        </Text>
+      ))}
+      <View style={styles.row}>
+        <StatusBadge label={`Memory ${snapshot.health}`} tone={snapshot.health === "healthy" ? "healthy" : "info"} />
+      </View>
+    </WidgetFrame>
+  );
+}
+
+export function AtlasPlannerWidget(_props: MissionControlWidgetProps) {
+  const snapshot = getPlannerSnapshot();
+
+  return (
+    <WidgetFrame title="Atlas Planner">
+      <Metric label="Status" value={snapshot.plannerStatus} />
+      <Metric
+        label="Next Step"
+        value={snapshot.nextStep?.label ?? "—"}
+        hint={snapshot.currentPlan?.goal ?? "No active plan"}
+      />
+      <View style={styles.row}>
+        <StatusBadge
+          label={snapshot.currentPlan?.plannerId ?? "idle"}
+          tone={snapshot.plannerStatus === "executing" ? "warning" : "info"}
+        />
+      </View>
+      <Text style={styles.copy}>Execution queue · {snapshot.executionQueue.length}</Text>
     </WidgetFrame>
   );
 }

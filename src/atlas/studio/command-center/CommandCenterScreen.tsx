@@ -8,6 +8,8 @@ import { STUDIO_COLORS } from "../core/theme";
 import { useStudioBootstrap } from "../hooks/useStudioBootstrap";
 import { loadCommandCenterSnapshot } from "./commandCenterDataService";
 import ModuleStatusPanel from "./ModuleStatusPanel";
+import MemoryStatusPanel from "./MemoryStatusPanel";
+import PlannerStatusPanel from "./PlannerStatusPanel";
 import ProviderStatusPanel from "./ProviderStatusPanel";
 import QualityPanel from "./QualityPanel";
 import RecentTasksPanel from "./RecentTasksPanel";
@@ -50,6 +52,12 @@ export default function CommandCenterScreen() {
               { label: "Alerts", value: String(snapshot.summary.alerts) },
             ]}
           />
+
+          <StudioSectionTitle>Atlas Brain</StudioSectionTitle>
+          <PlannerStatusPanel planner={snapshot.planner} />
+
+          <StudioSectionTitle>Atlas Memory</StudioSectionTitle>
+          <MemoryStatusPanel memory={snapshot.memory} />
 
           <StudioSectionTitle>Platform overview</StudioSectionTitle>
           <ProviderStatusPanel providers={snapshot.providers} />
