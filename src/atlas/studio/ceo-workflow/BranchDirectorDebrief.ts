@@ -9,6 +9,13 @@ import type {
 
 export const DEBRIEF_WORKFLOW_ID = "STUDIO-002";
 
+export const CEO_DEBRIEF_ERRORS = {
+  noWorkflow: "Atlas heeft geen actieve workflow. Start opnieuw via intent.",
+  wrongStatus: "Atlas staat niet klaar voor deze beslissing. Vernieuw de pagina en probeer opnieuw.",
+  missingDebrief: "Atlas mist het debrief-rapport. Start de workflow opnieuw.",
+  continueFailed: "Doorgaan is mislukt. Atlas kon de volgende stap niet starten.",
+} as const;
+
 export const CEO_ADJUST_OPTIONS: CeoAdjustOption[] = [
   {
     id: "adjust-roadmap",
@@ -96,6 +103,43 @@ export function buildContinueIntent(debrief: BranchDirectorDebrief): string {
     return "Atlas, geef de volgende aanbevolen initiative op basis van de North Star.";
   }
   return `Atlas, ga verder met ${target}${debrief.recommendedNextInitiativeId ? ` (${debrief.recommendedNextInitiativeId})` : ""}.`;
+}
+
+export function buildContinueConfirmation(debrief: BranchDirectorDebrief): {
+  message: string;
+  intent: string;
+  hasNextInitiative: boolean;
+} {
+  const nextTitle = debrief.recommendedNextInitiativeTitle ?? debrief.recommendedNextInitiativeId;
+  const hasNextInitiative = Boolean(nextTitle);
+
+  if (hasNextInitiative) {
+    return {
+      hasNextInitiative: true,
+      message: `Begrepen. Ik ga door met ${nextTitle}.`,
+      intent: buildContinueIntent(debrief),
+    };
+  }
+
+  return {
+    hasNextInitiative: false,
+    message: "Er staat nog geen volgend initiatief klaar. Ik stel een nieuw initiatief voor.",
+    intent: buildContinueIntent(debrief),
+  };
+}
+
+export function mapDebriefContinueError(rawError?: string): string {
+  if (!rawError) return CEO_DEBRIEF_ERRORS.continueFailed;
+
+  const normalized = rawError.toLowerCase();
+  if (normalized.includes("no active ceo workflow")) return CEO_DEBRIEF_ERRORS.noWorkflow;
+  if (normalized.includes("not awaiting debrief")) return CEO_DEBRIEF_ERRORS.wrongStatus;
+  if (normalized.includes("debrief is missing")) return CEO_DEBRIEF_ERRORS.missingDebrief;
+  if (Object.values(CEO_DEBRIEF_ERRORS).includes(rawError as (typeof CEO_DEBRIEF_ERRORS)[keyof typeof CEO_DEBRIEF_ERRORS])) {
+    return rawError;
+  }
+
+  return CEO_DEBRIEF_ERRORS.continueFailed;
 }
 
 export function attachDebriefToWorkflow(workflow: CeoWorkflowState): CeoWorkflowState {

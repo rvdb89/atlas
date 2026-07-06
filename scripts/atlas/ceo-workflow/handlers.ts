@@ -20,8 +20,9 @@ import {
 import { createInitialWorkflowSteps } from "@/atlas/studio/ceo-workflow/ceoWorkflow.constants";
 import {
   attachDebriefToWorkflow,
-  buildContinueIntent,
+  buildContinueConfirmation,
   CEO_ADJUST_OPTIONS,
+  CEO_DEBRIEF_ERRORS,
 } from "@/atlas/studio/ceo-workflow/BranchDirectorDebrief";
 import type {
   CeoAdjustOptionId,
@@ -357,8 +358,8 @@ function finalizePublication(
     "Gaan we door?",
   ]);
 
-  return attachDebriefToWorkflow(
-    persistWorkflow({
+  return persistWorkflow(
+    attachDebriefToWorkflow({
       ...workflow,
       steps,
       confirmation,
@@ -467,20 +468,25 @@ export async function approveCeoWorkflowRelease(commitMessage?: string): Promise
 
 export async function continueAfterDebrief(): Promise<CeoWorkflowState> {
   if (!activeWorkflow) {
-    throw new Error("No active CEO workflow.");
+    throw new Error(CEO_DEBRIEF_ERRORS.noWorkflow);
   }
 
   if (activeWorkflow.status !== "awaiting_ceo_debrief") {
-    throw new Error(`Workflow is not awaiting debrief decision (status: ${activeWorkflow.status}).`);
+    throw new Error(CEO_DEBRIEF_ERRORS.wrongStatus);
   }
 
   const debrief = activeWorkflow.debrief;
   if (!debrief) {
-    throw new Error("Debrief is missing from workflow state.");
+    throw new Error(CEO_DEBRIEF_ERRORS.missingDebrief);
   }
+
+  const { message: continueConfirmation, intent: continueIntent } = buildContinueConfirmation(debrief);
 
   let steps = setStepStatus(activeWorkflow.steps, "ceo-continue-decision", "completed", "CEO koos: doorgaan", [
     "Ja, ga door",
+  ]);
+  steps = setStepStatus(steps, "branch-director-debrief", "completed", continueConfirmation, [
+    continueConfirmation,
   ]);
 
   persistWorkflow({
@@ -488,10 +494,23 @@ export async function continueAfterDebrief(): Promise<CeoWorkflowState> {
     status: "continuing",
     steps,
     debrief: { ...debrief, ceoDecision: "continue" },
+    continueConfirmation,
   });
 
-  const continueIntent = buildContinueIntent(debrief);
-  return runCeoWorkflowPipeline(continueIntent);
+  const nextWorkflow = await runCeoWorkflowPipeline(continueIntent);
+
+  if (nextWorkflow.status === "failed" || nextWorkflow.status === "blocked") {
+    return persistWorkflow({
+      ...nextWorkflow,
+      continueConfirmation: undefined,
+      error: nextWorkflow.error ?? CEO_DEBRIEF_ERRORS.continueFailed,
+    });
+  }
+
+  return persistWorkflow({
+    ...nextWorkflow,
+    continueConfirmation,
+  });
 }
 
 export async function adjustAfterDebrief(

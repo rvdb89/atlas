@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 
 import { ATLAS_DEV_API } from "@/atlas/studio/developer/devEvents";
+import { mapDebriefContinueError } from "./BranchDirectorDebrief";
 import type { CeoAdjustOptionId, CeoWorkflowState } from "./ceoWorkflow.types";
 
 type WorkflowResult =
@@ -100,15 +101,18 @@ export function useCeoWorkflow() {
       const payload = (await response.json()) as { workflow?: CeoWorkflowState; error?: string };
 
       if (!response.ok || !payload.workflow) {
-        const message = payload.error ?? "Doorgaan mislukt.";
+        const message = mapDebriefContinueError(payload.error);
         setError(message);
         return { ok: false, error: message };
       }
 
       setWorkflow(payload.workflow);
+      setError(undefined);
       return { ok: true, workflow: payload.workflow };
     } catch (continueError) {
-      const message = continueError instanceof Error ? continueError.message : "Doorgaan mislukt.";
+      const message = mapDebriefContinueError(
+        continueError instanceof Error ? continueError.message : undefined,
+      );
       setError(message);
       return { ok: false, error: message };
     } finally {

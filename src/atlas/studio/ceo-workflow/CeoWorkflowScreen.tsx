@@ -165,6 +165,13 @@ export default function CeoWorkflowScreen() {
             </>
           ) : null}
 
+          {workflow.continueConfirmation ? (
+            <StudioCard compact>
+              <Text style={styles.confirmationTitle}>Branch Director</Text>
+              <Text style={styles.confirmationText}>{workflow.continueConfirmation}</Text>
+            </StudioCard>
+          ) : null}
+
           <StudioSectionTitle>Voortgang</StudioSectionTitle>
           <CeoWorkflowTimeline steps={workflow.steps} />
 
@@ -320,5 +327,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: STUDIO_COLORS.secondary,
+  },
+
+  confirmationTitle: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: STUDIO_COLORS.accentSoft,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
+
+  confirmationText: {
+    marginTop: 8,
+    fontSize: 16,
+    lineHeight: 24,
+    color: STUDIO_COLORS.brown,
+    fontWeight: "700",
   },
 });

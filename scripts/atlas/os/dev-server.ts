@@ -7,6 +7,7 @@ import { autoRecover, formatRecoveryFailure } from "./portRecovery";
 import { readSession, updateSessionRoute, writeSession } from "./session";
 import { ROOT_DIR } from "../shared";
 import type { CeoAdjustOptionId } from "@/atlas/studio/ceo-workflow/ceoWorkflow.types";
+import { mapDebriefContinueError } from "@/atlas/studio/ceo-workflow/BranchDirectorDebrief";
 import {
   approveCeoWorkflowRelease,
   adjustAfterDebrief,
@@ -146,7 +147,7 @@ function bindDevServer(handlers: AtlasDevServerHandlers): Promise<Server> {
           sendJson(response, 200, { workflow });
         } catch (error) {
           sendJson(response, 500, {
-            error: error instanceof Error ? error.message : "Continue workflow failed",
+            error: mapDebriefContinueError(error instanceof Error ? error.message : undefined),
           });
         }
         return;

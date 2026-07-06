@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { StudioCard } from "../components";
 import { STUDIO_COLORS, STUDIO_RADIUS } from "../core/theme";
@@ -79,9 +79,13 @@ export default function BranchDirectorDebriefPanel({
             <Pressable
               style={[styles.continueButton, running && styles.buttonDisabled]}
               onPress={onContinue}
-              disabled={running || !debrief.readyToContinue}
+              disabled={running}
             >
-              <Text style={styles.buttonText}>Ja, ga door</Text>
+              {running ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.buttonText}>Ja, ga door</Text>
+              )}
             </Pressable>
             <Pressable
               style={[styles.adjustButton, running && styles.buttonDisabled]}

@@ -128,6 +128,7 @@ export type CeoWorkflowState = {
   confirmation?: CeoWorkflowConfirmation;
   debrief?: BranchDirectorDebrief;
   adjustOptions?: CeoAdjustOption[];
+  continueConfirmation?: string;
   error?: string;
   updatedAt: string;
 };
