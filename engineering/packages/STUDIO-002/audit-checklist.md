@@ -5,7 +5,7 @@
 - Mission · **STUDIO-002**
 - Title · **Branch Director Debrief Flow**
 - Atlas · 0.26.0 (brain-005)
-- Generated · 2026-07-06T22:02:40.252Z
+- Generated · 2026-07-06T22:10:09.586Z
 
 ## Platform audit gates
 
