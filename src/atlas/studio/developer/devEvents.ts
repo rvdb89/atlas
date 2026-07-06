@@ -49,7 +49,7 @@ export function listRecentAtlasDevNotifications(): AtlasDevNotification[] {
   return [...recent];
 }
 
-export const ATLAS_DEV_API = "http://127.0.0.1:8084";
+export { ATLAS_DEV_API } from "@/atlas/config/ports";
 
 export const ATLAS_ROUTE_LABELS: Record<string, string> = {
   "/studio/command-center": "Studio / Command Center",

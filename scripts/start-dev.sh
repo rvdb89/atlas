@@ -4,8 +4,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-echo "Starting Atlas / Doughbert development server…"
-echo "Project: $ROOT_DIR"
-echo ""
+if [[ "${1:-}" == "--both" ]]; then
+  exec npx tsx scripts/dev-launcher.ts --both
+fi
 
-npx expo start --clear
+exec npx tsx scripts/dev-launcher.ts

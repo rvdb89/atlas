@@ -1,5 +1,13 @@
+export {
+  APP_PORT,
+  ATLAS_DEV_API,
+  ATLAS_DEV_API_PORT,
+  ATLAS_STUDIO_PORT,
+  ATLAS_STUDIO_URL,
+  APP_URL,
+} from "@/atlas/config/ports";
+
 export const ATLAS_OS_TAGLINE = "Artificial Intelligence Operating System";
-export const ATLAS_DEV_API_PORT = 8084;
 export const ATLAS_SESSION_DIR = ".atlas";
 export const ATLAS_SESSION_FILE = ".atlas/session.json";
 export const ATLAS_RESTART_SIGNAL = ".atlas/restart.signal";

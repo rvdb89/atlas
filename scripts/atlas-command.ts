@@ -7,6 +7,7 @@ import { stdin as input, stdout as output } from "node:process";
 import boxen from "boxen";
 import chalk from "chalk";
 
+import { ATLAS_DEV_API_PORT } from "@/atlas/config/ports";
 import { ATLAS_PORT, openBrowser, ROOT_DIR } from "./atlas/shared";
 import { printInspectorReport } from "./atlas/os/inspector";
 
@@ -85,7 +86,7 @@ const ACTIONS: PaletteAction[] = [
   {
     label: "Restart Atlas",
     run: async () => {
-      await fetch("http://127.0.0.1:8084/atlas/restart", { method: "POST" }).catch(() => undefined);
+      await fetch(`http://127.0.0.1:${ATLAS_DEV_API_PORT}/atlas/restart`, { method: "POST" }).catch(() => undefined);
       await runNpmScript("atlas");
     },
   },

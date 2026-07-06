@@ -2,7 +2,24 @@ import { execFileSync, execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-export const ATLAS_PORT = 8083;
+import {
+  APP_PORT,
+  APP_URL,
+  ATLAS_DEV_API_PORT,
+  ATLAS_STUDIO_PORT,
+  ATLAS_STUDIO_URL,
+} from "@/atlas/config/ports";
+
+export {
+  APP_PORT,
+  APP_URL,
+  ATLAS_DEV_API_PORT,
+  ATLAS_STUDIO_PORT,
+  ATLAS_STUDIO_URL,
+} from "@/atlas/config/ports";
+
+/** @deprecated Use ATLAS_STUDIO_PORT */
+export const ATLAS_PORT = ATLAS_STUDIO_PORT;
 export const ATLAS_STUDIO_DEFAULT_PATH = "/studio/ceo-workflow";
 export const ATLAS_STUDIO_FALLBACK_PATH = "/studio";
 /** @deprecated Use ATLAS_STUDIO_DEFAULT_PATH — kept for Command Center links */

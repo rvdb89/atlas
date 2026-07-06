@@ -4,12 +4,15 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-PORT=8083
+STUDIO_PORT=8083
 DEV_API_PORT=8084
 
 echo ""
 echo "Atlas Clean"
 echo "───────────"
+echo "Studio poorten · ${STUDIO_PORT}, ${DEV_API_PORT}"
+echo "App poort · 8081 (niet automatisch gestopt)"
+echo ""
 
 free_port() {
   local target_port="$1"
@@ -29,27 +32,20 @@ free_port() {
   fi
 }
 
-free_port "${PORT}"
+free_port "${STUDIO_PORT}"
 free_port "${DEV_API_PORT}"
 
 if command -v pgrep >/dev/null 2>&1; then
-  EXPO_PIDS=$(pgrep -fl "expo start" 2>/dev/null || true)
-  if [ -n "${EXPO_PIDS}" ]; then
-    echo "Stopping Expo dev processes…"
-    pkill -f "expo start" 2>/dev/null || true
-    echo "✔ Expo processes stopped"
-  fi
-
-  METRO_PIDS=$(pgrep -fl "metro" 2>/dev/null || true)
-  if [ -n "${METRO_PIDS}" ]; then
-    echo "Stopping Metro bundler processes…"
-    pkill -f "metro" 2>/dev/null || true
-    echo "✔ Metro processes stopped"
+  ATLAS_PIDS=$(pgrep -fl "scripts/atlas-dev" 2>/dev/null || true)
+  if [ -n "${ATLAS_PIDS}" ]; then
+    echo "Stopping Atlas Studio launcher…"
+    pkill -f "scripts/atlas-dev" 2>/dev/null || true
+    echo "✔ Atlas Studio launcher stopped"
   fi
 fi
 
 echo ""
-echo "Clearing caches…"
+echo "Clearing Studio caches…"
 rm -rf .expo
 rm -rf node_modules/.cache
 rm -rf /tmp/metro-* 2>/dev/null || true
@@ -61,5 +57,5 @@ fi
 
 echo "✔ Cache cleared"
 echo ""
-echo "Run npm run atlas to start fresh on ports ${PORT} and ${DEV_API_PORT}."
+echo "Run npm run atlas for Studio (${STUDIO_PORT}) and npm start for App (8081)."
 echo ""

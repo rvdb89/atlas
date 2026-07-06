@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -34,12 +34,19 @@ export default function CeoWorkflowScreen() {
     approveRelease,
     continueAfterDebrief,
     adjustAfterDebrief,
+    refreshState,
   } = useCeoWorkflow();
   const [intent, setIntent] = useState("I want Atlas to improve the CEO workflow in Studio.");
+
+  useEffect(() => {
+    void refreshState();
+  }, [refreshState]);
 
   const awaitingApproval = workflow?.status === "awaiting_ceo_approval";
   const awaitingDebrief = workflow?.status === "awaiting_ceo_debrief";
   const paused = workflow?.status === "paused";
+  const continueConfirmationMessage =
+    workflow?.ceoContinueDecision?.confirmationMessage ?? workflow?.continueConfirmation;
 
   async function handleRunWorkflow() {
     if (!intent.trim()) return;
@@ -132,7 +139,7 @@ export default function CeoWorkflowScreen() {
             )}
           </StudioCard>
 
-          {awaitingApproval ? (
+          {awaitingApproval && workflow.ceoReleaseApproval?.status === "awaiting" ? (
             <StudioCard>
               <Text style={styles.approvalTitle}>Atlas is klaar om af te ronden</Text>
               <Text style={styles.approvalText}>
@@ -165,10 +172,12 @@ export default function CeoWorkflowScreen() {
             </>
           ) : null}
 
-          {workflow.continueConfirmation ? (
+          {workflow.continueConfirmation || continueConfirmationMessage ? (
             <StudioCard compact>
               <Text style={styles.confirmationTitle}>Branch Director</Text>
-              <Text style={styles.confirmationText}>{workflow.continueConfirmation}</Text>
+              <Text style={styles.confirmationText}>
+                {continueConfirmationMessage ?? workflow.continueConfirmation}
+              </Text>
             </StudioCard>
           ) : null}
 

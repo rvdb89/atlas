@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "1.0",
+  "packageType": "engineering",
+  "missionId": "BRAIN-005",
+  "title": "Capability Registry & Roadmap Intelligence",
+  "templateLabel": "Brain Mission",
+  "atlasVersion": "0.26.0",
+  "atlasBuild": "brain-005",
+  "generatedAt": "2026-07-06T22:21:18.034Z",
+  "outputDir": "engineering/packages/BRAIN-005",
+  "entrypoint": "engineering/packages/BRAIN-005/claude-engineering-package.md",
+  "legacyBriefPath": "engineering/briefs/BRAIN-005.md",
+  "inputRequired": "missionIdOnly",
+  "inferencePipeline": [
+    "decision-engine",
+    "organization",
+    "evolution-engine",
+    "decision-framework",
+    "constitution",
+    "north-star",
+    "principles",
+    "capabilities",
+    "systems",
+    "roadmap",
+    "mission-registry",
+    "engineering-standards",
+    "architecture-rules",
+    "mission-dependencies",
+    "definition-of-done",
+    "validation-plan",
+    "engineering-package"
+  ],
+  "constitutionId": "ATLAS-000",
+  "constitutionPath": "engineering/constitution/atlas-constitution.md",
+  "decisionFrameworkId": "ATLAS-001",
+  "decisionEngineId": "BRAIN-004",
+  "evolutionEngineId": "ATLAS-001",
+  "organizationModelId": "ATLAS-002",
+  "branchDirectorIdentityId": "ATLAS-003",
+  "dependencies": [
+    {
+      "missionId": "ATLAS-000",
+      "title": "Atlas Constitution",
+      "relationship": "requires",
+      "reason": "Capabilities defined in Constitution"
+    },
+    {
+      "missionId": "ATLAS-001",
+      "title": "Evolution Engine",
+      "relationship": "requires",
+      "reason": "Evolution scoring uses registry strategic value"
+    },
+    {
+      "missionId": "BRAIN-001",
+      "title": "Planner Engine",
+      "relationship": "requires",
+      "reason": "Prior BRAIN mission in sequence"
+    },
+    {
+      "missionId": "BRAIN-004",
+      "title": "Decision Engine",
+      "relationship": "requires",
+      "reason": "Registry feeds Decision Engine recommendations"
+    }
+  ],
+  "files": {
+    "manifest": "engineering/packages/BRAIN-005/manifest.json",
+    "claudeEntrypoint": "engineering/packages/BRAIN-005/claude-engineering-package.md",
+    "architectureBrief": "engineering/packages/BRAIN-005/architecture-brief.md",
+    "validationPlan": "engineering/packages/BRAIN-005/validation-plan.md",
+    "auditChecklist": "engineering/packages/BRAIN-005/audit-checklist.md",
+    "releaseNotes": "engineering/packages/BRAIN-005/release-notes.md"
+  }
+}

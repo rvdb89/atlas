@@ -22,57 +22,71 @@ export default function BranchDirectorDebriefPanel({
   const debrief = workflow.debrief;
   const [showAdjustOptions, setShowAdjustOptions] = useState(false);
 
-  if (!debrief) return null;
+  if (!debrief && !workflow.ceoContinueDecision) return null;
 
-  const showDecisionButtons = workflow.status === "awaiting_ceo_debrief" && !showAdjustOptions;
-  const showPausedAdjust = workflow.status === "paused" || showAdjustOptions;
+  const continueDecision = workflow.ceoContinueDecision;
+  const awaitingContinueDecision = continueDecision?.status === "awaiting";
+  const showDecisionButtons =
+    workflow.status === "awaiting_ceo_debrief" && awaitingContinueDecision && !showAdjustOptions;
+  const showPausedAdjust =
+    workflow.status === "paused" ||
+    showAdjustOptions ||
+    continueDecision?.status === "adjustment_requested";
 
   return (
     <StudioCard>
       <Text style={styles.roleLabel}>Branch Director debrief</Text>
-      <Text style={styles.headline}>{debrief.headline}</Text>
+      {debrief ? (
+        <>
+          <Text style={styles.headline}>{debrief.headline}</Text>
 
-      {debrief.summary.split("\n").slice(1).map((line) => (
-        <Text key={line} style={styles.summaryLine}>
-          {line}
-        </Text>
-      ))}
-
-      <View style={styles.metrics}>
-        <Metric label="Initiative" value={formatInitiative(debrief.initiativeId, debrief.initiativeTitle)} />
-        <Metric label="Status" value={debrief.statusLabel} />
-        <Metric label="Review" value={debrief.reviewResult} />
-        <Metric label="Blockers" value={String(debrief.blockerCount)} />
-        <Metric label="Aandachtspunten" value={String(debrief.warningCount)} />
-        <Metric
-          label="Door kunnen gaan"
-          value={debrief.readyToContinue ? "Ja" : "Nog niet"}
-        />
-      </View>
-
-      {debrief.blockers.length > 0 ? (
-        <View style={styles.listBlock}>
-          <Text style={styles.listTitle}>Belemmeringen</Text>
-          {debrief.blockers.slice(0, 3).map((item) => (
-            <Text key={item.title} style={styles.listItem}>
-              · {item.title}
+          {debrief.summary.split("\n").slice(1).map((line) => (
+            <Text key={line} style={styles.summaryLine}>
+              {line}
             </Text>
           ))}
-        </View>
+
+          <View style={styles.metrics}>
+            <Metric label="Initiative" value={formatInitiative(debrief.initiativeId, debrief.initiativeTitle)} />
+            <Metric label="Status" value={debrief.statusLabel} />
+            <Metric label="Review" value={debrief.reviewResult} />
+            <Metric label="Blockers" value={String(debrief.blockerCount)} />
+            <Metric label="Aandachtspunten" value={String(debrief.warningCount)} />
+            <Metric
+              label="Door kunnen gaan"
+              value={debrief.readyToContinue ? "Ja" : "Nog niet"}
+            />
+          </View>
+
+          {debrief.blockers.length > 0 ? (
+            <View style={styles.listBlock}>
+              <Text style={styles.listTitle}>Belemmeringen</Text>
+              {debrief.blockers.slice(0, 3).map((item) => (
+                <Text key={item.title} style={styles.listItem}>
+                  · {item.title}
+                </Text>
+              ))}
+            </View>
+          ) : null}
+
+          {debrief.warnings.length > 0 ? (
+            <View style={styles.listBlock}>
+              <Text style={styles.listTitle}>Aandachtspunten</Text>
+              {debrief.warnings.slice(0, 3).map((item) => (
+                <Text key={item.title} style={styles.listItem}>
+                  · {item.title}
+                </Text>
+              ))}
+            </View>
+          ) : null}
+        </>
       ) : null}
 
-      {debrief.warnings.length > 0 ? (
-        <View style={styles.listBlock}>
-          <Text style={styles.listTitle}>Aandachtspunten</Text>
-          {debrief.warnings.slice(0, 3).map((item) => (
-            <Text key={item.title} style={styles.listItem}>
-              · {item.title}
-            </Text>
-          ))}
-        </View>
+      {continueDecision?.status === "completed" && continueDecision.confirmationMessage ? (
+        <Text style={styles.decisionComplete}>{continueDecision.confirmationMessage}</Text>
       ) : null}
 
-      {showDecisionButtons ? (
+      {showDecisionButtons && debrief ? (
         <>
           <Text style={styles.question}>{debrief.question}</Text>
           <View style={styles.actions}>
@@ -106,7 +120,7 @@ export default function BranchDirectorDebriefPanel({
               key={option.id}
               style={[
                 styles.optionRow,
-                debrief.selectedAdjustOption === option.id && styles.optionRowSelected,
+                continueDecision?.adjustOption === option.id && styles.optionRowSelected,
               ]}
               onPress={() => onAdjust(option.id)}
               disabled={running}
@@ -115,7 +129,7 @@ export default function BranchDirectorDebriefPanel({
               <Text style={styles.optionDescription}>{option.description}</Text>
             </Pressable>
           ))}
-          {debrief.adjustFeedback ? (
+          {debrief?.adjustFeedback ? (
             <Text style={styles.feedback}>Feedback: {debrief.adjustFeedback}</Text>
           ) : null}
         </View>
@@ -220,6 +234,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "900",
     color: STUDIO_COLORS.brown,
+  },
+
+  decisionComplete: {
+    marginTop: 16,
+    fontSize: 16,
+    lineHeight: 24,
+    color: STUDIO_COLORS.success,
+    fontWeight: "800",
   },
 
   actions: {

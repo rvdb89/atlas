@@ -1,6 +1,7 @@
 import chalk from "chalk";
 
 import {
+  APP_URL,
   ATLAS_PORT,
   checkDependenciesInstalled,
   openBrowser,
@@ -58,7 +59,7 @@ function stopLauncherResources(resources: LauncherResources): void {
 }
 
 function reportBrowserLaunch(url: string, label: string): void {
-  console.log(chalk.green("✔"), "Atlas Studio ready");
+  console.log(chalk.green("✔"), `Atlas Studio ready at ${url}`);
   console.log(chalk.green("✔"), `Opening ${label}`);
 
   const result = openBrowser(url);
@@ -179,7 +180,7 @@ export async function launchAtlasOs(options: AtlasOsLaunchOptions = {}): Promise
     if (!options.skipBrowser && ready) {
       reportBrowserLaunch(launchUrl, launchRoute.label);
     } else {
-      console.log(chalk.green("✔"), "Atlas Studio ready");
+      console.log(chalk.green("✔"), `Atlas Studio ready at ${launchUrl}`);
     }
 
     const bootSeconds = (Date.now() - bootStarted) / 1000;
@@ -201,6 +202,7 @@ export async function launchAtlasOs(options: AtlasOsLaunchOptions = {}): Promise
     }
 
     console.log(chalk.dim(`Studio route · ${studioRoute.path}`));
+    console.log(chalk.dim(`App route · npm start (${APP_URL})`));
     console.log(chalk.dim("Command palette · npm run atlas command"));
     console.log(chalk.dim("Inspector · npm run atlas inspect"));
     console.log(chalk.dim("Overlay · Ctrl+Shift+D in browser"));

@@ -24,9 +24,23 @@ import {
   CEO_ADJUST_OPTIONS,
   CEO_DEBRIEF_ERRORS,
 } from "@/atlas/studio/ceo-workflow/BranchDirectorDebrief";
+import {
+  createAdjustmentContinueDecision,
+  createAwaitingContinueDecision,
+  createAwaitingReleaseApproval,
+  createCompletedContinueDecision,
+  createCompletedReleaseApproval,
+  createPendingContinueDecision,
+  createPendingReleaseApproval,
+  syncCeoDecisionSteps,
+  syncContinueDecisionStep,
+  syncReleaseApprovalStep,
+} from "@/atlas/studio/ceo-workflow/ceoDecisionState";
 import type {
   CeoAdjustOptionId,
+  CeoContinueDecisionState,
   CeoWorkflowAuditSummary,
+  CeoWorkflowStageId,
   CeoWorkflowState,
   CeoWorkflowStep,
   CeoWorkflowStepStatus,
@@ -141,13 +155,70 @@ function resolveNextInitiativeTitle(missionId: string): string | null {
 }
 
 function createWorkflow(intent: string): CeoWorkflowState {
+  const steps = createInitialWorkflowSteps();
   return {
     id: `ceo-${Date.now()}`,
     intent,
     status: "running",
-    steps: createInitialWorkflowSteps(),
+    steps,
+    ceoReleaseApproval: createPendingReleaseApproval(),
+    ceoContinueDecision: createPendingContinueDecision(),
     updatedAt: new Date().toISOString(),
   };
+}
+
+const NEXT_CYCLE_RESET_STEP_IDS = new Set<CeoWorkflowStageId>([
+  "intent",
+  "branch-director-decision",
+  "execution",
+  "branch-director-review",
+  "release-decision",
+  "ceo-approval",
+  "publish",
+  "confirmation",
+]);
+
+function prepareStepsForNextInitiativeCycle(
+  steps: CeoWorkflowStep[],
+  preserveContinueDecision?: CeoContinueDecisionState,
+): CeoWorkflowStep[] {
+  return steps.map((step) => {
+    if (NEXT_CYCLE_RESET_STEP_IDS.has(step.id)) {
+      return { ...step, status: "pending", summary: "Waiting", details: [], error: undefined };
+    }
+
+    if (step.id === "ceo-continue-decision" && preserveContinueDecision) {
+      return {
+        ...step,
+        status: "completed",
+        summary: preserveContinueDecision.summary,
+        details: preserveContinueDecision.details,
+        error: undefined,
+      };
+    }
+
+    if (step.id === "branch-director-debrief" && preserveContinueDecision?.confirmationMessage) {
+      return {
+        ...step,
+        status: "completed",
+        summary: preserveContinueDecision.confirmationMessage,
+        details: [preserveContinueDecision.confirmationMessage],
+        error: undefined,
+      };
+    }
+
+    if (step.id === "branch-director-debrief" || step.id === "ceo-continue-decision") {
+      return {
+        ...step,
+        status: "pending",
+        summary: step.id === "branch-director-debrief" ? "Wacht op afronding" : "Wacht op debrief",
+        details: [],
+        error: undefined,
+      };
+    }
+
+    return step;
+  });
 }
 
 function persistWorkflow(state: CeoWorkflowState): CeoWorkflowState {
@@ -159,13 +230,40 @@ export function getCeoWorkflowState(): CeoWorkflowState | null {
   return activeWorkflow;
 }
 
-export async function runCeoWorkflowPipeline(intent: string): Promise<CeoWorkflowState> {
+export async function runCeoWorkflowPipeline(
+  intent: string,
+  options?: {
+    baseWorkflow?: CeoWorkflowState;
+    preserveContinueDecision?: CeoContinueDecisionState;
+  },
+): Promise<CeoWorkflowState> {
   loadMissionFilesFromDisk();
 
-  let workflow = createWorkflow(intent.trim());
+  let workflow = options?.baseWorkflow
+    ? {
+        ...options.baseWorkflow,
+        intent: intent.trim(),
+        status: "running" as const,
+        debrief: undefined,
+        error: undefined,
+      }
+    : createWorkflow(intent.trim());
+
+  let steps = options?.baseWorkflow
+    ? prepareStepsForNextInitiativeCycle(workflow.steps, options.preserveContinueDecision)
+    : workflow.steps;
+
+  workflow = persistWorkflow({
+    ...workflow,
+    steps,
+    ceoReleaseApproval: createPendingReleaseApproval(),
+    ceoContinueDecision: options?.preserveContinueDecision ?? createPendingContinueDecision(),
+    continueConfirmation: options?.preserveContinueDecision?.confirmationMessage,
+  });
+
   const { version, build } = readAtlasVersion();
 
-  let steps = setStepStatus(workflow.steps, "intent", "completed", "Intent captured", [workflow.intent]);
+  steps = setStepStatus(steps, "intent", "completed", "Intent captured", [workflow.intent]);
   steps = setStepStatus(steps, "branch-director-decision", "running", "Branch Director is deciding…");
   workflow = persistWorkflow({ ...workflow, steps });
 
@@ -307,13 +405,17 @@ export async function runCeoWorkflowPipeline(intent: string): Promise<CeoWorkflo
     });
   }
 
-  steps = setStepStatus(steps, "ceo-approval", "awaiting", "Wacht op CEO-goedkeuring", [
-    "Atlas heeft alles voorbereid. Jij keurt de release goed wanneer je klaar bent.",
-  ]);
+  const ceoReleaseApproval = createAwaitingReleaseApproval();
+  const ceoContinueDecision = options?.preserveContinueDecision ?? createPendingContinueDecision();
+
+  steps = setStepStatus(steps, "ceo-approval", "awaiting", ceoReleaseApproval.summary, ceoReleaseApproval.details);
   steps = setStepStatus(steps, "publish", "pending", "Wacht op goedkeuring");
   steps = setStepStatus(steps, "confirmation", "pending", "Wacht op afronding");
   steps = setStepStatus(steps, "branch-director-debrief", "pending", "Wacht op afronding");
-  steps = setStepStatus(steps, "ceo-continue-decision", "pending", "Wacht op debrief");
+  if (!options?.preserveContinueDecision) {
+    steps = setStepStatus(steps, "ceo-continue-decision", "pending", "Wacht op debrief");
+  }
+  steps = syncCeoDecisionSteps(steps, { releaseApproval: ceoReleaseApproval, continueDecision: ceoContinueDecision });
 
   return persistWorkflow({
     ...workflow,
@@ -323,6 +425,8 @@ export async function runCeoWorkflowPipeline(intent: string): Promise<CeoWorkflo
     auditSummary,
     auditReportPath: relativeReportPath,
     impact,
+    ceoReleaseApproval,
+    ceoContinueDecision,
   });
 }
 
@@ -350,19 +454,25 @@ function finalizePublication(
   steps: CeoWorkflowStep[],
   confirmation: CeoWorkflowState["confirmation"],
 ): CeoWorkflowState {
+  const ceoReleaseApproval = createCompletedReleaseApproval();
+  const ceoContinueDecision = createAwaitingContinueDecision();
+
   steps = setStepStatus(steps, "branch-director-debrief", "running", "Atlas bereidt debrief voor…");
   steps = setStepStatus(steps, "branch-director-debrief", "completed", "Debrief klaar", [
     "Branch Director rapporteert aan CEO.",
   ]);
-  steps = setStepStatus(steps, "ceo-continue-decision", "awaiting", "Wacht op CEO-beslissing", [
-    "Gaan we door?",
-  ]);
+  steps = syncCeoDecisionSteps(steps, {
+    releaseApproval: ceoReleaseApproval,
+    continueDecision: ceoContinueDecision,
+  });
 
   return persistWorkflow(
     attachDebriefToWorkflow({
       ...workflow,
       steps,
       confirmation,
+      ceoReleaseApproval,
+      ceoContinueDecision,
       error: undefined,
     }),
   );
@@ -381,12 +491,11 @@ export async function approveCeoWorkflowRelease(commitMessage?: string): Promise
     throw new Error("Release is blocked — Branch Director Review did not approve push.");
   }
 
-  let steps = setStepStatus(activeWorkflow.steps, "ceo-approval", "completed", "CEO approved release", [
-    "Explicit CEO approval received via Atlas Studio.",
-  ]);
+  const ceoReleaseApproval = createCompletedReleaseApproval();
+  let steps = syncReleaseApprovalStep(activeWorkflow.steps, ceoReleaseApproval);
   steps = setStepStatus(steps, "publish", "running", "Publishing release…");
 
-  let workflow = persistWorkflow({ ...activeWorkflow, status: "publishing", steps });
+  let workflow = persistWorkflow({ ...activeWorkflow, status: "publishing", steps, ceoReleaseApproval });
 
   const message =
     commitMessage?.trim() ||
@@ -481,10 +590,14 @@ export async function continueAfterDebrief(): Promise<CeoWorkflowState> {
   }
 
   const { message: continueConfirmation, intent: continueIntent } = buildContinueConfirmation(debrief);
+  const nextLabel = debrief.recommendedNextInitiativeTitle ?? debrief.recommendedNextInitiativeId;
 
-  let steps = setStepStatus(activeWorkflow.steps, "ceo-continue-decision", "completed", "CEO koos: doorgaan", [
-    "Ja, ga door",
-  ]);
+  const ceoContinueDecision = createCompletedContinueDecision({
+    confirmationMessage: continueConfirmation,
+    nextInitiativeLabel: nextLabel,
+  });
+
+  let steps = syncContinueDecisionStep(activeWorkflow.steps, ceoContinueDecision);
   steps = setStepStatus(steps, "branch-director-debrief", "completed", continueConfirmation, [
     continueConfirmation,
   ]);
@@ -494,10 +607,14 @@ export async function continueAfterDebrief(): Promise<CeoWorkflowState> {
     status: "continuing",
     steps,
     debrief: { ...debrief, ceoDecision: "continue" },
+    ceoContinueDecision,
     continueConfirmation,
   });
 
-  const nextWorkflow = await runCeoWorkflowPipeline(continueIntent);
+  const nextWorkflow = await runCeoWorkflowPipeline(continueIntent, {
+    baseWorkflow: activeWorkflow,
+    preserveContinueDecision: ceoContinueDecision,
+  });
 
   if (nextWorkflow.status === "failed" || nextWorkflow.status === "blocked") {
     return persistWorkflow({
@@ -510,6 +627,7 @@ export async function continueAfterDebrief(): Promise<CeoWorkflowState> {
   return persistWorkflow({
     ...nextWorkflow,
     continueConfirmation,
+    ceoContinueDecision,
   });
 }
 
@@ -535,16 +653,19 @@ export async function adjustAfterDebrief(
     throw new Error(`Unknown adjust option: ${option}`);
   }
 
-  let steps = setStepStatus(activeWorkflow.steps, "ceo-continue-decision", "completed", "CEO koos: aanpassen", [
-    selected.label,
-    feedback?.trim() ? feedback.trim() : "Geen extra toelichting.",
-  ]);
-
   const adjustmentSummary =
     option === "pause-execution"
       ? "Atlas pauzeert execution. Geef nieuwe intent wanneer je verder wilt."
       : `Atlas stopt execution en stelt voor: ${selected.description}`;
 
+  const ceoContinueDecision = createAdjustmentContinueDecision({
+    optionLabel: selected.label,
+    optionId: option,
+    adjustmentSummary,
+    feedback,
+  });
+
+  let steps = syncContinueDecisionStep(activeWorkflow.steps, ceoContinueDecision);
   steps = setStepStatus(steps, "branch-director-debrief", "completed", "Aanpassing vastgelegd", [
     adjustmentSummary,
   ]);
@@ -559,6 +680,7 @@ export async function adjustAfterDebrief(
       selectedAdjustOption: option,
       adjustFeedback: feedback?.trim(),
     },
+    ceoContinueDecision,
     adjustOptions: CEO_ADJUST_OPTIONS,
     error: undefined,
   });

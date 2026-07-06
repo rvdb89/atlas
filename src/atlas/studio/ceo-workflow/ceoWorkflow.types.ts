@@ -70,6 +70,31 @@ export type CeoWorkflowConfirmation = {
   pushOutput: string;
 };
 
+export type CeoDecisionStatus =
+  | "pending"
+  | "awaiting"
+  | "completed"
+  | "failed"
+  | "adjustment_requested";
+
+export type CeoReleaseApprovalState = {
+  status: CeoDecisionStatus;
+  summary: string;
+  details: string[];
+  decidedAt?: string;
+};
+
+export type CeoContinueDecisionState = {
+  status: CeoDecisionStatus;
+  summary: string;
+  details: string[];
+  decision?: "continue" | "adjust";
+  confirmationMessage?: string;
+  nextInitiativeLabel?: string | null;
+  adjustOption?: CeoAdjustOptionId;
+  decidedAt?: string;
+};
+
 export type CeoAdjustOptionId =
   | "adjust-roadmap"
   | "change-priority"
@@ -126,6 +151,10 @@ export type CeoWorkflowState = {
   auditReportPath?: string;
   impact?: CeoWorkflowReleaseImpact;
   confirmation?: CeoWorkflowConfirmation;
+  /** CEO decision 1 — approve release before publish */
+  ceoReleaseApproval?: CeoReleaseApprovalState;
+  /** CEO decision 2 — continue or adjust after debrief */
+  ceoContinueDecision?: CeoContinueDecisionState;
   debrief?: BranchDirectorDebrief;
   adjustOptions?: CeoAdjustOption[];
   continueConfirmation?: string;

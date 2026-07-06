@@ -34,12 +34,12 @@ export const CEO_ADJUST_OPTIONS: CeoAdjustOption[] = [
   },
   {
     id: "follow-up-initiative",
-    label: "Follow-up initiative",
+    label: "Follow-up initiative maken",
     description: "Atlas maakt een gericht vervolg-initiative voor open punten.",
   },
   {
     id: "pause-execution",
-    label: "Execution pauzeren",
+    label: "Pauzeren",
     description: "Atlas stopt execution tot jij nieuwe intent geeft.",
   },
 ];
@@ -116,7 +116,7 @@ export function buildContinueConfirmation(debrief: BranchDirectorDebrief): {
   if (hasNextInitiative) {
     return {
       hasNextInitiative: true,
-      message: `Begrepen. Ik ga door met ${nextTitle}.`,
+      message: `Begrepen. We gaan door met ${nextTitle}.`,
       intent: buildContinueIntent(debrief),
     };
   }

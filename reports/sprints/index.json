@@ -1,5 +1,25 @@
 [
   {
+    "date": "2026-07-06T22:21:20.728Z",
+    "sprintName": "Atlas Auditor Hardening",
+    "score": 93,
+    "recommendation": "APPROVED_WITH_NOTES",
+    "warnings": 3,
+    "blockers": 0,
+    "reportLink": "reports/sprints/sprint-audit-2026-07-07-00-21.md",
+    "strict": true
+  },
+  {
+    "date": "2026-07-06T22:16:33.004Z",
+    "sprintName": "Atlas Auditor Hardening",
+    "score": 78,
+    "recommendation": "APPROVED_WITH_NOTES",
+    "warnings": 4,
+    "blockers": 0,
+    "reportLink": "reports/sprints/sprint-audit-2026-07-07-00-16.md",
+    "strict": true
+  },
+  {
     "date": "2026-07-06T22:10:12.003Z",
     "sprintName": "Atlas Auditor Hardening",
     "score": 93,
@@ -277,26 +297,6 @@
     "warnings": 4,
     "blockers": 0,
     "reportLink": "reports/sprints/sprint-audit-2026-07-06-21-30.md",
-    "strict": true
-  },
-  {
-    "date": "2026-07-06T19:22:50.658Z",
-    "sprintName": "Atlas Auditor Hardening",
-    "score": 93,
-    "recommendation": "APPROVED_WITH_NOTES",
-    "warnings": 1,
-    "blockers": 0,
-    "reportLink": "reports/sprints/sprint-audit-2026-07-06-21-22.md",
-    "strict": true
-  },
-  {
-    "date": "2026-07-06T19:19:00.531Z",
-    "sprintName": "Atlas Auditor Hardening",
-    "score": 93,
-    "recommendation": "APPROVED_WITH_NOTES",
-    "warnings": 1,
-    "blockers": 0,
-    "reportLink": "reports/sprints/sprint-audit-2026-07-06-21-19.md",
     "strict": true
   }
 ]

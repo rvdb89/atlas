@@ -1,6 +1,6 @@
-import { ATLAS_DEV_API_PORT } from "./constants";
+import { ATLAS_DEV_API_PORT, ATLAS_STUDIO_PORT } from "@/atlas/config/ports";
+
 import {
-  ATLAS_PORT,
   describePortUsage,
   getPortPids,
   getProcessCommands,
@@ -25,7 +25,7 @@ const ATLAS_PROCESS_PATTERNS = [
   /atlas-dev/i,
   /scripts\/atlas-dev/i,
   /atlas\/os\/dev-server/i,
-  /expo start/i,
+  /expo start.*--port[= ]8083\b/i,
   /\bmetro\b/i,
   /@expo\/cli/i,
 ];
@@ -44,20 +44,11 @@ function killPattern(pattern: string): number {
   }
 }
 
-export function killStaleDevProcesses(): string[] {
-  const actions: string[] = [];
-  const patterns = ["expo start", "metro", "@expo/cli", "scripts/atlas-dev"];
-
-  for (const pattern of patterns) {
-    if (killPattern(pattern) > 0) {
-      actions.push(`Stopped ${pattern}`);
-    }
+function isAtlasRelatedCommand(command: string): boolean {
+  if (/expo start.*--port[= ]8081\b/i.test(command)) {
+    return false;
   }
 
-  return actions;
-}
-
-function isAtlasRelatedCommand(command: string): boolean {
   return ATLAS_PROCESS_PATTERNS.some((pattern) => pattern.test(command));
 }
 
@@ -75,14 +66,14 @@ async function inspectPortConflict(port: number): Promise<PortConflict> {
 
 function formatPortConflict(conflict: PortConflict): string {
   const lines = [
-    `Port ${conflict.port} is already in use by another process.`,
+    `Poort ${conflict.port} is bezet door een ander proces.`,
     "",
-    "Process details:",
+    "Procesdetails:",
   ];
 
   for (let index = 0; index < conflict.pids.length; index += 1) {
     const pid = conflict.pids[index];
-    const command = conflict.commands[index] ?? "unknown command";
+    const command = conflict.commands[index] ?? "onbekend commando";
     lines.push(`  PID ${pid} · ${command}`);
   }
 
@@ -92,8 +83,8 @@ function formatPortConflict(conflict: PortConflict): string {
 
   lines.push(
     "",
-    "Atlas cannot stop this process automatically.",
-    "Free the port manually, then run npm run atlas again.",
+    "Atlas Studio kan dit proces niet automatisch stoppen.",
+    "Maak de poort handmatig vrij en start opnieuw met npm run atlas.",
     `Tip: lsof -nP -iTCP:${conflict.port} -sTCP:LISTEN`,
   );
 
@@ -115,7 +106,7 @@ async function freePort(port: number, onStatus: (message: string) => void): Prom
     };
   }
 
-  onStatus(`Port ${port} bezet — oude Atlas instance stoppen…`);
+  onStatus(`Poort ${port} bezet — oude Atlas Studio instance stoppen…`);
 
   if (port === ATLAS_DEV_API_PORT) {
     killPattern("scripts/atlas-dev");
@@ -150,33 +141,20 @@ async function freePort(port: number, onStatus: (message: string) => void): Prom
 
 export async function autoRecover(onStatus: (message: string) => void): Promise<RecoveryResult> {
   const devApiBusy = isPortInUse(ATLAS_DEV_API_PORT);
-  const runtimeBusy = isPortInUse(ATLAS_PORT);
+  const runtimeBusy = isPortInUse(ATLAS_STUDIO_PORT);
 
   if (!devApiBusy && !runtimeBusy) {
-    const staleActions = killStaleDevProcesses();
-    if (staleActions.length > 0) {
-      onStatus("Oude Atlas dev processen gevonden — opruimen…");
-      for (const action of staleActions) {
-        onStatus(action);
-      }
-      await sleep(400);
-    }
     return { ok: true };
   }
 
-  onStatus("Vorige Atlas instance gevonden.");
-
-  const staleActions = killStaleDevProcesses();
-  for (const action of staleActions) {
-    onStatus(action);
-  }
+  onStatus("Vorige Atlas Studio instance gevonden.");
 
   const devApiResult = await freePort(ATLAS_DEV_API_PORT, onStatus);
   if (!devApiResult.ok) {
     return devApiResult;
   }
 
-  const runtimeResult = await freePort(ATLAS_PORT, onStatus);
+  const runtimeResult = await freePort(ATLAS_STUDIO_PORT, onStatus);
   if (!runtimeResult.ok) {
     return runtimeResult;
   }
@@ -186,4 +164,9 @@ export async function autoRecover(onStatus: (message: string) => void): Promise<
 
 export function formatRecoveryFailure(result: Extract<RecoveryResult, { ok: false }>): string {
   return result.message;
+}
+
+/** @deprecated Port-scoped recovery replaced global stale-process cleanup. */
+export function killStaleDevProcesses(): string[] {
+  return [];
 }
