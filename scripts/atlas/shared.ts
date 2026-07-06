@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -91,7 +91,7 @@ export function runCommand(command: string, args: string[], options?: { cwd?: st
   }
 
   return normalizeExecOutput(
-    execSync([command, ...args].join(" "), {
+    execFileSync(command, args, {
       cwd: options?.cwd ?? ROOT_DIR,
       stdio: "pipe",
       encoding: "utf8",
@@ -100,7 +100,7 @@ export function runCommand(command: string, args: string[], options?: { cwd?: st
 }
 
 export function runCommandInherit(command: string, args: string[], options?: { cwd?: string }): void {
-  execSync([command, ...args].join(" "), {
+  execFileSync(command, args, {
     cwd: options?.cwd ?? ROOT_DIR,
     stdio: "inherit",
   });

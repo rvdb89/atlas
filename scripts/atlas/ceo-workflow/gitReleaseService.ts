@@ -2,6 +2,15 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { ROOT_DIR, runCommand } from "../shared";
+import {
+  buildGitCommitArgs,
+  CEO_PUBLISH_ERRORS,
+  extractExecError,
+  logInternalPublishError,
+  mapCommitError,
+  mapPushError,
+  mapStageError,
+} from "./publishErrors";
 
 const BLOCKED_STAGE_PATTERNS = [/^\.env$/i, /\/\.env$/i, /\.env\.local$/i];
 
@@ -73,13 +82,21 @@ export function getGitReleaseStatus(): GitReleaseStatus {
   }
 }
 
-export function stageSafeChanges(): { ok: boolean; staged: string[]; error?: string } {
+export function stageSafeChanges(): {
+  ok: boolean;
+  staged: string[];
+  ceoMessage?: string;
+  internalError?: string;
+  error?: string;
+} {
   const status = getGitReleaseStatus();
   if (!status.available) {
-    return { ok: false, staged: [], error: "Git repository not available." };
+    const internalError = "Git repository not available.";
+    return { ok: false, staged: [], ceoMessage: mapStageError(internalError), internalError, error: mapStageError(internalError) };
   }
   if (status.hasEnvStaged || status.hasEnvChanged) {
-    return { ok: false, staged: [], error: ".env must not be staged or committed." };
+    const internalError = ".env must not be staged or committed.";
+    return { ok: false, staged: [], ceoMessage: mapStageError(internalError), internalError, error: mapStageError(internalError) };
   }
 
   const stageable = status.changedFiles.filter((file) => !isBlockedPath(file));
@@ -91,39 +108,48 @@ export function stageSafeChanges(): { ok: boolean; staged: string[]; error?: str
     runCommand("git", ["add", "--", ...stageable]);
     return { ok: true, staged: stageable };
   } catch (error) {
-    return {
-      ok: false,
-      staged: [],
-      error: error instanceof Error ? error.message : "Failed to stage changes.",
-    };
+    const internalError = extractExecError(error);
+    logInternalPublishError("stage", internalError);
+    const ceoMessage = mapStageError(internalError);
+    return { ok: false, staged: [], ceoMessage, internalError, error: ceoMessage };
   }
 }
 
-export function commitRelease(message: string): { ok: boolean; sha: string | null; error?: string } {
+export function commitRelease(message: string): {
+  ok: boolean;
+  sha: string | null;
+  ceoMessage?: string;
+  internalError?: string;
+  error?: string;
+} {
   try {
-    runCommand("git", ["commit", "-m", message]);
+    runCommand("git", buildGitCommitArgs(message));
     const sha = runCommand("git", ["rev-parse", "--short", "HEAD"]);
     return { ok: true, sha: sha || null };
   } catch (error) {
-    return {
-      ok: false,
-      sha: null,
-      error: error instanceof Error ? error.message : "Commit failed.",
-    };
+    const internalError = extractExecError(error);
+    logInternalPublishError("commit", internalError);
+    const ceoMessage = mapCommitError(internalError);
+    return { ok: false, sha: null, ceoMessage, internalError, error: ceoMessage };
   }
 }
 
-export function pushRelease(): { ok: boolean; output: string; error?: string } {
+export function pushRelease(): {
+  ok: boolean;
+  output: string;
+  ceoMessage?: string;
+  internalError?: string;
+  error?: string;
+} {
   try {
     const branch = runCommand("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
     const output = runCommand("git", ["push", "-u", "origin", branch]);
     return { ok: true, output: output || `Pushed ${branch} to origin.` };
   } catch (error) {
-    const detail =
-      (error as { stderr?: string; stdout?: string }).stderr ??
-      (error as { stdout?: string }).stdout ??
-      (error instanceof Error ? error.message : "Push failed.");
-    return { ok: false, output: "", error: detail.trim() };
+    const internalError = extractExecError(error);
+    logInternalPublishError("push", internalError);
+    const ceoMessage = mapPushError(internalError);
+    return { ok: false, output: "", ceoMessage, internalError, error: ceoMessage };
   }
 }
 

@@ -42,6 +42,7 @@ import {
   verifyRemoteSync,
   hasUnpushedCommits,
 } from "./gitReleaseService";
+import { CEO_PUBLISH_ERRORS } from "./publishErrors";
 
 let activeWorkflow: CeoWorkflowState | null = null;
 
@@ -324,7 +325,30 @@ export async function runCeoWorkflowPipeline(intent: string): Promise<CeoWorkflo
   });
 }
 
-function finalizePublication(workflow: CeoWorkflowState, steps: CeoWorkflowStep[], confirmation: CeoWorkflowState["confirmation"]): CeoWorkflowState {
+function failPublish(
+  workflow: CeoWorkflowState,
+  steps: CeoWorkflowStep[],
+  ceoMessage: string,
+  publishSummary = "Publiceren mislukt",
+): CeoWorkflowState {
+  const halted = setStepStatus(steps, "publish", "failed", publishSummary, [], ceoMessage);
+  const confirmationHalted = setStepStatus(halted, "confirmation", "failed", "Geannuleerd", [
+    "Atlas is gestopt — er is niets gepubliceerd.",
+  ]);
+
+  return persistWorkflow({
+    ...workflow,
+    status: "failed",
+    steps: confirmationHalted,
+    error: ceoMessage,
+  });
+}
+
+function finalizePublication(
+  workflow: CeoWorkflowState,
+  steps: CeoWorkflowStep[],
+  confirmation: CeoWorkflowState["confirmation"],
+): CeoWorkflowState {
   steps = setStepStatus(steps, "branch-director-debrief", "running", "Atlas bereidt debrief voor…");
   steps = setStepStatus(steps, "branch-director-debrief", "completed", "Debrief klaar", [
     "Branch Director rapporteert aan CEO.",
@@ -375,15 +399,15 @@ export async function approveCeoWorkflowRelease(commitMessage?: string): Promise
 
   const staged = stageSafeChanges();
   if (!staged.ok) {
-    steps = setStepStatus(steps, "publish", "failed", "Staging failed", [], staged.error);
-    return persistWorkflow({ ...workflow, status: "failed", steps, error: staged.error });
+    const ceoMessage = staged.ceoMessage ?? CEO_PUBLISH_ERRORS.stageFailed;
+    return failPublish(workflow, steps, ceoMessage, "Voorbereiden mislukt");
   }
 
   if (staged.staged.length > 0) {
     const committed = commitRelease(message);
     if (!committed.ok) {
-      steps = setStepStatus(steps, "publish", "failed", "Commit failed", [], committed.error);
-      return persistWorkflow({ ...workflow, status: "failed", steps, error: committed.error });
+      const ceoMessage = committed.ceoMessage ?? CEO_PUBLISH_ERRORS.commitFailed;
+      return failPublish(workflow, steps, ceoMessage, "Vastleggen mislukt");
     }
   } else if (!hasUnpushedCommits()) {
     steps = setStepStatus(steps, "publish", "completed", "Release is actueel", [
@@ -403,8 +427,8 @@ export async function approveCeoWorkflowRelease(commitMessage?: string): Promise
 
   const pushed = pushRelease();
   if (!pushed.ok) {
-    steps = setStepStatus(steps, "publish", "failed", "Push failed", [], pushed.error);
-    return persistWorkflow({ ...workflow, status: "failed", steps, error: pushed.error });
+    const ceoMessage = pushed.ceoMessage ?? CEO_PUBLISH_ERRORS.pushFailed;
+    return failPublish(workflow, steps, ceoMessage, "Vrijgeven mislukt");
   }
 
   steps = setStepStatus(steps, "publish", "completed", "Release gepubliceerd", ["Atlas heeft de release afgerond."]);
@@ -435,13 +459,7 @@ export async function approveCeoWorkflowRelease(commitMessage?: string): Promise
   };
 
   if (!verification.ok) {
-    return persistWorkflow({
-      ...workflow,
-      status: "failed",
-      steps,
-      confirmation,
-      error: verification.detail,
-    });
+    return failPublish(workflow, steps, CEO_PUBLISH_ERRORS.verificationFailed, "Bevestiging mislukt");
   }
 
   return finalizePublication(workflow, steps, confirmation);
