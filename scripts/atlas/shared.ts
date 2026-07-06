@@ -30,12 +30,38 @@ export function printStatus(level: StatusLevel, label: string, detail?: string):
   console.log(`${icon} ${label}${detail ? ` — ${detail}` : ""}`);
 }
 
+export function normalizeExecOutput(output: string | Buffer | null | undefined): string {
+  if (output == null) {
+    return "";
+  }
+  if (typeof output === "string") {
+    return output.trim();
+  }
+  return output.toString("utf8").trim();
+}
+
 export function runCommand(command: string, args: string[], options?: { cwd?: string; stdio?: "inherit" | "pipe" }): string {
-  return execSync([command, ...args].join(" "), {
+  const stdio = options?.stdio ?? "pipe";
+
+  if (stdio === "inherit") {
+    runCommandInherit(command, args, options);
+    return "";
+  }
+
+  return normalizeExecOutput(
+    execSync([command, ...args].join(" "), {
+      cwd: options?.cwd ?? ROOT_DIR,
+      stdio: "pipe",
+      encoding: "utf8",
+    }),
+  );
+}
+
+export function runCommandInherit(command: string, args: string[], options?: { cwd?: string }): void {
+  execSync([command, ...args].join(" "), {
     cwd: options?.cwd ?? ROOT_DIR,
-    stdio: options?.stdio ?? "pipe",
-    encoding: "utf8",
-  }).trim();
+    stdio: "inherit",
+  });
 }
 
 export function commandExists(command: string): boolean {
@@ -88,6 +114,17 @@ export function getPortPids(port: number): number[] {
   } catch {
     return [];
   }
+}
+
+export function getProcessCommands(pids: number[]): string[] {
+  if (process.platform === "win32") return pids.map(() => "unknown");
+  return pids.map((pid) => {
+    try {
+      return runCommand("ps", ["-p", String(pid), "-o", "command="]);
+    } catch {
+      return "unknown";
+    }
+  });
 }
 
 export function describePortUsage(port: number): string {
@@ -151,17 +188,26 @@ export function checkRouteFiles(): Array<{ route: string; ok: boolean }> {
   }));
 }
 
-export function openBrowser(url: string): void {
-  const platform = process.platform;
-  if (platform === "darwin") {
-    runCommand("open", [url], { stdio: "inherit" });
-    return;
+export type BrowserLaunchResult = { ok: true } | { ok: false; reason: string };
+
+export function openBrowser(url: string): BrowserLaunchResult {
+  try {
+    if (process.platform === "darwin") {
+      runCommandInherit("open", [url]);
+      return { ok: true };
+    }
+    if (process.platform === "win32") {
+      runCommandInherit("cmd", ["/c", "start", "", url]);
+      return { ok: true };
+    }
+    runCommandInherit("xdg-open", [url]);
+    return { ok: true };
+  } catch (error) {
+    return {
+      ok: false,
+      reason: error instanceof Error ? error.message : String(error),
+    };
   }
-  if (platform === "win32") {
-    runCommand("cmd", ["/c", "start", "", url], { stdio: "inherit" });
-    return;
-  }
-  runCommand("xdg-open", [url], { stdio: "inherit" });
 }
 
 export async function waitForUrl(url: string, timeoutMs = 120_000): Promise<boolean> {
@@ -176,4 +222,18 @@ export async function waitForUrl(url: string, timeoutMs = 120_000): Promise<bool
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
   return false;
+}
+
+export async function probeAtlasDevApi(port: number): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 1500);
+    const response = await fetch(`http://127.0.0.1:${port}/atlas/health`, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!response.ok) return false;
+    const payload = (await response.json()) as { service?: string };
+    return payload.service === "atlas-dev-api";
+  } catch {
+    return false;
+  }
 }

@@ -30,14 +30,22 @@ type StartupStep = {
 
 async function runStep(spinner: Ora, step: StartupStep): Promise<boolean> {
   spinner.start(`Checking ${step.label.toLowerCase()}…`);
-  await new Promise((resolve) => setTimeout(resolve, 120));
-  const ok = await step.run();
-  const detail = step.detail?.();
-  spinner.stopAndPersist({
-    symbol: ok ? "✔" : "✖",
-    text: statusLine(step.label, ok, detail),
-  });
-  return ok;
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 120));
+    const ok = await step.run();
+    const detail = step.detail?.();
+    spinner.stopAndPersist({
+      symbol: ok ? "✔" : "✖",
+      text: statusLine(step.label, ok, detail),
+    });
+    return ok;
+  } catch (error) {
+    spinner.stopAndPersist({
+      symbol: "✖",
+      text: statusLine(step.label, false, error instanceof Error ? error.message : "check failed"),
+    });
+    return false;
+  }
 }
 
 export async function runLiveStartup(): Promise<{ ok: boolean; blocking: boolean }> {

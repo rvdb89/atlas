@@ -12,6 +12,7 @@
 
 export * from "./constants";
 export * from "./session";
+export * from "./portRecovery";
 export * from "./recovery";
 export * from "./ui";
 export * from "./startup";

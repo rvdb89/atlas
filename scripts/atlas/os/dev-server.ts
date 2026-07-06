@@ -3,6 +3,7 @@ import { existsSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { ATLAS_DEV_API_PORT, ATLAS_RESTART_SIGNAL } from "./constants";
+import { autoRecover, formatRecoveryFailure } from "./portRecovery";
 import { readSession, updateSessionRoute, writeSession } from "./session";
 import { ROOT_DIR } from "../shared";
 
@@ -10,6 +11,18 @@ export type AtlasDevServerHandlers = {
   onRestart?: () => void;
   onRouteChange?: (path: string, label?: string) => void;
 };
+
+export class AtlasPortInUseError extends Error {
+  readonly port: number;
+  readonly detail: string;
+
+  constructor(port: number, detail: string) {
+    super(`Port ${port} is already in use`);
+    this.name = "AtlasPortInUseError";
+    this.port = port;
+    this.detail = detail;
+  }
+}
 
 let server: Server | null = null;
 
@@ -34,59 +47,91 @@ function sendJson(response: ServerResponse, status: number, payload: unknown): v
   response.end(JSON.stringify(payload));
 }
 
-export function startAtlasDevServer(handlers: AtlasDevServerHandlers = {}): Server {
-  if (server) return server;
-
-  server = createServer(async (request, response) => {
-    if (request.method === "OPTIONS") {
-      sendJson(response, 204, {});
-      return;
-    }
-
-    const url = new URL(request.url ?? "/", `http://localhost:${ATLAS_DEV_API_PORT}`);
-
-    if (request.method === "GET" && url.pathname === "/atlas/session") {
-      sendJson(response, 200, readSession());
-      return;
-    }
-
-    if (request.method === "GET" && url.pathname === "/atlas/health") {
-      sendJson(response, 200, { ok: true, service: "atlas-dev-api" });
-      return;
-    }
-
-    if (request.method === "POST" && url.pathname === "/atlas/session/route") {
-      const body = await readBody(request);
-      const payload = JSON.parse(body || "{}") as { path?: string; label?: string };
-      if (!payload.path) {
-        sendJson(response, 400, { error: "path required" });
+function bindDevServer(handlers: AtlasDevServerHandlers): Promise<Server> {
+  return new Promise((resolve, reject) => {
+    const nextServer = createServer(async (request, response) => {
+      if (request.method === "OPTIONS") {
+        sendJson(response, 204, {});
         return;
       }
 
-      const session = updateSessionRoute(payload.path, payload.label);
-      handlers.onRouteChange?.(payload.path, payload.label);
-      sendJson(response, 200, session);
-      return;
-    }
+      const url = new URL(request.url ?? "/", `http://localhost:${ATLAS_DEV_API_PORT}`);
 
-    if (request.method === "POST" && url.pathname === "/atlas/restart") {
-      const signalPath = join(ROOT_DIR, ATLAS_RESTART_SIGNAL);
-      writeFileSync(signalPath, `${Date.now()}\n`, "utf8");
-      handlers.onRestart?.();
-      sendJson(response, 202, { ok: true, message: "restart queued" });
-      return;
-    }
+      if (request.method === "GET" && url.pathname === "/atlas/session") {
+        sendJson(response, 200, readSession());
+        return;
+      }
 
-    if (request.method === "POST" && url.pathname === "/atlas/notify") {
-      sendJson(response, 200, { ok: true });
-      return;
-    }
+      if (request.method === "GET" && url.pathname === "/atlas/health") {
+        sendJson(response, 200, { ok: true, service: "atlas-dev-api" });
+        return;
+      }
 
-    sendJson(response, 404, { error: "not found" });
+      if (request.method === "POST" && url.pathname === "/atlas/session/route") {
+        const body = await readBody(request);
+        const payload = JSON.parse(body || "{}") as { path?: string; label?: string };
+        if (!payload.path) {
+          sendJson(response, 400, { error: "path required" });
+          return;
+        }
+
+        const session = updateSessionRoute(payload.path, payload.label);
+        handlers.onRouteChange?.(payload.path, payload.label);
+        sendJson(response, 200, session);
+        return;
+      }
+
+      if (request.method === "POST" && url.pathname === "/atlas/restart") {
+        const signalPath = join(ROOT_DIR, ATLAS_RESTART_SIGNAL);
+        writeFileSync(signalPath, `${Date.now()}\n`, "utf8");
+        handlers.onRestart?.();
+        sendJson(response, 202, { ok: true, message: "restart queued" });
+        return;
+      }
+
+      if (request.method === "POST" && url.pathname === "/atlas/notify") {
+        sendJson(response, 200, { ok: true });
+        return;
+      }
+
+      sendJson(response, 404, { error: "not found" });
+    });
+
+    nextServer.once("error", (error: NodeJS.ErrnoException) => {
+      if (error.code === "EADDRINUSE") {
+        reject(new AtlasPortInUseError(ATLAS_DEV_API_PORT, `Atlas dev API port ${ATLAS_DEV_API_PORT} is already in use`));
+        return;
+      }
+      reject(error);
+    });
+
+    nextServer.listen(ATLAS_DEV_API_PORT, "127.0.0.1", () => {
+      server = nextServer;
+      resolve(nextServer);
+    });
   });
+}
 
-  server.listen(ATLAS_DEV_API_PORT, "127.0.0.1");
-  return server;
+export async function startAtlasDevServer(handlers: AtlasDevServerHandlers = {}): Promise<Server> {
+  if (server) return server;
+
+  try {
+    return await bindDevServer(handlers);
+  } catch (error) {
+    if (!(error instanceof AtlasPortInUseError)) {
+      throw error;
+    }
+
+    const recovered = await autoRecover((message) => {
+      console.log(`↻ ${message}`);
+    });
+
+    if (!recovered.ok) {
+      throw new AtlasPortInUseError(ATLAS_DEV_API_PORT, formatRecoveryFailure(recovered));
+    }
+
+    return bindDevServer(handlers);
+  }
 }
 
 export function stopAtlasDevServer(): void {

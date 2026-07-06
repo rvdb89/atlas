@@ -54,22 +54,40 @@ function spawnExpo(silent: boolean): ChildProcess {
   );
 
   if (silent && child.stdout && child.stderr) {
-    child.stdout.on("data", (chunk: Buffer) => {
-      filterOutput(chunk.toString("utf8"));
+    child.stdout.on("data", (chunk: Buffer | string) => {
+      handleStreamChunk(chunk);
     });
-    child.stderr.on("data", (chunk: Buffer) => {
-      filterOutput(chunk.toString("utf8"));
+    child.stderr.on("data", (chunk: Buffer | string) => {
+      handleStreamChunk(chunk);
     });
   }
 
-  child.on("error", () => {
-    // surfaced via health checks
+  child.on("error", (error) => {
+    console.log(`◆ Atlas runtime · Process error · ${error.message}`);
   });
 
   return child;
 }
 
-function filterOutput(line: string): void {
+function normalizeStreamChunk(chunk: Buffer | string | null | undefined): string {
+  if (chunk == null) {
+    return "";
+  }
+  return typeof chunk === "string" ? chunk : chunk.toString("utf8");
+}
+
+function handleStreamChunk(chunk: Buffer | string): void {
+  const text = normalizeStreamChunk(chunk);
+  if (!text) return;
+
+  for (const line of text.split(/\r?\n/)) {
+    filterOutput(line);
+  }
+}
+
+function filterOutput(line: string | null | undefined): void {
+  if (line == null) return;
+
   const trimmed = line.trim();
   if (!trimmed) return;
 
