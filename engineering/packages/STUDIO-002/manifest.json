@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.0",
+  "packageType": "engineering",
+  "missionId": "STUDIO-002",
+  "title": "Branch Director Debrief Flow",
+  "templateLabel": "Studio Mission",
+  "atlasVersion": "0.26.0",
+  "atlasBuild": "brain-005",
+  "generatedAt": "2026-07-06T21:52:01.159Z",
+  "outputDir": "engineering/packages/STUDIO-002",
+  "entrypoint": "engineering/packages/STUDIO-002/claude-engineering-package.md",
+  "legacyBriefPath": "engineering/briefs/STUDIO-002.md",
+  "inputRequired": "missionIdOnly",
+  "inferencePipeline": [
+    "decision-engine",
+    "organization",
+    "evolution-engine",
+    "decision-framework",
+    "constitution",
+    "north-star",
+    "principles",
+    "capabilities",
+    "systems",
+    "roadmap",
+    "mission-registry",
+    "engineering-standards",
+    "architecture-rules",
+    "mission-dependencies",
+    "definition-of-done",
+    "validation-plan",
+    "engineering-package"
+  ],
+  "constitutionId": "ATLAS-000",
+  "constitutionPath": "engineering/constitution/atlas-constitution.md",
+  "decisionFrameworkId": "ATLAS-001",
+  "decisionEngineId": "BRAIN-004",
+  "evolutionEngineId": "ATLAS-001",
+  "organizationModelId": "ATLAS-002",
+  "branchDirectorIdentityId": "ATLAS-003",
+  "dependencies": [
+    {
+      "missionId": "ATLAS-003",
+      "title": "Branch Director Identity",
+      "relationship": "requires",
+      "reason": "Debrief uses Branch Director language"
+    },
+    {
+      "missionId": "BRAIN-004",
+      "title": "Decision Engine",
+      "relationship": "requires",
+      "reason": "Next initiative recommendation comes from Decision Engine"
+    },
+    {
+      "missionId": "STUDIO-001",
+      "title": "CEO Workflow",
+      "relationship": "requires",
+      "reason": "Debrief flow extends CEO Workflow in Studio"
+    }
+  ],
+  "files": {
+    "manifest": "engineering/packages/STUDIO-002/manifest.json",
+    "claudeEntrypoint": "engineering/packages/STUDIO-002/claude-engineering-package.md",
+    "architectureBrief": "engineering/packages/STUDIO-002/architecture-brief.md",
+    "validationPlan": "engineering/packages/STUDIO-002/validation-plan.md",
+    "auditChecklist": "engineering/packages/STUDIO-002/audit-checklist.md",
+    "releaseNotes": "engineering/packages/STUDIO-002/release-notes.md"
+  }
+}

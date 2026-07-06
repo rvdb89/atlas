@@ -1,6 +1,6 @@
-# Claude Engineering Package — BRAIN-004
+# Execution Package — BRAIN-004
 
-> **Atlas Mission Orchestrator** — Humans provide intent or Mission ID. Atlas derives everything from the Constitution.
+> **Branch Director Mission Control** — Humans provide intent or Mission ID. Atlas derives everything from the Constitution.
 
 ## Constitution
 
@@ -14,33 +14,47 @@
 - Mission ID follows Atlas platform naming conventions.
 - Evaluated against: Work advances the North Star when it reduces manual steps toward autonomous execution
 - Evaluated against: Missions must map to at least one Capability and one System
-- North Star: Atlas becomes an AI Operating System that translates human intent into autonomous execution — with less manual intervention per workflow and more trustworthy release decisions.
+- North Star: Atlas becomes the AI Operating System that translates human intent into autonomous execution — routing work to the correct department, coordinating AI Workers, and generating Execution Packages only when software work is required.
+
+## Organizational Model
+
+- **Atlas role:** Branch Director (Vestigingsdirecteur)
+- **Organization model:** ATLAS-002
+- **Departments:** Engineering, Quality Assurance, Operations
+- **Workers assigned:** 4
+- **Execution Package required:** Yes
+
+Atlas (Branch Director) routes software work to Engineering department. Execution Package will be generated for Claude Engineer execution. ChatGPT defines architecture; Atlas operationalizes execution.
 
 ## Evolution Engine
 
 - **Engine ID:** ATLAS-001
 - **North Star aligned:** Yes (9/10)
 - **Selected mission:** BRAIN-004
-- **Next best mission:** BRAIN-002
+- **Recommended Next Initiative:** ATLAS-001
 
-Mission ID BRAIN-004 provided — evolution assessment confirms alignment. Roadmap context: Reasoning and decision policies advance autonomy Selected by evolution value score — not static roadmap priority.
+Mission ID BRAIN-004 provided — evolution assessment confirms alignment. Roadmap context: Reasoning and decision policies advance autonomy Selected by evolution value score — not static roadmap priority. North Star alignment score: 9/10. Selected BRAIN-004 because it closes the highest-value capability gap (priority 10.00). Departments: Engineering (primary), Quality Assurance (supporting), Operations (supporting).
 
 ### Where are we / where we want to be
 
-- **Today:** Atlas platform maturity averages 61%. Developing: Memory, Context, Planning, Studio. Nascent: Reasoning. Evolution Engine assesses live capability state — not blind roadmap order.
-- **Target:** Atlas becomes an AI Operating System that translates human intent into autonomous execution — with less manual intervention per workflow and more trustworthy release decisions.
-- **Gaps:** Reasoning (75% gap), Memory (40% gap), Context (40% gap), Planning (35% gap), Orchestration (10% gap)
+- **Today:** Atlas platform maturity averages 69%. Developing: Memory, Context, Planning, Studio. Evolution Engine assesses live capability state — not blind roadmap order.
+- **Target:** Atlas becomes the AI Operating System that translates human intent into autonomous execution — routing work to the correct department, coordinating AI Workers, and generating Execution Packages only when software work is required.
+- **Gaps:** Memory (40% gap), Context (40% gap), Planning (35% gap), Orchestration (10% gap), Reasoning (5% gap)
 - **Highest value:** Orchestration
 
 ### Evolution steps
 
 - **Intent** (pass) — Intent recognized
-- **Current State** (pass) — 8 capabilities assessed
+- **Capability** (pass) — 1 capability(ies) mapped
+- **Department(s)** (pass) — 3 department(s) selected
+- **Worker Assignment** (pass) — 4 worker(s) assigned
+- **Execution Plan** (pass) — 4 step(s) planned
+- **Current State** (pass) — 8 platform capabilities assessed
 - **North Star** (pass) — North Star alignment confirmed
-- **Capability Gaps** (pass) — 6 gap(s) identified
-- **Recommended Evolution** (pass) — BRAIN-004 · Decision Engine (score 10.00)
+- **Capability Gaps** (pass) — 6 platform gap(s) identified
+- **Recommended Evolution** (pass) — BRAIN-004 · Decision Engine
 - **Mission Registry** (pass) — BRAIN-004 registered
-- **Engineering Package** (pass) — Ready to generate
+- **Execution Package** (pass) — Ready to generate
 
 ## Input received
 
@@ -69,11 +83,11 @@ Roadmap
 ↓
 Mission Registry
 ↓
-Engineering Packages
+Execution Packages
 ↓
 Claude
 ↓
-Atlas Auditor
+Branch Director Review
 ```
 
 ## Mission (from Registry)
@@ -82,42 +96,42 @@ Atlas Auditor
 - **Title:** Decision Engine
 - **Registry source:** engineering/missions/BRAIN-004.mission
 - **Template:** brain
-- **Atlas:** 0.20.0 (atlas-001-evolution)
-- **Generated:** 2026-07-06T20:24:45.623Z
+- **Atlas:** 0.23.0 (brain-004)
+- **Generated:** 2026-07-06T21:13:13.454Z
 
 ## Goal
 
-Atlas leert beslissingen nemen.
+Build the first reasoning engine of Atlas — transforming human intent into autonomous decisions with explicit WHY.
 
 ## Implementation focus
 
-- Decision Engine
-- Decision Policies
-- Decision Registry
+- Decision Engine composing Constitution, capabilities, Organization, and Roadmap
+- Decision Policies and Decision Registry
+- Reasoning layer explaining every recommended initiative
+- Execution Package trigger when engineering is required
 
 ## Constraints
 
-- Geen breaking changes
+- No breaking changes to Evolution Engine or Organizational Model APIs
+- Provider-independent Brain module under src/atlas/brain/decision/
+- Every future initiative originates from the Decision Engine
 
 ## Engineering Standards (inferred)
 
 - All engineering knowledge derives from the Atlas Constitution
 - Humans provide intent or Mission ID — not Architecture Briefs
-- ChatGPT must not define missions or write Architecture Briefs
+- ChatGPT (Chief Architect) defines architecture and strategic direction — never manages workers
 - Deterministic, rule-based orchestration before AI generation
-- Small focused changes with TypeScript strictness
-- Atlas Auditor validates whether work advances the North Star
-- Release decisions follow blockers — warnings inform, never block alone
 - Mission packages generated via npm run atlas:mission
 - Legacy brief output remains backward compatible only
 
 ## North Star (inferred)
 
-- Atlas becomes an AI Operating System that translates human intent into autonomous execution — with less manual intervention per workflow and more trustworthy release decisions.
-- Atlas interprets natural-language intent and proposes the next mission
+- Atlas becomes the AI Operating System that translates human intent into autonomous execution — routing work to the correct department, coordinating AI Workers, and generating Execution Packages only when software work is required.
+- Atlas interprets natural-language intent and proposes the recommended next initiative
 - Roadmap self-updates from Constitution, audit findings, and capability gaps
 - Brain layers (planner, memory, context, decision) operate as one autonomy stack
-- Engineering packages are generated without external brief writing
+- Execution packages are generated without external brief writing
 - Atlas als AI Operating System
 - Generieke architectuur boven vertical coupling
 - Meer autonomie, minder handmatige tussenkomst
@@ -127,10 +141,9 @@ Atlas leert beslissingen nemen.
 
 ## Architecture Rules (inferred)
 
-- ChatGPT must not define missions or write Architecture Briefs
+- ChatGPT (Chief Architect) defines architecture and strategic direction — never manages workers
 - Generic architecture over vertical coupling
 - Provider independence in Brain and core platform layers
-- Registry pattern for extensibility across systems
 - Atlas core blijft domein-onafhankelijk
 - Registry pattern voor uitbreidbaarheid
 - Geen vertical-specifieke logica in generieke modules
@@ -148,14 +161,17 @@ Atlas leert beslissingen nemen.
 ## Definition of Done
 
 - [ ] Decision Engine module exists under src/atlas/
-- [ ] Decision Engine implemented per mission scope
-- [ ] Decision Policies implemented per mission scope
-- [ ] Decision Registry implemented per mission scope
-- [ ] Constraint respected: Geen breaking changes
+- [ ] Decision Engine composing Constitution, capabilities, Organization, and Roadmap implemented per mission scope
+- [ ] Decision Policies and Decision Registry implemented per mission scope
+- [ ] Reasoning layer explaining every recommended initiative implemented per mission scope
+- [ ] Execution Package trigger when engineering is required implemented per mission scope
+- [ ] Constraint respected: No breaking changes to Evolution Engine or Organizational Model APIs
+- [ ] Constraint respected: Provider-independent Brain module under src/atlas/brain/decision/
+- [ ] Constraint respected: Every future initiative originates from the Decision Engine
 - [ ] TypeScript compiles clean
 - [ ] npm run atlas:mission BRAIN-004 regenerates package
 - [ ] npm run atlas:audit -- --strict returns APPROVED or APPROVED_WITH_NOTES
-- [ ] Decision Engine volledig operationeel.
+- [ ] npm run atlas:decide -- "I want Atlas to improve decision making." recommends BRAIN-004 and explains WHY.
 
 ## Validation Plan
 
@@ -165,7 +181,7 @@ Atlas leert beslissingen nemen.
 - npm run atlas:mission BRAIN-004
 - Bestaande workflows blijven intact
 - npm run atlas:constitution
-- npm run atlas:evolve -- "intent for BRAIN-004"
+- npm run atlas:decide -- "intent for BRAIN-004"
 - npm run atlas:mission BRAIN-004
 
 ## Commands to run before finishing
@@ -186,13 +202,13 @@ npm run atlas:health
 4. Do **not** write a new Architecture Brief — Atlas already generated the engineering package.
 5. Keep changes small, TypeScript strict, and registry-aligned.
 6. Complete the Definition of Done checklist before marking the mission done.
-7. Run validation commands and ensure Atlas Auditor release decision is APPROVED or APPROVED_WITH_NOTES.
+7. Run validation commands and ensure Branch Director Release Decision is APPROVED or APPROVED_WITH_NOTES.
 8. Fill in `release-notes.md` after implementation.
 
 ## Success criteria
 
-Decision Engine volledig operationeel.
+npm run atlas:decide -- "I want Atlas to improve decision making." recommends BRAIN-004 and explains WHY.
 
 ---
 
-_Generated by Atlas Mission Orchestrator · 2026-07-06T20:24:45.623Z_
+_Generated by Atlas Mission Orchestrator · 2026-07-06T21:13:13.454Z_

@@ -4,8 +4,8 @@
 
 - Mission · **BRAIN-004**
 - Title · **Decision Engine**
-- Atlas · 0.20.0 (atlas-001-evolution)
-- Generated · 2026-07-06T20:24:45.623Z
+- Atlas · 0.23.0 (brain-004)
+- Generated · 2026-07-06T21:13:13.454Z
 
 ## Platform audit gates
 
@@ -25,21 +25,23 @@
 ## Mission-specific checks
 
 - [ ] Decision Engine module exists under src/atlas/
-- [ ] Decision Engine implemented per mission scope
-- [ ] Decision Policies implemented per mission scope
-- [ ] Decision Registry implemented per mission scope
-- [ ] Constraint respected: Geen breaking changes
+- [ ] Decision Engine composing Constitution, capabilities, Organization, and Roadmap implemented per mission scope
+- [ ] Decision Policies and Decision Registry implemented per mission scope
+- [ ] Reasoning layer explaining every recommended initiative implemented per mission scope
+- [ ] Execution Package trigger when engineering is required implemented per mission scope
+- [ ] Constraint respected: No breaking changes to Evolution Engine or Organizational Model APIs
+- [ ] Constraint respected: Provider-independent Brain module under src/atlas/brain/decision/
+- [ ] Constraint respected: Every future initiative originates from the Decision Engine
 - [ ] TypeScript compiles clean
 - [ ] npm run atlas:mission BRAIN-004 regenerates package
 - [ ] npm run atlas:audit -- --strict returns APPROVED or APPROVED_WITH_NOTES
-- [ ] Decision Engine volledig operationeel.
+- [ ] npm run atlas:decide -- "I want Atlas to improve decision making." recommends BRAIN-004 and explains WHY.
 
 ## Architecture rules
 
-- [ ] ChatGPT must not define missions or write Architecture Briefs
+- [ ] ChatGPT (Chief Architect) defines architecture and strategic direction — never manages workers
 - [ ] Generic architecture over vertical coupling
 - [ ] Provider independence in Brain and core platform layers
-- [ ] Registry pattern for extensibility across systems
 - [ ] Atlas core blijft domein-onafhankelijk
 - [ ] Registry pattern voor uitbreidbaarheid
 - [ ] Geen vertical-specifieke logica in generieke modules

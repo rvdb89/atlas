@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import chalk from "chalk";
 
-import { runEvolution } from "@/atlas/constitution";
+import { runDecision } from "@/atlas/brain/decision";
 import { getBranchDirectorTerminology } from "@/atlas/constitution";
 import { renderOrganizationMarkdown } from "@/atlas/organization";
 
@@ -39,7 +39,8 @@ function main(): void {
     return;
   }
 
-  const evolution = runEvolution({ intent });
+  const decision = runDecision({ intent });
+  const evolution = decision.evolution;
 
   console.log(`Intent · ${chalk.cyan(evolution.intent)}`);
   console.log("");
@@ -67,7 +68,7 @@ function main(): void {
   }
 
   console.log("");
-  console.log(chalk.dim(`Software work detected — run npm run atlas:evolve for ${getBranchDirectorTerminology().executionPackage} generation.`));
+  console.log(chalk.dim(`Software work detected — run npm run atlas:decide for ${getBranchDirectorTerminology().executionPackage} generation.`));
   console.log("");
 }
 

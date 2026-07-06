@@ -4,8 +4,8 @@
 
 - Mission · **BRAIN-004**
 - Title · **Decision Engine**
-- Atlas · 0.20.0 (atlas-001-evolution)
-- Generated · 2026-07-06T20:24:45.623Z
+- Atlas · 0.23.0 (brain-004)
+- Generated · 2026-07-06T21:13:13.454Z
 
 ## Required commands
 
@@ -25,12 +25,12 @@ npm run atlas:health
 - npm run atlas:mission BRAIN-004
 - Bestaande workflows blijven intact
 - npm run atlas:constitution
-- npm run atlas:evolve -- "intent for BRAIN-004"
+- npm run atlas:decide -- "intent for BRAIN-004"
 - npm run atlas:mission BRAIN-004
 
 ## Expected outcome
 
-- Decision Engine volledig operationeel.
+- npm run atlas:decide -- "I want Atlas to improve decision making." recommends BRAIN-004 and explains WHY.
 - Existing Atlas workflows remain intact
 - TypeScript compiles without errors
 - Release decision allows push (APPROVED or APPROVED_WITH_NOTES)

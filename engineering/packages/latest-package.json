@@ -1,54 +1,8 @@
 {
-  "schemaVersion": "1.0",
-  "inputRequired": "missionIdOnly",
-  "inferencePipeline": [
-    "organization",
-    "evolution-engine",
-    "decision-framework",
-    "constitution",
-    "north-star",
-    "principles",
-    "capabilities",
-    "systems",
-    "roadmap",
-    "mission-registry",
-    "engineering-standards",
-    "architecture-rules",
-    "mission-dependencies",
-    "definition-of-done",
-    "validation-plan",
-    "engineering-package"
-  ],
-  "missionId": "ATLAS-002",
-  "title": "Organizational Model",
-  "templateLabel": "Engineering Mission",
-  "atlasVersion": "0.21.0",
-  "atlasBuild": "atlas-002",
-  "generatedAt": "2026-07-06T20:33:58.547Z",
-  "outputDir": "engineering/packages/ATLAS-002",
-  "entrypoint": "engineering/packages/ATLAS-002/claude-engineering-package.md",
-  "legacyBriefPath": "engineering/briefs/ATLAS-002.md",
-  "releaseNotesPath": "engineering/packages/ATLAS-002/release-notes.md",
-  "dependencies": [
-    {
-      "missionId": "ATLAS-000",
-      "title": "Atlas Constitution",
-      "relationship": "requires",
-      "reason": "Organizational Model extends Constitution identity"
-    },
-    {
-      "missionId": "ATLAS-001",
-      "title": "Evolution Engine",
-      "relationship": "requires",
-      "reason": "Evolution complements organizational routing"
-    }
-  ],
-  "files": {
-    "manifest": "engineering/packages/ATLAS-002/manifest.json",
-    "claudeEntrypoint": "engineering/packages/ATLAS-002/claude-engineering-package.md",
-    "architectureBrief": "engineering/packages/ATLAS-002/architecture-brief.md",
-    "validationPlan": "engineering/packages/ATLAS-002/validation-plan.md",
-    "auditChecklist": "engineering/packages/ATLAS-002/audit-checklist.md",
-    "releaseNotes": "engineering/packages/ATLAS-002/release-notes.md"
-  }
+  "missionId": "STUDIO-002",
+  "title": "Branch Director Debrief Flow",
+  "outputDir": "engineering/packages/STUDIO-002",
+  "entrypoint": "engineering/packages/STUDIO-002/claude-engineering-package.md",
+  "decisionEngineId": "BRAIN-004",
+  "generatedAt": "2026-07-06T21:52:01.159Z"
 }

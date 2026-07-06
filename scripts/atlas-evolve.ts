@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import chalk from "chalk";
 
-import { runEvolution } from "@/atlas/constitution";
+import { runDecision } from "@/atlas/brain/decision";
 import { getBranchDirectorTerminology } from "@/atlas/constitution";
 import {
   ENGINEERING_PACKAGE_FILENAMES,
@@ -94,7 +94,7 @@ function main(): void {
   const intent = args.join(" ").trim();
 
   console.log("");
-  console.log(chalk.bold.hex("#B85F1D")("Atlas Evolution Engine"));
+  console.log(chalk.bold.hex("#B85F1D")("Atlas Decision Engine (Evolution path)"));
   console.log("");
 
   loadMissionFilesFromDisk();
@@ -108,10 +108,11 @@ function main(): void {
   }
 
   const terms = getBranchDirectorTerminology();
-  const evolution = runEvolution({
+  const decision = runDecision({
     intent,
     missionRegistered: (id) => missionRegistry.has(id),
   });
+  const evolution = decision.evolution;
 
   console.log(`Intent · ${chalk.cyan(evolution.intent)}`);
   console.log("");
@@ -133,8 +134,8 @@ function main(): void {
   console.log(`  System to evolve · ${evolution.answers.systemToEvolve ?? "none"}`);
   console.log(`  Missions to create · ${evolution.answers.missionsToCreate.join(", ") || "none"}`);
   console.log("");
-  console.log(chalk.bold("Why this is the next best step"));
-  console.log(`  ${evolution.answers.whyNextBestStep}`);
+  console.log(chalk.bold("Why this decision"));
+  console.log(`  ${decision.why}`);
   console.log("");
 
   if (evolution.organization && !evolution.organization.engineeringPackageRequired) {
@@ -147,7 +148,7 @@ function main(): void {
     return;
   }
 
-  if (!evolution.selectedMissionId || !evolution.missionRegistered) {
+  if (!decision.executionPackageTrigger || !decision.executionPackageMissionId) {
     console.log(chalk.yellow("Cannot generate package — mission not registered."));
     console.log("");
     process.exitCode = 1;
@@ -155,7 +156,7 @@ function main(): void {
   }
 
   const { version, build } = readAtlasVersion();
-  const result = orchestrateMission(evolution.selectedMissionId, { atlasVersion: version, atlasBuild: build });
+  const result = orchestrateMission(decision.executionPackageMissionId, { atlasVersion: version, atlasBuild: build });
 
   if (!result.ok) {
     console.log(chalk.red(result.message));

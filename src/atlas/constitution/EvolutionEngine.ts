@@ -17,6 +17,7 @@ import {
   isNorthStarCritical,
 } from "./CurrentStateRegistry";
 import { getBranchDirectorTerminology } from "./BranchDirectorIdentity";
+import { getCapabilityStrategicValue } from "../brain/capability/CapabilityRegistry";
 import { routeOrganization } from "../organization/OrganizationEngine";
 import { getOrganizationalModel } from "../organization/OrganizationalModel";
 
@@ -99,7 +100,8 @@ function scoreRecommendations(
     const intentWeight = intentCapabilityIds.includes(gap.capabilityId) ? 3 : gap.northStarCritical ? 1.5 : 1;
     const northStarWeight = NORTH_STAR_CAPABILITY_WEIGHT[gap.capabilityId] ?? 1;
     const stackBonus = gap.currentMaturity < 0.4 ? 1.3 : 1;
-    const valueScore = gap.gap * intentWeight * northStarWeight * stackBonus;
+    const registryBonus = 1 + getCapabilityStrategicValue(gap.capabilityId);
+    const valueScore = gap.gap * intentWeight * northStarWeight * stackBonus * registryBonus;
 
     const roadmapItem = constitution.roadmap.find((item) => item.missionId === state.evolutionMissionId);
     const existing = byMission.get(state.evolutionMissionId);

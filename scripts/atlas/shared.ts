@@ -3,8 +3,50 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 export const ATLAS_PORT = 8083;
+export const ATLAS_STUDIO_DEFAULT_PATH = "/studio/ceo-workflow";
+export const ATLAS_STUDIO_FALLBACK_PATH = "/studio";
+/** @deprecated Use ATLAS_STUDIO_DEFAULT_PATH — kept for Command Center links */
 export const COMMAND_CENTER_PATH = "/studio/command-center";
 export const COMMAND_CENTER_URL = `http://localhost:${ATLAS_PORT}${COMMAND_CENTER_PATH}`;
+
+export const ATLAS_STUDIO_ROUTE_LABELS: Record<string, string> = {
+  [ATLAS_STUDIO_DEFAULT_PATH]: "CEO Workflow",
+  [ATLAS_STUDIO_FALLBACK_PATH]: "Studio",
+  [COMMAND_CENTER_PATH]: "Command Center",
+};
+
+export function resolveAtlasStudioLaunchRoute(session?: {
+  lastRoute?: string;
+  lastRouteLabel?: string;
+}): { path: string; label: string } {
+  if (session?.lastRoute?.startsWith("/studio")) {
+    return {
+      path: session.lastRoute,
+      label: session.lastRouteLabel ?? ATLAS_STUDIO_ROUTE_LABELS[session.lastRoute] ?? session.lastRoute,
+    };
+  }
+
+  const ceoRouteFile = join(ROOT_DIR, "src/app/studio/ceo-workflow.tsx");
+  if (existsSync(ceoRouteFile)) {
+    return {
+      path: ATLAS_STUDIO_DEFAULT_PATH,
+      label: ATLAS_STUDIO_ROUTE_LABELS[ATLAS_STUDIO_DEFAULT_PATH],
+    };
+  }
+
+  const studioIndexFile = join(ROOT_DIR, "src/app/studio/index.tsx");
+  if (existsSync(studioIndexFile)) {
+    return {
+      path: ATLAS_STUDIO_FALLBACK_PATH,
+      label: ATLAS_STUDIO_ROUTE_LABELS[ATLAS_STUDIO_FALLBACK_PATH],
+    };
+  }
+
+  return {
+    path: ATLAS_STUDIO_FALLBACK_PATH,
+    label: ATLAS_STUDIO_ROUTE_LABELS[ATLAS_STUDIO_FALLBACK_PATH],
+  };
+}
 
 export const ROOT_DIR = process.cwd();
 
@@ -175,6 +217,7 @@ export function detectDevProcesses(): string[] {
 
 export const STUDIO_ROUTES = [
   "src/app/studio/command-center.tsx",
+  "src/app/studio/ceo-workflow.tsx",
   "src/app/studio/health.tsx",
   "src/app/studio/proof-of-power.tsx",
   "src/app/studio/index.tsx",

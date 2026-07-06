@@ -1,0 +1,24 @@
+Mission:
+BRAIN-005
+
+Title:
+Capability Registry & Roadmap Intelligence
+
+Goal:
+Teach Atlas to understand its own capabilities and recommend the next best initiative using registry-backed roadmap intelligence.
+
+Focus:
+Capability Registry with maturity, gaps, systems, initiatives, and strategic value
+Roadmap Intelligence answering where we are weak and what to build next
+Decision Engine integration with Branch Director Dutch advice
+Atlas Studio capability scores for CEO visibility
+
+Constraints:
+No new meta-frameworks — extend Brain registry pattern
+Build on Constitution capabilities and Current State Registry
+CEO-facing output uses Branch Director language, not git or CLI terms
+
+Success:
+Atlas answers "Where are we weak?", "What should we build next?", and "Why is this the best next step?"
+Decision Engine uses Capability Registry for initiative recommendations.
+CEO Workflow and Intelligence screens show capability scores, weak/strong capabilities, and recommended initiative.

@@ -3,7 +3,8 @@ import { join } from "node:path";
 
 import chalk from "chalk";
 
-import { runDecisionFramework } from "@/atlas/constitution";
+import { runDecision } from "@/atlas/brain/decision";
+import { getBranchDirectorTerminology } from "@/atlas/constitution";
 import {
   ENGINEERING_PACKAGE_FILENAMES,
   missionRegistry,
@@ -55,8 +56,7 @@ function writePackageArtifacts(pkg: EngineeringPackage): void {
   removeStalePackageFiles(packageRoot);
 
   for (const artifact of pkg.artifacts) {
-    const target = join(ROOT_DIR, artifact.relativePath);
-    writeFileSync(target, artifact.markdown, "utf8");
+    writeFileSync(join(ROOT_DIR, artifact.relativePath), artifact.markdown, "utf8");
   }
 
   writeFileSync(join(packageRoot, "manifest.json"), serializePackageManifest(pkg.manifest), "utf8");
@@ -69,22 +69,13 @@ function writePackageArtifacts(pkg: EngineeringPackage): void {
     join(ROOT_DIR, "engineering/packages/latest-package.json"),
     JSON.stringify(
       {
-        schemaVersion: pkg.manifest.schemaVersion,
-        inputRequired: pkg.manifest.inputRequired,
-        inferencePipeline: pkg.manifest.inferencePipeline,
         missionId: pkg.missionId,
         title: pkg.title,
-        templateLabel: pkg.templateLabel,
-        atlasVersion: pkg.manifest.atlasVersion,
-        atlasBuild: pkg.manifest.atlasBuild,
-        generatedAt: pkg.generatedAt,
         outputDir: pkg.outputDir,
         entrypoint: pkg.claudePackagePath,
-        legacyBriefPath: pkg.legacyBriefPath,
-        releaseNotesPath: pkg.releaseNotesPath,
-        dependencies: pkg.manifest.dependencies,
-        files: pkg.manifest.files,
-        decisionFrameworkId: pkg.manifest.decisionFrameworkId,
+        decisionEngineId: pkg.manifest.decisionEngineId,
+        evolutionEngineId: pkg.manifest.evolutionEngineId,
+        generatedAt: pkg.generatedAt,
       },
       null,
       2,
@@ -104,7 +95,7 @@ function main(): void {
   const intent = args.join(" ").trim();
 
   console.log("");
-  console.log(chalk.bold.hex("#B85F1D")("Atlas Decision Framework"));
+  console.log(chalk.bold.hex("#B85F1D")("Atlas Decision Engine"));
   console.log("");
 
   loadMissionFilesFromDisk();
@@ -117,7 +108,8 @@ function main(): void {
     return;
   }
 
-  const decision = runDecisionFramework({
+  const terms = getBranchDirectorTerminology();
+  const decision = runDecision({
     intent,
     missionRegistered: (id) => missionRegistry.has(id),
   });
@@ -128,45 +120,52 @@ function main(): void {
   for (const step of decision.steps) {
     const color = statusColor(step.status);
     console.log(color(`✓ ${step.label}`) + chalk.dim(` · ${step.summary}`));
-    for (const detail of step.details.slice(0, 3)) {
+    for (const detail of step.details.slice(0, 2)) {
       console.log(chalk.dim(`    ${detail}`));
     }
   }
 
   console.log("");
-  console.log(chalk.bold("Why this mission"));
-  console.log(`  ${decision.selectionRationale}`);
+  console.log(chalk.bold("Decision reasoning"));
+  for (const line of decision.reasoning.slice(0, 6)) {
+    console.log(chalk.dim(`  · ${line}`));
+  }
+  console.log("");
+  console.log(chalk.bold("Why this decision"));
+  console.log(`  ${decision.why}`);
   console.log("");
 
-  if (decision.nextBestMissionId && decision.nextBestMissionId !== decision.selectedMissionId) {
-    console.log(chalk.bold("Next best mission"));
-    console.log(`  ${decision.nextBestMissionId}`);
+  if (!decision.executionPackageRequired) {
+    console.log(chalk.bold("Branch Director routing"));
+    console.log(`  ${decision.evolution.organization?.branchDirectorRationale ?? decision.why}`);
     console.log("");
-  }
-
-  if (!decision.selectedMissionId) {
-    console.log(chalk.yellow("No mission selected — refine intent or add roadmap entry."));
+    console.log(chalk.green("Operational routing complete"));
+    console.log(chalk.dim(terms.noExecutionPackageRequired + " — Atlas coordinates AI Workers directly."));
     console.log("");
-    process.exitCode = 1;
     return;
   }
 
-  if (!decision.missionRegistered) {
-    console.log(chalk.yellow(`Mission ${decision.selectedMissionId} is not registered yet.`));
+  console.log(chalk.bold(terms.recommendedNextInitiative));
+  console.log(
+    `  ${decision.recommendedInitiativeId ?? "none"} · priority ${decision.priorityScore.toFixed(2)}`,
+  );
+  console.log("");
+
+  if (!decision.executionPackageTrigger || !decision.executionPackageMissionId) {
+    console.log(chalk.yellow("Cannot generate package — mission not registered or alignment incomplete."));
     console.log("");
     process.exitCode = 1;
     return;
   }
 
   const { version, build } = readAtlasVersion();
-  const result = orchestrateMission(decision.selectedMissionId, {
+  const result = orchestrateMission(decision.executionPackageMissionId, {
     atlasVersion: version,
     atlasBuild: build,
   });
 
   if (!result.ok) {
     console.log(chalk.red(result.message));
-    console.log("");
     process.exitCode = 1;
     return;
   }
@@ -174,12 +173,8 @@ function main(): void {
   writePackageArtifacts(result.package);
   setLastEngineeringPackage(result.package);
 
-  console.log(chalk.green("Engineering Package generated"));
+  console.log(chalk.green(terms.executionPackageGenerated));
   console.log(`  ${result.package.claudePackagePath}`);
-  console.log("");
-  for (const line of summarizeEngineeringPackage(result.package)) {
-    console.log(chalk.dim(`  ${line}`));
-  }
   console.log("");
 }
 

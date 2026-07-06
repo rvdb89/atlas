@@ -1,0 +1,23 @@
+Mission:
+STUDIO-001
+
+Title:
+CEO Workflow
+
+Goal:
+Eliminate the developer workflow for the CEO. Atlas Studio becomes the operational interface for intent through release.
+
+Focus:
+CEO Workflow screen in Atlas Studio
+Dev API pipeline for decision, audit, and git release
+Intent → Branch Director Decision → Execution → Review → CEO Approval → Publish
+Git operations encapsulated behind Atlas services
+
+Constraints:
+No breaking changes to CLI workflows — terminal remains for development and recovery
+CEO must explicitly approve before publish
+.env files must never be staged or committed
+
+Success:
+CEO can build, review, and release an initiative entirely from Atlas Studio at /studio/ceo-workflow.
+No manual git, npm, or audit commands required for normal operations.

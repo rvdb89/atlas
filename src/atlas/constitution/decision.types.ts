@@ -1,3 +1,4 @@
+import type { DecisionEngineResult } from "../brain/decision/decision.types";
 import type { EvolutionResult } from "./evolution.types";
 
 export type DecisionStepId =
@@ -53,6 +54,7 @@ export type DecisionResult = {
   steps: DecisionStep[];
   evaluatedAt: string;
   evolution?: EvolutionResult;
+  decisionEngine?: DecisionEngineResult;
 };
 
 export type DecisionInput = {

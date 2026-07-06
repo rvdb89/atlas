@@ -2,14 +2,14 @@
 
 - Mission · **BRAIN-004**
 - Title · **Decision Engine**
-- Atlas · 0.20.0 (atlas-001-evolution)
+- Atlas · 0.23.0 (brain-004)
 - Status · **Pending implementation**
 
 ## Summary
 
 _Fill in after sprint completion._
 
-Atlas leert beslissingen nemen.
+Build the first reasoning engine of Atlas — transforming human intent into autonomous decisions with explicit WHY.
 
 ## Delivered
 

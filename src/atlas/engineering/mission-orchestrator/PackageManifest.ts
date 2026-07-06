@@ -15,6 +15,7 @@ export type PackageManifest = {
   constitutionId: string;
   constitutionPath: string;
   decisionFrameworkId: string;
+  decisionEngineId: string;
   evolutionEngineId: string;
   organizationModelId: string;
   branchDirectorIdentityId: string;
@@ -81,6 +82,10 @@ export function buildPackageManifest(input: {
     constitutionId: input.context.constitutionId,
     constitutionPath: input.context.constitutionPath,
     decisionFrameworkId: input.context.decisionTrace.frameworkId,
+    decisionEngineId:
+      input.context.decisionTrace.decisionEngine?.engineId ??
+      input.context.decisionTrace.evolution?.engineId ??
+      input.context.decisionTrace.frameworkId,
     evolutionEngineId: input.context.decisionTrace.evolution?.engineId ?? input.context.decisionTrace.frameworkId,
     organizationModelId: input.context.decisionTrace.evolution?.organization?.modelId ?? "ATLAS-002",
     branchDirectorIdentityId: "ATLAS-003",

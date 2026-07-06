@@ -22,6 +22,7 @@ export type MissionDependency = {
 };
 
 export type MissionPipelineStepId =
+  | "decision-engine"
   | "organization"
   | "evolution-engine"
   | "decision-framework"
@@ -95,6 +96,21 @@ const KNOWN_DEPENDENCIES: Record<
     { missionId: "ATLAS-001", title: "Evolution Engine", reason: "Planning missions pass through Evolution Engine", relationship: "requires" },
     { missionId: "ATLAS-000", title: "Atlas Constitution", reason: "Constitution defines planning capability", relationship: "requires" },
   ],
+  "BRAIN-005": [
+    { missionId: "BRAIN-004", title: "Decision Engine", reason: "Registry feeds Decision Engine recommendations", relationship: "requires" },
+    { missionId: "ATLAS-001", title: "Evolution Engine", reason: "Evolution scoring uses registry strategic value", relationship: "requires" },
+    { missionId: "ATLAS-000", title: "Atlas Constitution", reason: "Capabilities defined in Constitution", relationship: "requires" },
+  ],
+  "STUDIO-002": [
+    { missionId: "STUDIO-001", title: "CEO Workflow", reason: "Debrief flow extends CEO Workflow in Studio", relationship: "requires" },
+    { missionId: "BRAIN-004", title: "Decision Engine", reason: "Next initiative recommendation comes from Decision Engine", relationship: "requires" },
+    { missionId: "ATLAS-003", title: "Branch Director Identity", reason: "Debrief uses Branch Director language", relationship: "requires" },
+  ],
+  "STUDIO-001": [
+    { missionId: "BRAIN-004", title: "Decision Engine", reason: "CEO Workflow orchestrates Decision Engine output", relationship: "requires" },
+    { missionId: "ATLAS-003", title: "Branch Director Identity", reason: "CEO Workflow uses Branch Director terminology", relationship: "requires" },
+    { missionId: "ATLAS-000", title: "Atlas Constitution", reason: "Constitution defines CEO intent-only model", relationship: "requires" },
+  ],
   "BRAIN-004": [
     { missionId: "BRAIN-003", title: "Context Engine", reason: "Context engine informs decision inputs", relationship: "requires" },
     { missionId: "BRAIN-002", title: "Memory Engine", reason: "Memory engine supplies decision history", relationship: "requires" },
@@ -112,6 +128,7 @@ const KNOWN_DEPENDENCIES: Record<
 };
 
 const PIPELINE_STEPS: MissionPipelineStep[] = [
+  { id: "decision-engine", label: "Decision Engine", source: "constitution" },
   { id: "organization", label: "Organizational Model", source: "constitution" },
   { id: "evolution-engine", label: "Evolution Engine", source: "constitution" },
   { id: "decision-framework", label: "Decision Framework", source: "constitution" },
@@ -225,7 +242,7 @@ export function inferMissionContext(
     validationChecks: [
       ...template.validationChecks.map((check) => check.replace("<MISSION_ID>", entry.id)),
       "npm run atlas:constitution",
-      `npm run atlas:evolve -- "intent for ${entry.id}"`,
+      `npm run atlas:decide -- "intent for ${entry.id}"`,
       `npm run atlas:mission ${entry.id}`,
     ],
     pipeline: PIPELINE_STEPS,

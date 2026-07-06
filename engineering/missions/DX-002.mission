@@ -1,0 +1,21 @@
+Mission:
+DX-002
+
+Title:
+Atlas Launcher Opens Studio
+
+Goal:
+npm run atlas must open Atlas Studio — not the regular app home screen.
+
+Focus:
+Default launch route /studio/ceo-workflow with /studio fallback
+Prevent Expo from auto-opening browser to /
+Launcher output: Atlas Studio ready · Opening CEO Workflow
+
+Constraints:
+npm start unchanged for normal app
+Do not break Expo runtime startup
+TypeScript clean
+
+Success:
+npm run atlas opens browser directly to Atlas Studio CEO Workflow.

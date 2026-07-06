@@ -3,8 +3,8 @@ import chalk from "chalk";
 import {
   ATLAS_PORT,
   checkDependenciesInstalled,
-  COMMAND_CENTER_PATH,
   openBrowser,
+  resolveAtlasStudioLaunchRoute,
   waitForUrl,
 } from "../shared";
 import { formatRecoveryFailure, recoverAtlasPorts } from "./recovery";
@@ -58,9 +58,11 @@ function stopLauncherResources(resources: LauncherResources): void {
 }
 
 function reportBrowserLaunch(url: string, label: string): void {
+  console.log(chalk.green("✔"), "Atlas Studio ready");
+  console.log(chalk.green("✔"), `Opening ${label}`);
+
   const result = openBrowser(url);
   if (result.ok) {
-    console.log(chalk.green("✔"), `Opened · ${label}`);
     console.log(chalk.dim(`   ${url}`));
     return;
   }
@@ -176,15 +178,18 @@ export async function launchAtlasOs(options: AtlasOsLaunchOptions = {}): Promise
 
     if (!options.skipBrowser && ready) {
       reportBrowserLaunch(launchUrl, launchRoute.label);
+    } else {
+      console.log(chalk.green("✔"), "Atlas Studio ready");
     }
 
     const bootSeconds = (Date.now() - bootStarted) / 1000;
     bootComplete(bootSeconds);
 
     const session = recordBootTiming(bootStarted, previousSession);
-    if (!session.lastRoute) {
-      session.lastRoute = COMMAND_CENTER_PATH;
-      session.lastRouteLabel = launchRoute.label;
+    const studioRoute = resolveAtlasStudioLaunchRoute(session);
+    if (!session.lastRoute?.startsWith("/studio")) {
+      session.lastRoute = studioRoute.path;
+      session.lastRouteLabel = studioRoute.label;
     }
     writeSession(session);
 
@@ -195,7 +200,7 @@ export async function launchAtlasOs(options: AtlasOsLaunchOptions = {}): Promise
       resources.healthWatcher = startSmartHealth(30_000);
     }
 
-    console.log(chalk.bold("Atlas OS ready"));
+    console.log(chalk.dim(`Studio route · ${studioRoute.path}`));
     console.log(chalk.dim("Command palette · npm run atlas command"));
     console.log(chalk.dim("Inspector · npm run atlas inspect"));
     console.log(chalk.dim("Overlay · Ctrl+Shift+D in browser"));

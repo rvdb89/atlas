@@ -7,6 +7,17 @@ export * from "./ConstitutionEngine";
 export * from "./EvolutionEngine";
 export * from "./DecisionFramework";
 export * from "./BranchDirectorIdentity";
+export {
+  runDecision,
+  renderDecisionEngineHierarchy,
+  getDecisionEngineDefinition,
+  DECISION_ENGINE_ID,
+} from "../brain/decision";
+export {
+  getCapabilityRegistry,
+  analyzeCapabilityIntelligence,
+  CAPABILITY_REGISTRY_ID,
+} from "../brain/capability";
 export * from "./ConstitutionRenderer";
 
 export { routeOrganization, renderOrganizationMarkdown } from "../organization/OrganizationEngine";

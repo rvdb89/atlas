@@ -5,15 +5,19 @@ Title:
 Decision Engine
 
 Goal:
-Atlas leert beslissingen nemen.
+Build the first reasoning engine of Atlas — transforming human intent into autonomous decisions with explicit WHY.
 
 Focus:
-Decision Engine
-Decision Policies
-Decision Registry
+Decision Engine composing Constitution, capabilities, Organization, and Roadmap
+Decision Policies and Decision Registry
+Reasoning layer explaining every recommended initiative
+Execution Package trigger when engineering is required
 
 Constraints:
-Geen breaking changes
+No breaking changes to Evolution Engine or Organizational Model APIs
+Provider-independent Brain module under src/atlas/brain/decision/
+Every future initiative originates from the Decision Engine
 
 Success:
-Decision Engine volledig operationeel.
+npm run atlas:decide -- "I want Atlas to improve decision making." recommends BRAIN-004 and explains WHY.
+npm run atlas:audit -- --strict returns APPROVED or APPROVED_WITH_NOTES.

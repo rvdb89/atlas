@@ -1,19 +1,21 @@
 import type { DecisionInput, DecisionResult } from "./decision.types";
 import { EVOLUTION_ENGINE_ID, EVOLUTION_HIERARCHY, getAtlasConstitution } from "./AtlasConstitution";
-import { runEvolution, renderEvolutionHierarchy } from "./EvolutionEngine";
+import { runDecision, renderDecisionEngineHierarchy } from "../brain/decision";
+import { renderEvolutionHierarchy } from "./EvolutionEngine";
 
 export function runDecisionFramework(input: DecisionInput): DecisionResult {
-  const evolution = runEvolution(input);
+  const decision = runDecision(input);
+  const evolution = decision.evolution;
 
   return {
     frameworkId: EVOLUTION_ENGINE_ID,
-    intent: evolution.intent,
-    northStarAligned: evolution.northStarAligned,
-    northStarScore: evolution.northStarScore,
+    intent: decision.intent,
+    northStarAligned: decision.northStarAligned,
+    northStarScore: decision.northStarScore,
     applicablePrinciples: [],
     capabilities: evolution.currentState
       .filter((item) =>
-        evolution.capabilityGaps.some(
+        decision.capabilityGaps.some(
           (gap) => gap.capabilityId === item.capabilityId && gap.intentRelevant,
         ),
       )
@@ -37,10 +39,10 @@ export function runDecisionFramework(input: DecisionInput): DecisionResult {
       priority: Math.round(item.valueScore * 10),
       systemId: item.systemId,
     })),
-    selectedMissionId: evolution.selectedMissionId,
-    selectionRationale: evolution.selectionRationale,
-    nextBestMissionId: evolution.nextBestMissionId,
-    missionRegistered: evolution.missionRegistered,
+    selectedMissionId: decision.recommendedInitiativeId,
+    selectionRationale: decision.why,
+    nextBestMissionId: decision.nextBestInitiativeId,
+    missionRegistered: decision.missionRegistered,
     steps: evolution.steps.map((item) => ({
       id: item.id as DecisionResult["steps"][number]["id"],
       label: item.label,
@@ -48,13 +50,14 @@ export function runDecisionFramework(input: DecisionInput): DecisionResult {
       summary: item.summary,
       details: item.details,
     })),
-    evaluatedAt: evolution.evaluatedAt,
+    evaluatedAt: decision.evaluatedAt,
     evolution,
+    decisionEngine: decision,
   };
 }
 
 export function renderDecisionHierarchy(): string {
-  return renderEvolutionHierarchy();
+  return renderDecisionEngineHierarchy();
 }
 
 export function getDecisionFrameworkDefinition() {
@@ -62,6 +65,7 @@ export function getDecisionFrameworkDefinition() {
 }
 
 export { runEvolution, renderEvolutionHierarchy, getEvolutionEngineDefinition } from "./EvolutionEngine";
+export { runDecision, renderDecisionEngineHierarchy, getDecisionEngineDefinition } from "../brain/decision";
 export {
   EVOLUTION_ENGINE_ID,
   EVOLUTION_HIERARCHY,

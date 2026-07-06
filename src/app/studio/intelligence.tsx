@@ -6,6 +6,7 @@ import {
   StudioScreen,
   StudioSectionTitle,
 } from "@/atlas/studio/components";
+import CapabilityIntelligencePanel from "@/atlas/studio/ceo-workflow/CapabilityIntelligencePanel";
 import { STUDIO_COLORS } from "@/atlas/studio/core/theme";
 import { useStudioBootstrap, useStudioIntelligence } from "@/atlas/studio/hooks";
 
@@ -24,8 +25,11 @@ export default function StudioIntelligenceScreen() {
   return (
     <StudioScreen
       title="Intelligence"
-      subtitle="Content gaps, trends, quality warnings, and recommendations from Atlas Intelligence."
+      subtitle="Capability registry, content gaps, trends, and recommendations from Atlas Intelligence."
     >
+      <StudioSectionTitle>Capability Registry</StudioSectionTitle>
+      <CapabilityIntelligencePanel />
+
       <StudioSectionTitle>Content gaps</StudioSectionTitle>
       {data.contentGaps.length === 0 ? (
         <StudioCard>

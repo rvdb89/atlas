@@ -1,0 +1,25 @@
+Mission:
+STUDIO-002
+
+Title:
+Branch Director Debrief Flow
+
+Goal:
+After every completed initiative, Atlas gives the CEO a clear debrief and asks for a continue-or-adjust decision — like a Branch Director reporting to the CEO.
+
+Focus:
+Branch Director Debrief after release completion
+Dutch CEO-facing debrief narrative
+Ja, ga door / Nee, aanpassen decision flow
+Continue to next initiative or propose adjustments
+No terminal-first or raw git language in CEO UI
+
+Constraints:
+Internal technical terms may remain in services and audit layers
+CEO must explicitly choose continue or adjust
+Extend STUDIO-001 CEO Workflow — no breaking changes
+
+Success:
+After a completed initiative Atlas shows:
+"Sprint is klaar. Ik zie geen belemmeringen om door te gaan. Mijn advies: ga verder met [NEXT]. Gaan we door?"
+Buttons: Ja, ga door · Nee, aanpassen

@@ -1,0 +1,133 @@
+# Architecture Brief — STUDIO-002
+
+## Titel
+
+# STUDIO-002 — Branch Director Debrief Flow
+
+## Mission Metadata
+
+- Mission ID · **STUDIO-002**
+- Title · **Branch Director Debrief Flow**
+- Template · Studio Mission
+- Phase · PHASE 2 — ATLAS STUDIO
+- Atlas Version · 0.26.0 (brain-005)
+- Generated · 2026-07-06T21:52:01.159Z
+
+## Doel
+
+After every completed initiative, Atlas gives the CEO a clear debrief and asks for a continue-or-adjust decision — like a Branch Director reporting to the CEO.
+
+## Scope
+
+Atlas Studio OS, Mission Control, Command Center en Studio UX.
+
+### Focus
+- Branch Director Debrief after release completion
+- Dutch CEO-facing debrief narrative
+- Ja, ga door / Nee, aanpassen decision flow
+- Continue to next initiative or propose adjustments
+- No terminal-first or raw git language in CEO UI
+
+## Niet doen
+
+- Internal technical terms may remain in services and audit layers
+- CEO must explicitly choose continue or adjust
+- Extend STUDIO-001 CEO Workflow — no breaking changes
+- Geen breaking changes
+- Geen ongevraagde refactors
+- Geen externe database zonder expliciete opdracht
+
+## Architectuur
+
+### Principes
+- Atlas core blijft domein-onafhankelijk
+- Registry pattern voor uitbreidbaarheid
+- Geen vertical-specifieke logica in generieke modules
+- TypeScript-first en strict compileerbaar
+- Studio gebruikt registries voor widgets, commands en panels
+- UI panels blijven thin — geen businesslogica duplicatie
+
+### Mission Architecture
+- Implement Branch Director Debrief after release completion using registry-based Atlas patterns.
+- Implement Dutch CEO-facing debrief narrative using registry-based Atlas patterns.
+- Implement Ja, ga door / Nee, aanpassen decision flow using registry-based Atlas patterns.
+- Implement Continue to next initiative or propose adjustments using registry-based Atlas patterns.
+- Implement No terminal-first or raw git language in CEO UI using registry-based Atlas patterns.
+
+## Technische eisen
+
+- Clean TypeScript zonder placeholders
+- Exports via index.ts barrels
+- Bootstrap chain blijft intact
+- Implement Branch Director Debrief Flow under src/atlas/ with index.ts exports
+- Integrate with Atlas bootstrap without breaking existing modules
+- Deliver Branch Director Debrief after release completion with rule-based local logic
+- Deliver Dutch CEO-facing debrief narrative with rule-based local logic
+- Deliver Ja, ga door / Nee, aanpassen decision flow with rule-based local logic
+- Deliver Continue to next initiative or propose adjustments with rule-based local logic
+- Deliver No terminal-first or raw git language in CEO UI with rule-based local logic
+
+## Security
+
+- Geen .env of API keys in source control
+- Geen secrets in logs
+- Provider credentials alleen via environment/config layer
+
+## North Star
+
+- Atlas als AI Operating System
+- Generieke architectuur boven vertical coupling
+- Meer autonomie, minder handmatige tussenkomst
+- Uitbreidbare planning, memory, context en agents
+- Mission STUDIO-002 advances Branch Director Debrief Flow toward Atlas autonomy
+
+## Definition of Done
+
+- [ ] Branch Director Debrief Flow module bestaat onder src/atlas/
+- [ ] Mission Card parser werkt
+- [ ] Brief templates zijn geregistreerd
+- [ ] Markdown generator produceert volledige brief
+- [ ] npm run atlas:brief werkt
+- [ ] Generated brief wordt opgeslagen in engineering/briefs/
+- [ ] Command Center toont laatste gegenereerde brief
+- [ ] TypeScript compileert clean
+- [ ] Mission completed successfully.
+- [ ] Constraint gerespecteerd: Internal technical terms may remain in services and audit layers
+- [ ] Constraint gerespecteerd: CEO must explicitly choose continue or adjust
+- [ ] Constraint gerespecteerd: Extend STUDIO-001 CEO Workflow — no breaking changes
+
+## Validatie
+
+- npx tsc --noEmit
+- npm run atlas:health
+- npm run atlas:audit
+- npm run atlas:mission <MISSION_ID>
+- Bestaande workflows blijven intact
+- npm run atlas:brief genereert STUDIO-002.md
+- npm run atlas:mission STUDIO-002 genereert engineering package
+- Mission STUDIO-002 DoD volledig afvinkbaar
+
+## Rapportage
+
+- Lijst van nieuwe en gewijzigde bestanden
+- Architectuur uitleg
+- Definition of Done status
+- Open items voor volgende sprint
+- Generated brief path: engineering/briefs/STUDIO-002.md
+- Atlas Auditor cross-check via npm run atlas:audit
+- Mission Generator status zichtbaar in Command Center
+
+## Claude Output Requirements
+
+- ChatGPT levert alleen een Mission ID (bijv. BRAIN-004)
+- ChatGPT schrijft nooit Architecture Briefs
+- Atlas inferreert Engineering Standards, North Star, Architecture Rules, Dependencies, DoD en Validation
+- Atlas genereert het Engineering Package via npm run atlas:mission
+- Claude ontvangt alleen claude-engineering-package.md
+- Rapportage na sprint via Atlas Auditor
+- Mission card format voor STUDIO-002 gebruiken
+- Success criteria: Mission completed successfully.
+
+---
+
+_Generated by Atlas Mission Brief Generator · 2026-07-06T21:52:01.159Z_

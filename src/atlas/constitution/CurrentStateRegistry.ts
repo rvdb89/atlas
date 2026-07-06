@@ -40,11 +40,15 @@ const CAPABILITY_STATE: Record<string, CapabilityStateDefinition> = {
     northStarCritical: true,
   },
   reasoning: {
-    maturity: 0.15,
-    status: "nascent",
+    maturity: 0.9,
+    status: "mature",
     systemId: "brain",
-    evolutionMissionId: "BRAIN-004",
-    evidence: ["Decision Engine not yet implemented", "Brain stack awaiting decision layer"],
+    evolutionMissionId: "BRAIN-005",
+    evidence: [
+      "Decision Engine operational (BRAIN-004)",
+      "Capability Registry and Roadmap Intelligence (BRAIN-005)",
+      "Branch Director advice grounded in capability gaps and strategic value",
+    ],
     northStarCritical: true,
   },
   orchestration: {
@@ -75,11 +79,15 @@ const CAPABILITY_STATE: Record<string, CapabilityStateDefinition> = {
     northStarCritical: false,
   },
   studio: {
-    maturity: 0.6,
-    status: "developing",
+    maturity: 0.9,
+    status: "mature",
     systemId: "studio",
-    evolutionMissionId: "ENG-006B",
-    evidence: ["Command Center and Mission Control exist", "Evolution visibility not yet surfaced in Studio"],
+    evolutionMissionId: "STUDIO-002",
+    evidence: [
+      "CEO Workflow operational (STUDIO-001)",
+      "Branch Director Debrief Flow with continue-or-adjust (STUDIO-002)",
+      "Dutch CEO-facing debrief — no terminal-first workflow",
+    ],
     northStarCritical: false,
   },
 };

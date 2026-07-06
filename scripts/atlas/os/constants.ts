@@ -6,6 +6,7 @@ export const ATLAS_RESTART_SIGNAL = ".atlas/restart.signal";
 
 export const ATLAS_ROUTE_LABELS: Record<string, string> = {
   "/studio/command-center": "Studio / Command Center",
+  "/studio/ceo-workflow": "Studio / CEO Workflow",
   "/studio/health": "Studio / Health Dashboard",
   "/studio/proof-of-power": "Studio / Proof Of Power",
   "/studio": "Studio / Home",

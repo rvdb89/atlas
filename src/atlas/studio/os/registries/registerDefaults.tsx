@@ -55,6 +55,7 @@ export function registerAtlasOsDefaults(): void {
 
   const commands: Array<Parameters<typeof commandRegistry.register>[0]> = [
     { id: "run-workflow", label: "Run Workflow", group: "Workflows", keywords: ["proof", "pipeline"], run: (ctx) => nav(ctx, "/studio/proof-of-power") },
+    { id: "open-ceo-workflow", label: "Open CEO Workflow", group: "Navigation", keywords: ["ceo", "release", "intent"], run: (ctx) => nav(ctx, "/studio/ceo-workflow") },
     { id: "open-command-center", label: "Open Command Center", group: "Navigation", keywords: ["cockpit"], run: (ctx) => nav(ctx, "/studio/command-center") },
     { id: "open-proof-of-power", label: "Open Proof of Power", group: "Navigation", run: (ctx) => nav(ctx, "/studio/proof-of-power") },
     { id: "open-entities", label: "Open Entities", group: "Navigation", run: (ctx) => nav(ctx, "/studio/entities") },

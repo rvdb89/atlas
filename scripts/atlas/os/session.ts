@@ -2,7 +2,7 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from
 import { join } from "node:path";
 
 import { ATLAS_SESSION_DIR, ATLAS_SESSION_FILE, ATLAS_ROUTE_LABELS } from "./constants";
-import { COMMAND_CENTER_PATH, ROOT_DIR, runCommand } from "../shared";
+import { resolveAtlasStudioLaunchRoute, ROOT_DIR, runCommand } from "../shared";
 
 export type AtlasSession = {
   branch?: string;
@@ -74,9 +74,7 @@ export function readGitSessionInfo(): Pick<AtlasSession, "branch" | "lastCommit"
 }
 
 export function resolveLaunchRoute(session: AtlasSession): { path: string; label: string } {
-  const path = session.lastRoute ?? COMMAND_CENTER_PATH;
-  const label = session.lastRouteLabel ?? ATLAS_ROUTE_LABELS[path] ?? path;
-  return { path, label };
+  return resolveAtlasStudioLaunchRoute(session);
 }
 
 export function recordBootTiming(startedAt: number, previousSession: AtlasSession): AtlasSession {

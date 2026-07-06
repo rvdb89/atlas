@@ -41,7 +41,7 @@ export function startAtlasRuntime(options?: { silent?: boolean }): ExpoProcessCo
 function spawnExpo(silent: boolean): ChildProcess {
   const child = spawn(
     "npx",
-    ["expo", "start", "--web", "--port", String(ATLAS_PORT)],
+    ["expo", "start", "--port", String(ATLAS_PORT)],
     {
       cwd: ROOT_DIR,
       stdio: silent ? ["ignore", "pipe", "pipe"] : "inherit",
@@ -49,6 +49,7 @@ function spawnExpo(silent: boolean): ChildProcess {
         ...process.env,
         CI: "1",
         EXPO_NO_TELEMETRY: "1",
+        BROWSER: "none",
       },
     },
   );

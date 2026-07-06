@@ -6,6 +6,14 @@ import { ATLAS_DEV_API_PORT, ATLAS_RESTART_SIGNAL } from "./constants";
 import { autoRecover, formatRecoveryFailure } from "./portRecovery";
 import { readSession, updateSessionRoute, writeSession } from "./session";
 import { ROOT_DIR } from "../shared";
+import type { CeoAdjustOptionId } from "@/atlas/studio/ceo-workflow/ceoWorkflow.types";
+import {
+  approveCeoWorkflowRelease,
+  adjustAfterDebrief,
+  continueAfterDebrief,
+  getCeoWorkflowState,
+  runCeoWorkflowPipeline,
+} from "../ceo-workflow/handlers";
 
 export type AtlasDevServerHandlers = {
   onRestart?: () => void;
@@ -91,6 +99,74 @@ function bindDevServer(handlers: AtlasDevServerHandlers): Promise<Server> {
 
       if (request.method === "POST" && url.pathname === "/atlas/notify") {
         sendJson(response, 200, { ok: true });
+        return;
+      }
+
+      if (request.method === "GET" && url.pathname === "/atlas/ceo-workflow/state") {
+        sendJson(response, 200, { workflow: getCeoWorkflowState() });
+        return;
+      }
+
+      if (request.method === "POST" && url.pathname === "/atlas/ceo-workflow/run") {
+        try {
+          const body = await readBody(request);
+          const payload = JSON.parse(body || "{}") as { intent?: string };
+          if (!payload.intent?.trim()) {
+            sendJson(response, 400, { error: "intent required" });
+            return;
+          }
+
+          const workflow = await runCeoWorkflowPipeline(payload.intent.trim());
+          sendJson(response, 200, { workflow });
+        } catch (error) {
+          sendJson(response, 500, {
+            error: error instanceof Error ? error.message : "CEO workflow failed",
+          });
+        }
+        return;
+      }
+
+      if (request.method === "POST" && url.pathname === "/atlas/ceo-workflow/approve") {
+        try {
+          const body = await readBody(request);
+          const payload = JSON.parse(body || "{}") as { commitMessage?: string };
+          const workflow = await approveCeoWorkflowRelease(payload.commitMessage);
+          sendJson(response, 200, { workflow });
+        } catch (error) {
+          sendJson(response, 500, {
+            error: error instanceof Error ? error.message : "CEO approval failed",
+          });
+        }
+        return;
+      }
+
+      if (request.method === "POST" && url.pathname === "/atlas/ceo-workflow/debrief/continue") {
+        try {
+          const workflow = await continueAfterDebrief();
+          sendJson(response, 200, { workflow });
+        } catch (error) {
+          sendJson(response, 500, {
+            error: error instanceof Error ? error.message : "Continue workflow failed",
+          });
+        }
+        return;
+      }
+
+      if (request.method === "POST" && url.pathname === "/atlas/ceo-workflow/debrief/adjust") {
+        try {
+          const body = await readBody(request);
+          const payload = JSON.parse(body || "{}") as { option?: string; feedback?: string };
+          if (!payload.option) {
+            sendJson(response, 400, { error: "option required" });
+            return;
+          }
+          const workflow = await adjustAfterDebrief(payload.option as CeoAdjustOptionId, payload.feedback);
+          sendJson(response, 200, { workflow });
+        } catch (error) {
+          sendJson(response, 500, {
+            error: error instanceof Error ? error.message : "Adjust workflow failed",
+          });
+        }
         return;
       }
 
