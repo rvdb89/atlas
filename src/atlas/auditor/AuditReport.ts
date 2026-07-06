@@ -10,6 +10,7 @@ import { evaluateDefinitionOfDone } from "./AuditRule";
 import { calculateQualityScores, renderQualityScoresMarkdown } from "./AuditScoring";
 import { runAuditRules, summarizeAuditResults } from "./AuditRunner";
 import { deriveReleaseDecision, renderReleaseDecisionMarkdown } from "./ReleaseDecision";
+import { getBranchDirectorTerminology } from "@/atlas/constitution";
 import type {
   AuditContext,
   AuditReport,
@@ -88,6 +89,8 @@ export function buildAuditReport(context: AuditContext, reportPath: string): Aud
   const gitSummary = buildGitSummary(context);
   const technicalDebt = buildTechnicalDebt(context, warnings);
   const nextActions = buildNextActions({ releaseDecision, warnings, blockers, definitionOfDone });
+
+  const terms = getBranchDirectorTerminology();
 
   const sections = [
     {
@@ -195,7 +198,7 @@ export function buildAuditReport(context: AuditContext, reportPath: string): Aud
     },
     {
       id: "release-decision",
-      title: "15. Release Decision",
+      title: `15. ${terms.branchDirectorReleaseDecision}`,
       body: renderReleaseDecisionMarkdown(releaseDecision),
     },
     {
@@ -234,9 +237,10 @@ export function buildAuditReport(context: AuditContext, reportPath: string): Aud
 }
 
 export function renderAuditReportMarkdown(report: AuditReport): string {
-  const header = `# Atlas Sprint Audit 2.0\n\n`;
+  const terms = getBranchDirectorTerminology();
+  const header = `# Branch Director Sprint Review\n\n`;
   const body = report.sections.map((section) => `## ${section.title}\n\n${section.body}`).join("\n\n");
-  const footer = `\n\n---\n\n_Atlas Auditor · ${report.atlasVersion} (${report.atlasBuild}) · ${report.generatedAt}_\n`;
+  const footer = `\n\n---\n\n_${terms.reportFooterLabel} · ${report.atlasVersion} (${report.atlasBuild}) · ${report.generatedAt}_\n`;
   return `${header}${body}${footer}`;
 }
 

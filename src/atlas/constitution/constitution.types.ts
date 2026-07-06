@@ -1,3 +1,4 @@
+import type { BranchDirectorIdentityDefinition } from "./BranchDirectorIdentity";
 import type { DecisionFrameworkDefinition } from "./decision.types";
 import type { EvolutionEngineDefinition } from "./evolution.types";
 import type { OrganizationalModelDefinition } from "../organization/organization.types";
@@ -43,6 +44,7 @@ export type AtlasConstitution = {
   decisionFramework: DecisionFrameworkDefinition;
   evolutionEngine: EvolutionEngineDefinition;
   organizationalModel: OrganizationalModelDefinition;
+  branchDirectorIdentity: BranchDirectorIdentityDefinition;
 };
 
 export type IntentResolution = {

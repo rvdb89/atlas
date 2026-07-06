@@ -16,6 +16,7 @@ import {
   getTargetMaturity,
   isNorthStarCritical,
 } from "./CurrentStateRegistry";
+import { getBranchDirectorTerminology } from "./BranchDirectorIdentity";
 import { routeOrganization } from "../organization/OrganizationEngine";
 import { getOrganizationalModel } from "../organization/OrganizationalModel";
 
@@ -426,6 +427,8 @@ export function runEvolution(input: EvolutionInput): EvolutionResult {
     );
   }
 
+  const terms = getBranchDirectorTerminology();
+
   steps.push(
     step(
       "mission-registry",
@@ -445,12 +448,12 @@ export function runEvolution(input: EvolutionInput): EvolutionResult {
           : "No mission selected"
         : "Not required — operational routing only",
       engineeringRequired
-        ? [missionRegistered ? "Ready for Engineering Package." : "Add mission card to registry."]
+        ? [missionRegistered ? `Ready for ${terms.executionPackage}.` : "Add mission card to registry."]
         : ["Atlas assigns AI Workers directly — no mission registry needed."],
     ),
     step(
       "engineering-package",
-      "Engineering Package",
+      terms.executionPackage,
       engineeringRequired
         ? selectedMissionId && missionRegistered
           ? "pass"
@@ -460,7 +463,7 @@ export function runEvolution(input: EvolutionInput): EvolutionResult {
         ? selectedMissionId && missionRegistered
           ? "Ready to generate"
           : "Pending"
-        : "Not required — no software work for this intent",
+        : terms.noExecutionPackageRequired,
       engineeringRequired && selectedMissionId && missionRegistered
         ? [`npm run atlas:mission -- ${selectedMissionId}`]
         : engineeringRequired

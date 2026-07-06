@@ -1,4 +1,5 @@
 import type { AtlasConstitution } from "./constitution.types";
+import { BRANCH_DIRECTOR_IDENTITY, BRANCH_DIRECTOR_TERMINOLOGY } from "./BranchDirectorIdentity";
 import { ORGANIZATIONAL_MODEL } from "../organization/OrganizationalModel";
 
 export const ATLAS_CONSTITUTION_ID = "ATLAS-000";
@@ -14,9 +15,9 @@ export const ATLAS_HIERARCHY = [
   "Systems",
   "Roadmap",
   "Mission Registry",
-  "Engineering Packages",
+  BRANCH_DIRECTOR_TERMINOLOGY.hierarchyExecutionPackageLabel,
   "Claude",
-  "Atlas Auditor",
+  BRANCH_DIRECTOR_TERMINOLOGY.hierarchyReviewLabel,
 ] as const;
 
 export const EVOLUTION_HIERARCHY = [
@@ -25,7 +26,7 @@ export const EVOLUTION_HIERARCHY = [
   "Capability Gaps",
   "Recommended Evolution",
   "Mission Registry",
-  "Engineering Package",
+  BRANCH_DIRECTOR_TERMINOLOGY.executionPackage,
 ] as const;
 
 export const DECISION_HIERARCHY = [
@@ -36,7 +37,7 @@ export const DECISION_HIERARCHY = [
   "Systems",
   "Roadmap",
   "Mission Registry",
-  "Engineering Package",
+  BRANCH_DIRECTOR_TERMINOLOGY.executionPackage,
 ] as const;
 
 export const ATLAS_CONSTITUTION: AtlasConstitution = {
@@ -47,36 +48,37 @@ export const ATLAS_CONSTITUTION: AtlasConstitution = {
   whyAtlasExists:
     "Atlas is the Branch Director (Vestigingsdirecteur) of the Robbert AI Organization. Atlas translates founder intent into autonomous execution across AI departments — selecting the right department, assigning AI Workers, and coordinating delivery. Atlas is no longer an Engineering Manager; Atlas is the operational leader of the organization.",
   northStar:
-    "Atlas becomes the AI Operating System that translates human intent into autonomous execution — routing work to the correct department, coordinating AI Workers, and generating Engineering Packages only when software work is required.",
+    "Atlas becomes the AI Operating System that translates human intent into autonomous execution — routing work to the correct department, coordinating AI Workers, and generating Execution Packages only when software work is required.",
   principles: [
     "Constitution is the highest source of truth — everything else derives from it",
     "Robbert (Founder / CEO) provides intent; Atlas (Branch Director) operationalizes execution",
     "ChatGPT (Chief Architect) defines architecture and strategic direction — never manages workers",
     "Every AI Worker reports to Atlas; Atlas reports to Robbert",
     "Atlas asks which department should perform work — not what code to generate",
-    "Engineering Packages are generated only when software work is required",
+    "Execution Packages are generated only when software work is required",
+    "Branch Director Review validates whether work advances the North Star",
+    "User-facing language reflects organizational leadership — not engineering tooling",
     "Generic architecture over vertical coupling",
     "Provider independence in Brain and core platform layers",
     "Deterministic, rule-based orchestration before AI generation",
-    "Atlas Auditor validates whether work advances the North Star",
   ],
   longTermVision: [
-    "Atlas interprets natural-language intent and proposes the next mission",
+    "Atlas interprets natural-language intent and proposes the recommended next initiative",
     "Roadmap self-updates from Constitution, audit findings, and capability gaps",
     "Brain layers (planner, memory, context, decision) operate as one autonomy stack",
-    "Engineering packages are generated without external brief writing",
+    "Execution packages are generated without external brief writing",
     "Studio surfaces Constitution alignment, roadmap, and release readiness",
     "Vertical modules plug into Atlas without polluting generic core",
-    "Atlas learns from audit history to prioritize North Star progress",
+    "Branch Director Review history prioritizes North Star progress",
   ],
   capabilities: [
     { id: "reasoning", name: "Reasoning", description: "Decision-making, policies, and autonomous judgment" },
     { id: "memory", name: "Memory", description: "Persistent knowledge of workflows, projects, and preferences" },
     { id: "context", name: "Context", description: "Situational awareness for planning and execution" },
     { id: "planning", name: "Planning", description: "Goal decomposition and execution queues" },
-    { id: "orchestration", name: "Orchestration", description: "Mission pipeline from intent to engineering package" },
-    { id: "audit", name: "Self-review", description: "Atlas Auditor and release decision engine" },
-    { id: "engineering", name: "Engineering", description: "Brief generation, packages, and platform tooling" },
+    { id: "orchestration", name: "Orchestration", description: "Mission pipeline from intent to execution package" },
+    { id: "audit", name: "Self-review", description: "Branch Director Review and release decision engine" },
+    { id: "engineering", name: "Engineering", description: "Execution package generation and platform tooling" },
     { id: "studio", name: "Studio", description: "Mission Control, Command Center, and operator UX" },
   ],
   systems: [
@@ -94,8 +96,8 @@ export const ATLAS_CONSTITUTION: AtlasConstitution = {
     },
     {
       id: "auditor",
-      name: "Atlas Auditor",
-      purpose: "Rule-based self-review, scoring, and release decisions",
+      name: "Branch Director Review",
+      purpose: "Rule-based self-review, scoring, and Branch Director Release Decisions",
       evolution: "Expand rules without bypassing Constitution principles",
     },
     {
@@ -121,7 +123,7 @@ export const ATLAS_CONSTITUTION: AtlasConstitution = {
   missionDerivationRules: [
     "Missions derive from Roadmap items linked to Systems and Capabilities",
     "Mission Registry stores mission cards — humans do not author full briefs",
-    "npm run atlas:mission <ID> generates Engineering Packages from Registry + Constitution",
+    "npm run atlas:mission <ID> generates Execution Packages from Registry + Constitution",
     "Intent input maps to capabilities first, then roadmap, then mission ID",
     "Capability gaps trigger evolution recommendations — not blind roadmap order",
     "Evolution Engine assesses current state before selecting missions",
@@ -133,14 +135,14 @@ export const ATLAS_CONSTITUTION: AtlasConstitution = {
     "Missions that unblock autonomy (Brain, Orchestrator, Auditor) rank higher",
     "Security blockers override all other priorities",
     "Roadmap priority is context — Evolution Engine value score selects missions",
-    "Auditor warnings become follow-up missions — not release blockers",
+    "Branch Director Review warnings become follow-up initiatives — not release blockers",
   ],
   northStarEvaluationRules: [
     "Work advances the North Star when it reduces manual steps toward autonomous execution",
     "Missions must map to at least one Capability and one System",
     "Generic architecture preservation is required for North Star credit",
     "Vertical-only convenience without platform reuse does not advance the North Star",
-    "Atlas Auditor release decision confirms North Star alignment at merge time",
+    "Branch Director Release Decision confirms North Star alignment at merge time",
   ],
   hierarchy: [...ATLAS_HIERARCHY],
   decisionFramework: {
@@ -168,11 +170,12 @@ export const ATLAS_CONSTITUTION: AtlasConstitution = {
       "Roadmap exists as context; Evolution Engine recommends improvements",
       "Highest-value capability gap determines the next mission",
       "Atlas answers where we are, where we want to be, and why this step is next",
-      "Every Engineering Package passes through Evolution Engine first",
+      "Every Execution Package passes through Evolution Engine first",
       "Humans provide intent only — no Architecture Briefs or manual prioritization",
     ],
   },
   organizationalModel: ORGANIZATIONAL_MODEL,
+  branchDirectorIdentity: BRANCH_DIRECTOR_IDENTITY,
   roadmap: [
     {
       missionId: "ATLAS-000",
@@ -193,6 +196,13 @@ export const ATLAS_CONSTITUTION: AtlasConstitution = {
       title: "Organizational Model",
       rationale: "Atlas becomes Branch Director — routing intent to departments, not just code",
       priority: 2,
+      systemId: "engineering",
+    },
+    {
+      missionId: "ATLAS-003",
+      title: "Branch Director Identity",
+      rationale: "Replace engineering-oriented language with organizational Branch Director language",
+      priority: 3,
       systemId: "engineering",
     },
     {

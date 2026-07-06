@@ -4,6 +4,7 @@ import { join } from "node:path";
 import chalk from "chalk";
 
 import { runEvolution } from "@/atlas/constitution";
+import { getBranchDirectorTerminology } from "@/atlas/constitution";
 import {
   ENGINEERING_PACKAGE_FILENAMES,
   missionRegistry,
@@ -106,6 +107,7 @@ function main(): void {
     return;
   }
 
+  const terms = getBranchDirectorTerminology();
   const evolution = runEvolution({
     intent,
     missionRegistered: (id) => missionRegistry.has(id),
@@ -140,7 +142,7 @@ function main(): void {
     console.log(`  ${evolution.organization.branchDirectorRationale}`);
     console.log("");
     console.log(chalk.green("Operational routing complete"));
-    console.log(chalk.dim("No Engineering Package required — Atlas coordinates AI Workers directly."));
+      console.log(chalk.dim(terms.noExecutionPackageRequired + " — Atlas coordinates AI Workers directly."));
     console.log("");
     return;
   }
@@ -164,7 +166,7 @@ function main(): void {
   writePackageArtifacts(result.package);
   setLastEngineeringPackage(result.package);
 
-  console.log(chalk.green("Engineering Package generated"));
+  console.log(chalk.green(terms.executionPackageGenerated));
   console.log(`  ${result.package.claudePackagePath}`);
   console.log("");
 }

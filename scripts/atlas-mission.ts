@@ -13,6 +13,7 @@ import {
   summarizeEngineeringPackage,
   type EngineeringPackage,
 } from "@/atlas/engineering/mission-orchestrator";
+import { getBranchDirectorTerminology } from "@/atlas/constitution";
 
 import { ROOT_DIR } from "./atlas/shared";
 
@@ -126,7 +127,7 @@ function main(): void {
   const missionId = args[0];
 
   console.log("");
-  console.log(chalk.bold.hex("#B85F1D")("Atlas Mission Orchestrator"));
+  console.log(chalk.bold.hex("#B85F1D")("Branch Director · Mission Control"));
   console.log("");
 
   loadMissionFilesFromDisk();
@@ -156,7 +157,7 @@ function main(): void {
   writePackageArtifacts(result.package);
   setLastEngineeringPackage(result.package);
 
-  console.log(chalk.green("Engineering package generated"));
+  console.log(chalk.green(getBranchDirectorTerminology().executionPackageGenerated));
   console.log(chalk.dim("Input · Mission ID only — Atlas inferred all engineering context"));
   console.log("");
   console.log(chalk.bold("Inference pipeline"));

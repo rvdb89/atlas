@@ -9,7 +9,9 @@ import {
   getDepartment,
   getOrganizationalModel,
   ORGANIZATION_MODEL_ID,
+  renderOrganizationRoutingHierarchy,
 } from "./OrganizationalModel";
+import { BRANCH_DIRECTOR_TERMINOLOGY } from "../constitution/BranchDirectorIdentity";
 
 const ORG_CAPABILITY_PATTERNS: Array<{ pattern: RegExp; capabilityId: string }> = [
   { pattern: /\binstagram|social media|tiktok|growth|marketing|brand|audience|followers|content strategy/i, capabilityId: "growth" },
@@ -131,12 +133,12 @@ function buildWorkerTask(intent: string, departmentId: string, workerId: string)
       "data-researcher": "Gather supporting data and benchmarks",
     },
     engineering: {
-      "claude-engineer": "Implement software deliverables via Engineering Package",
+      "claude-engineer": `Implement software deliverables via ${BRANCH_DIRECTOR_TERMINOLOGY.executionPackage}`,
       "platform-architect": "Ensure platform architecture alignment",
     },
     "quality-assurance": {
       "qa-reviewer": "Review deliverable quality before reporting to Branch Director",
-      "audit-specialist": "Run Atlas Auditor validation when software is involved",
+      "audit-specialist": `Run ${BRANCH_DIRECTOR_TERMINOLOGY.branchDirectorReview} validation when software is involved`,
     },
   };
 
@@ -177,13 +179,13 @@ function buildBranchDirectorRationale(input: {
       `This is operational work — not a code generation request.`,
       `Primary department: ${primaryDept.departmentName}.`,
       `ChatGPT (Chief Architect) provides strategic direction only; Atlas assigns AI Workers.`,
-      `No Engineering Package required unless software deliverables emerge.`,
+      `No ${BRANCH_DIRECTOR_TERMINOLOGY.executionPackage} required unless software deliverables emerge.`,
     ].join(" ");
   }
 
   return [
     `Atlas (Branch Director) routes software work to Engineering department.`,
-    `Engineering Package will be generated for Claude Engineer execution.`,
+    `${BRANCH_DIRECTOR_TERMINOLOGY.executionPackage} will be generated for Claude Engineer execution.`,
     `ChatGPT defines architecture; Atlas operationalizes execution.`,
   ].join(" ");
 }
@@ -267,7 +269,7 @@ export function renderOrganizationMarkdown(): string {
     "## Routing Hierarchy",
     "",
     "```",
-    "Intent\n↓\nCapability\n↓\nDepartment(s)\n↓\nWorker Assignment\n↓\nExecution Plan\n↓\nEngineering Package (if software work required)",
+    renderOrganizationRoutingHierarchy(),
     "```",
     "",
   ].join("\n");

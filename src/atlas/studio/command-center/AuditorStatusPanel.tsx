@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
+import { getBranchDirectorTerminology } from "@/atlas/constitution";
 import type { CommandCenterAuditorView } from "./types";
 import { STUDIO_COLORS, STUDIO_RADIUS } from "../core/theme";
 import { Metric, StatusBadge } from "../os/design-system";
@@ -15,6 +16,7 @@ const TONE: Record<CommandCenterAuditorView["recommendation"], "healthy" | "warn
 };
 
 export default function AuditorStatusPanel({ auditor }: AuditorStatusPanelProps) {
+  const terms = getBranchDirectorTerminology();
   const lastAudit =
     auditor.lastAuditAt === "Not run yet"
       ? auditor.lastAuditAt
@@ -22,7 +24,7 @@ export default function AuditorStatusPanel({ auditor }: AuditorStatusPanelProps)
 
   return (
     <View style={styles.panel}>
-      <Text style={styles.title}>Atlas Auditor</Text>
+      <Text style={styles.title}>{terms.branchDirectorReview}</Text>
 
       <View style={styles.metrics}>
         <Metric label="Score" value={`${auditor.overallScore}/100`} />

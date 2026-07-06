@@ -3,6 +3,7 @@ import { generateArchitectureBriefDocument } from "./ArchitectureBriefGenerator"
 import { generateAuditChecklistDocument } from "./AuditChecklistGenerator";
 import { generateClaudeEngineeringPackage } from "./ClaudePackageGenerator";
 import { inferMissionContext } from "./MissionKnowledge";
+import { getBranchDirectorTerminology } from "@/atlas/constitution";
 import type {
   EngineeringPackage,
   EngineeringPackageArtifact,
@@ -36,8 +37,8 @@ export function orchestrateMission(missionId: string, options: MissionOrchestrat
     return { ok: false, message: resolved.message };
   }
 
-  const atlasVersion = options.atlasVersion ?? "0.21.0";
-  const atlasBuild = options.atlasBuild ?? "atlas-002";
+  const atlasVersion = options.atlasVersion ?? "0.22.0";
+  const atlasBuild = options.atlasBuild ?? "atlas-003";
   const outputDir = options.outputDir ?? `engineering/packages/${resolved.entry.id}`;
   const briefOutputDir = options.briefOutputDir ?? "engineering/briefs";
 
@@ -97,7 +98,7 @@ export function orchestrateMission(missionId: string, options: MissionOrchestrat
     createArtifact("validation-plan.md", outputDir, "Validation Plan", validationPlan),
     createArtifact("audit-checklist.md", outputDir, "Audit Checklist", auditChecklist),
     createArtifact("release-notes.md", outputDir, "Release Notes", releaseNotes),
-    createArtifact("claude-engineering-package.md", outputDir, "Claude Engineering Package", claudePackage),
+    createArtifact("claude-engineering-package.md", outputDir, getBranchDirectorTerminology().executionPackage, claudePackage),
   ];
 
   return {
@@ -125,12 +126,13 @@ export function getPrimaryClaudeArtifact(pkg: EngineeringPackage): EngineeringPa
 }
 
 export function summarizeEngineeringPackage(pkg: EngineeringPackage): string[] {
+  const terms = getBranchDirectorTerminology();
   return [
     `Input · ${pkg.missionId} (Mission ID only)`,
-    `Mission · ${pkg.missionId} — ${pkg.title}`,
+    `Initiative · ${pkg.missionId} — ${pkg.title}`,
     `Template · ${pkg.templateLabel}`,
     `Dependencies · ${pkg.context.dependencies.length}`,
-    `Package · ${pkg.outputDir}`,
+    `${terms.executionPackage} · ${pkg.outputDir}`,
     `Claude entrypoint · ${pkg.claudePackagePath}`,
     `Legacy brief · ${pkg.legacyBriefPath}`,
   ];

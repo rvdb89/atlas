@@ -1,0 +1,22 @@
+Mission:
+ATLAS-003
+
+Title:
+Branch Director Identity
+
+Goal:
+Atlas must present itself as Branch Director of the Robbert AI Organization. Replace engineering-oriented language with organizational language throughout UI, CLI, and reports.
+
+Focus:
+BranchDirectorIdentity module in Constitution as single source of truth
+Terminology: Branch Director Review, Branch Director Release Decision, Execution Package, Mission Executed, Recommended Next Initiative
+Update auditor CLI, reports, Command Center, mission orchestrator output
+Constitution hierarchy labels updated
+
+Constraints:
+Internal npm scripts and module paths may retain technical names
+TypeScript compiles clean
+Branch Director Review approves release
+
+Success:
+Every Atlas interaction feels like a report from a Branch Director — not output from a build tool.

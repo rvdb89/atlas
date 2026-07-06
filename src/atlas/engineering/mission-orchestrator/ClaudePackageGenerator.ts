@@ -5,6 +5,7 @@ import {
   renderDependencies,
   renderPipelineDiagram,
 } from "./MissionKnowledge";
+import { getBranchDirectorTerminology } from "@/atlas/constitution";
 
 export function generateClaudeEngineeringPackage(input: {
   context: InferredMissionContext;
@@ -14,13 +15,14 @@ export function generateClaudeEngineeringPackage(input: {
 }): string {
   const { context, atlasVersion, atlasBuild, generatedAt } = input;
   const { card } = context;
+  const terms = getBranchDirectorTerminology();
   const focusList = card.focus.map((item) => `- ${item}`).join("\n");
   const constraintList = card.constraints.map((item) => `- ${item}`).join("\n") || "- Geen extra constraints opgegeven.";
 
   return [
-    `# Claude Engineering Package — ${card.mission}`,
+    `# Execution Package — ${card.mission}`,
     "",
-    "> **Atlas Mission Orchestrator** — Humans provide intent or Mission ID. Atlas derives everything from the Constitution.",
+    "> **Branch Director Mission Control** — Humans provide intent or Mission ID. Atlas derives everything from the Constitution.",
     "",
     "## Constitution",
     "",
@@ -38,7 +40,7 @@ export function generateClaudeEngineeringPackage(input: {
       ? [
           `- **Departments:** ${context.decisionTrace.evolution.organization.departmentAssignments.map((d) => d.departmentName).join(", ")}`,
           `- **Workers assigned:** ${context.decisionTrace.evolution.organization.workerAssignments.length}`,
-          `- **Engineering Package required:** ${context.decisionTrace.evolution.organization.engineeringPackageRequired ? "Yes" : "No"}`,
+          `- **${terms.executionPackage} required:** ${context.decisionTrace.evolution.organization.engineeringPackageRequired ? "Yes" : "No"}`,
           "",
           context.decisionTrace.evolution.organization.branchDirectorRationale,
           "",
@@ -49,7 +51,7 @@ export function generateClaudeEngineeringPackage(input: {
     `- **Engine ID:** ${context.decisionTrace.evolution?.engineId ?? context.decisionTrace.frameworkId}`,
     `- **North Star aligned:** ${context.decisionTrace.northStarAligned ? "Yes" : "Review needed"} (${context.decisionTrace.northStarScore}/10)`,
     `- **Selected mission:** ${context.decisionTrace.selectedMissionId ?? "none"}`,
-    `- **Next best mission:** ${context.decisionTrace.nextBestMissionId ?? "none"}`,
+    `- **${terms.nextBestInitiative}:** ${context.decisionTrace.nextBestMissionId ?? "none"}`,
     "",
     context.decisionTrace.selectionRationale,
     "",
@@ -149,7 +151,7 @@ export function generateClaudeEngineeringPackage(input: {
     "4. Do **not** write a new Architecture Brief — Atlas already generated the engineering package.",
     "5. Keep changes small, TypeScript strict, and registry-aligned.",
     "6. Complete the Definition of Done checklist before marking the mission done.",
-    "7. Run validation commands and ensure Atlas Auditor release decision is APPROVED or APPROVED_WITH_NOTES.",
+    `7. Run validation commands and ensure ${terms.branchDirectorReleaseDecision} is APPROVED or APPROVED_WITH_NOTES.`,
     "8. Fill in `release-notes.md` after implementation.",
     "",
     "## Success criteria",

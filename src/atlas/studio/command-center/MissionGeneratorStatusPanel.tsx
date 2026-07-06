@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
+import { getBranchDirectorTerminology } from "@/atlas/constitution";
 import type { CommandCenterMissionGeneratorView } from "./types";
 import { STUDIO_COLORS, STUDIO_RADIUS } from "../core/theme";
 import { Metric, StatusBadge } from "../os/design-system";
@@ -15,6 +16,7 @@ const TONE: Record<CommandCenterMissionGeneratorView["status"], "healthy" | "war
 };
 
 export default function MissionGeneratorStatusPanel({ missionGenerator }: MissionGeneratorStatusPanelProps) {
+  const terms = getBranchDirectorTerminology();
   const generatedAt =
     missionGenerator.generatedAt === "Not generated yet"
       ? missionGenerator.generatedAt
@@ -22,10 +24,10 @@ export default function MissionGeneratorStatusPanel({ missionGenerator }: Missio
 
   return (
     <View style={styles.panel}>
-      <Text style={styles.title}>Mission Generator</Text>
+      <Text style={styles.title}>{terms.missionGeneratorTitle}</Text>
 
       <View style={styles.metrics}>
-        <Metric label="Last Mission" value={missionGenerator.lastMission} />
+        <Metric label={terms.lastInitiativeLabel} value={missionGenerator.lastMission} />
         <Metric label="Template" value={missionGenerator.templateUsed} />
       </View>
 

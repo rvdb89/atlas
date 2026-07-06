@@ -1,4 +1,5 @@
 import type { AuditBlocker, AuditContext, AuditRuleResult, AuditWarning, DefinitionOfDoneCheck } from "./audit.types";
+import { getBranchDirectorTerminology } from "@/atlas/constitution";
 
 const SECRET_PATTERNS = [
   { pattern: /sk-ant-[a-zA-Z0-9-_]+/, label: "Anthropic API key pattern" },
@@ -736,7 +737,7 @@ export function evaluateDefinitionOfDone(context: AuditContext, ruleResults: Aud
     id: label.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
     label,
     passed: checks[label] ?? false,
-    detail: checks[label] ? "Verified by Atlas Auditor" : "Not verified",
+    detail: checks[label] ? getBranchDirectorTerminology().verifiedByReview : "Not verified",
   }));
 }
 

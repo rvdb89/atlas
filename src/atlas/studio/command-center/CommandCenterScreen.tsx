@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
+import { getBranchDirectorTerminology } from "@/atlas/constitution";
 import { StudioScreen, StudioSectionTitle, StudioStatGrid } from "../components";
 import CommandCenterActionsPanel from "../os/command-center/CommandCenterActionsPanel";
 import ActivityFeed from "../os/activity/ActivityFeed";
@@ -21,6 +22,7 @@ import type { CommandCenterSnapshot } from "./types";
 
 export default function CommandCenterScreen() {
   useStudioBootstrap();
+  const terms = getBranchDirectorTerminology();
   const [snapshot, setSnapshot] = useState<CommandCenterSnapshot | undefined>();
   const [loading, setLoading] = useState(true);
 
@@ -61,10 +63,10 @@ export default function CommandCenterScreen() {
           <StudioSectionTitle>Atlas Memory</StudioSectionTitle>
           <MemoryStatusPanel memory={snapshot.memory} />
 
-          <StudioSectionTitle>Atlas Auditor</StudioSectionTitle>
+          <StudioSectionTitle>{terms.branchDirectorReview}</StudioSectionTitle>
           <AuditorStatusPanel auditor={snapshot.auditor} />
 
-          <StudioSectionTitle>Mission Generator</StudioSectionTitle>
+          <StudioSectionTitle>{terms.missionGeneratorTitle}</StudioSectionTitle>
           <MissionGeneratorStatusPanel missionGenerator={snapshot.missionGenerator} />
 
           <StudioSectionTitle>Platform overview</StudioSectionTitle>

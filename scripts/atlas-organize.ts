@@ -4,6 +4,7 @@ import { join } from "node:path";
 import chalk from "chalk";
 
 import { runEvolution } from "@/atlas/constitution";
+import { getBranchDirectorTerminology } from "@/atlas/constitution";
 import { renderOrganizationMarkdown } from "@/atlas/organization";
 
 import { ROOT_DIR } from "./atlas/shared";
@@ -59,14 +60,14 @@ function main(): void {
 
     if (!evolution.organization.engineeringPackageRequired) {
       console.log(chalk.green("Operational routing complete"));
-      console.log(chalk.dim("No Engineering Package required — Atlas coordinates AI Workers directly."));
+      console.log(chalk.dim(getBranchDirectorTerminology().noExecutionPackageRequired + " — Atlas coordinates AI Workers directly."));
       console.log("");
       return;
     }
   }
 
   console.log("");
-  console.log(chalk.dim("Software work detected — run npm run atlas:evolve for Engineering Package generation."));
+  console.log(chalk.dim(`Software work detected — run npm run atlas:evolve for ${getBranchDirectorTerminology().executionPackage} generation.`));
   console.log("");
 }
 

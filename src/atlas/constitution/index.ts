@@ -6,6 +6,7 @@ export * from "./CurrentStateRegistry";
 export * from "./ConstitutionEngine";
 export * from "./EvolutionEngine";
 export * from "./DecisionFramework";
+export * from "./BranchDirectorIdentity";
 export * from "./ConstitutionRenderer";
 
 export { routeOrganization, renderOrganizationMarkdown } from "../organization/OrganizationEngine";

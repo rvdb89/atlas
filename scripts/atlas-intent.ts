@@ -1,6 +1,7 @@
 import chalk from "chalk";
 
 import { runEvolution } from "@/atlas/constitution";
+import { getBranchDirectorTerminology } from "@/atlas/constitution";
 
 function statusColor(status: string): (text: string) => string {
   if (status === "pass") return chalk.green;
@@ -38,12 +39,12 @@ function main(): void {
   }
 
   console.log("");
-  console.log(chalk.bold("Recommended mission"));
+  console.log(chalk.bold(getBranchDirectorTerminology().recommendedNextInitiative));
   console.log(`  ${evolution.selectedMissionId ?? "none"}`);
   console.log("");
   console.log(chalk.dim(evolution.answers.whyNextBestStep));
   console.log("");
-  console.log(chalk.dim('Run npm run atlas:evolve -- "..." to generate Engineering Package'));
+  console.log(chalk.dim(`Run npm run atlas:evolve -- "..." to generate ${getBranchDirectorTerminology().executionPackage}`));
   console.log("");
 }
 

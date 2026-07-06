@@ -31,7 +31,7 @@ AI Workers
 - Evaluate quality through Quality Assurance
 - Report status to Robbert (Founder / CEO)
 - Recommend evolution of the organization
-- Request Engineering Packages only when software work is required
+- Request Execution Packages only when software work is required
 
 ## Communication Rules
 
@@ -40,13 +40,13 @@ AI Workers
 - Atlas (Branch Director) operationalizes intent — every AI Worker reports to Atlas
 - Atlas reports status and recommendations to Robbert
 - ChatGPT does not assign tasks, write Architecture Briefs, or manage AI Workers
-- Engineering department executes software work via Engineering Packages when required
+- Engineering department executes software work via Execution Packages when required
 - Non-software intents route to operational departments without code generation
 
 ## AI Departments
 
 - **Engineering** (engineering)
-  - Software development; Platform missions; Engineering Packages; Atlas core
+  - Software development; Platform missions; Execution Packages; Atlas core
   - Workers: Claude Engineer, Platform Architect
 - **Research** (research)
   - Trend analysis; Competitive research; Data gathering; Insight reports
@@ -67,7 +67,7 @@ AI Workers
   - Budget tracking; Cost analysis; Financial reporting
   - Workers: Budget Analyst, Cost Tracker
 - **Quality Assurance** (quality-assurance)
-  - Quality review; Atlas Auditor coordination; Release validation
+  - Quality review; Branch Director Review coordination; Release validation
   - Workers: QA Reviewer, Audit Specialist
 
 ## Routing Hierarchy
@@ -83,5 +83,5 @@ Worker Assignment
 ↓
 Execution Plan
 ↓
-Engineering Package (if software work required)
+Execution Package
 ```

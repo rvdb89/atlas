@@ -4,6 +4,7 @@ import {
   ATLAS_CONSTITUTION_ID,
   ATLAS_CONSTITUTION_PATH,
   evaluateNorthStarAlignment,
+  getBranchDirectorTerminology,
   getConstitutionArchitectureRules,
   getConstitutionEngineeringStandards,
   getConstitutionNorthStarGoals,
@@ -79,6 +80,10 @@ const KNOWN_DEPENDENCIES: Record<
   Array<{ missionId: string; title?: string; reason: string; relationship?: MissionDependency["relationship"] }>
 > = {
   "ATLAS-000": [],
+  "ATLAS-003": [
+    { missionId: "ATLAS-002", title: "Organizational Model", reason: "Branch Director identity builds on organizational model", relationship: "requires" },
+    { missionId: "ATLAS-000", title: "Atlas Constitution", reason: "Identity derives from Constitution", relationship: "requires" },
+  ],
   "ATLAS-002": [
     { missionId: "ATLAS-000", title: "Atlas Constitution", reason: "Organizational Model extends Constitution identity", relationship: "requires" },
     { missionId: "ATLAS-001", title: "Evolution Engine", reason: "Evolution complements organizational routing", relationship: "requires" },
@@ -122,7 +127,7 @@ const PIPELINE_STEPS: MissionPipelineStep[] = [
   { id: "mission-dependencies", label: "Mission Dependencies", source: "generated" },
   { id: "definition-of-done", label: "Definition of Done", source: "generated" },
   { id: "validation-plan", label: "Validation Plan", source: "generated" },
-  { id: "engineering-package", label: "Engineering Package", source: "generated" },
+  { id: "engineering-package", label: getBranchDirectorTerminology().executionPackage, source: "generated" },
 ];
 
 function inferNumericDependencies(

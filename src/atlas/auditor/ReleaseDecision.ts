@@ -1,4 +1,5 @@
 import type { AuditBlocker, AuditRecommendation, AuditWarning } from "./audit.types";
+import { getBranchDirectorTerminology } from "@/atlas/constitution";
 
 export type ReleaseDecision = {
   status: AuditRecommendation;
@@ -66,33 +67,31 @@ export function deriveReleaseDecision(input: ReleaseGateInput): ReleaseDecision 
   const approvedReasons = buildApprovedReasons(input);
 
   if (input.warnings.length > 0) {
+    const terms = getBranchDirectorTerminology();
     return {
       status: "APPROVED_WITH_NOTES",
       pushAllowed: true,
       reason: `Mission is safe to release — ${input.warnings.length} warning(s) will be tracked as follow-up work.`,
       reasons: approvedReasons,
-      nextActions: ["✓ Commit", "✓ Push", "✓ Create follow-up mission"],
-      nextActionSummary: "✓ Commit · ✓ Push · ✓ Create follow-up mission",
+      nextActions: ["✓ Commit", "✓ Push", `✓ ${terms.createFollowUpInitiative}`],
+      nextActionSummary: `✓ Commit · ✓ Push · ✓ ${terms.createFollowUpInitiative}`,
     };
   }
 
+  const terms = getBranchDirectorTerminology();
   return {
     status: "APPROVED",
     pushAllowed: true,
     reason: "All release gates passed — mission is safe to release.",
     reasons: approvedReasons,
-    nextActions: ["✓ Commit", "✓ Push", "✓ Start next mission"],
-    nextActionSummary: "✓ Commit · ✓ Push · ✓ Start next mission",
+    nextActions: ["✓ Commit", "✓ Push", `✓ ${terms.startRecommendedNextInitiative}`],
+    nextActionSummary: `✓ Commit · ✓ Push · ✓ ${terms.startRecommendedNextInitiative}`,
   };
 }
 
-/** @deprecated Use deriveReleaseDecision — kept as alias for existing imports. */
-export function deriveAuditRecommendation(input: ReleaseGateInput): AuditRecommendation {
-  return deriveReleaseDecision(input).status;
-}
-
 export function renderReleaseDecisionCli(decision: ReleaseDecision, log: (line?: string) => void): void {
-  log("Release Decision");
+  const terms = getBranchDirectorTerminology();
+  log(terms.branchDirectorReleaseDecision);
   log("");
   log(`Status:`);
   log(`  ${decision.status}`);
@@ -113,6 +112,11 @@ export function renderReleaseDecisionCli(decision: ReleaseDecision, log: (line?:
     log(`  ${action}`);
   }
   log("");
+}
+
+/** @deprecated Use deriveReleaseDecision — kept as alias for existing imports. */
+export function deriveAuditRecommendation(input: ReleaseGateInput): AuditRecommendation {
+  return deriveReleaseDecision(input).status;
 }
 
 export function renderReleaseDecisionMarkdown(decision: ReleaseDecision): string {

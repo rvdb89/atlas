@@ -6,6 +6,7 @@ import {
   createAuditReportPath,
   printAuditCliSummary,
 } from "@/atlas/auditor";
+import { getBranchDirectorTerminology } from "@/atlas/constitution";
 
 import { collectAuditContext, ROOT_DIR, writeAuditReportFile } from "./atlas/audit-context";
 
@@ -23,8 +24,9 @@ function main(): void {
   const { strict } = parseArgs(process.argv.slice(2));
   bootstrapAtlasAuditor();
 
+  const terms = getBranchDirectorTerminology();
   console.log("");
-  console.log(chalk.bold.hex("#B85F1D")("Atlas Auditor"));
+  console.log(chalk.bold.hex("#B85F1D")(terms.cliReviewBanner));
   console.log("");
   console.log(`Running checks${strict ? " (strict mode)" : ""}...`);
   console.log("");

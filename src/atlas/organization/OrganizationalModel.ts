@@ -1,4 +1,5 @@
 import type { OrganizationalModelDefinition } from "./organization.types";
+import { BRANCH_DIRECTOR_TERMINOLOGY } from "../constitution/BranchDirectorIdentity";
 
 export const ORGANIZATION_MODEL_ID = "ATLAS-002";
 
@@ -16,7 +17,7 @@ export const ORGANIZATION_ROUTING_HIERARCHY = [
   "Department(s)",
   "Worker Assignment",
   "Execution Plan",
-  "Engineering Package",
+  BRANCH_DIRECTOR_TERMINOLOGY.executionPackage,
 ] as const;
 
 export const ORGANIZATIONAL_MODEL: OrganizationalModelDefinition = {
@@ -33,7 +34,7 @@ export const ORGANIZATIONAL_MODEL: OrganizationalModelDefinition = {
     "Evaluate quality through Quality Assurance",
     "Report status to Robbert (Founder / CEO)",
     "Recommend evolution of the organization",
-    "Request Engineering Packages only when software work is required",
+    "Request Execution Packages only when software work is required",
   ],
   communicationRules: [
     "Robbert (Founder / CEO) provides intent — the highest human input",
@@ -41,7 +42,7 @@ export const ORGANIZATIONAL_MODEL: OrganizationalModelDefinition = {
     "Atlas (Branch Director) operationalizes intent — every AI Worker reports to Atlas",
     "Atlas reports status and recommendations to Robbert",
     "ChatGPT does not assign tasks, write Architecture Briefs, or manage AI Workers",
-    "Engineering department executes software work via Engineering Packages when required",
+    "Engineering department executes software work via Execution Packages when required",
     "Non-software intents route to operational departments without code generation",
   ],
   organizationalCapabilities: [
@@ -90,7 +91,7 @@ export const ORGANIZATIONAL_MODEL: OrganizationalModelDefinition = {
     {
       id: "software-delivery",
       name: "Software Delivery",
-      description: "Platform engineering, code, missions, and Engineering Packages",
+      description: "Platform engineering, code, missions, and Execution Packages",
       primaryDepartmentId: "engineering",
     },
   ],
@@ -98,9 +99,9 @@ export const ORGANIZATIONAL_MODEL: OrganizationalModelDefinition = {
     {
       id: "engineering",
       name: "Engineering",
-      responsibilities: ["Software development", "Platform missions", "Engineering Packages", "Atlas core"],
+      responsibilities: ["Software development", "Platform missions", "Execution Packages", "Atlas core"],
       workers: [
-        { id: "claude-engineer", name: "Claude Engineer", departmentId: "engineering", role: "Implements Engineering Packages" },
+        { id: "claude-engineer", name: "Claude Engineer", departmentId: "engineering", role: "Implements Execution Packages" },
         { id: "platform-architect", name: "Platform Architect", departmentId: "engineering", role: "Maintains Atlas platform architecture" },
       ],
     },
@@ -162,10 +163,10 @@ export const ORGANIZATIONAL_MODEL: OrganizationalModelDefinition = {
     {
       id: "quality-assurance",
       name: "Quality Assurance",
-      responsibilities: ["Quality review", "Atlas Auditor coordination", "Release validation"],
+      responsibilities: ["Quality review", "Branch Director Review coordination", "Release validation"],
       workers: [
         { id: "qa-reviewer", name: "QA Reviewer", departmentId: "quality-assurance", role: "Reviews deliverable quality" },
-        { id: "audit-specialist", name: "Audit Specialist", departmentId: "quality-assurance", role: "Runs Atlas Auditor checks" },
+        { id: "audit-specialist", name: "Audit Specialist", departmentId: "quality-assurance", role: "Runs Branch Director Review checks" },
       ],
     },
   ],
