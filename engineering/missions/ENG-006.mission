@@ -1,0 +1,23 @@
+Mission:
+ENG-006
+
+Title:
+Mission Orchestrator
+
+Goal:
+Atlas orkestreert de volledige engineering workflow vanuit één Mission ID.
+
+Focus:
+Mission Registry
+Mission Resolver
+Brief Generator
+Claude Package Generator
+Engineering Package
+
+Constraints:
+Geen breaking changes
+Geen AI of Claude API voor generatie
+Bestaande atlas:brief workflow blijft werken
+
+Success:
+npm run atlas:mission BRAIN-004 genereert het volledige engineering package.

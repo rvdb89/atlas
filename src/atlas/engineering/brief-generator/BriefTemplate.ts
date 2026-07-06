@@ -39,6 +39,7 @@ const BASE_VALIDATION = [
   "npx tsc --noEmit",
   "npm run atlas:health",
   "npm run atlas:audit",
+  "npm run atlas:mission <MISSION_ID>",
   "Bestaande workflows blijven intact",
 ];
 
@@ -50,9 +51,11 @@ const BASE_REPORTING = [
 ];
 
 const BASE_CLAUDE_OUTPUT = [
-  "Geen volledige Architecture Brief handmatig schrijven",
-  "Alleen compacte Mission Card aanleveren",
-  "Atlas genereert de volledige brief via npm run atlas:brief",
+  "ChatGPT levert alleen een Mission ID (bijv. BRAIN-004)",
+  "ChatGPT schrijft nooit Architecture Briefs",
+  "Atlas inferreert Engineering Standards, North Star, Architecture Rules, Dependencies, DoD en Validation",
+  "Atlas genereert het Engineering Package via npm run atlas:mission",
+  "Claude ontvangt alleen claude-engineering-package.md",
   "Rapportage na sprint via Atlas Auditor",
 ];
 

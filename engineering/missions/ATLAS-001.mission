@@ -1,0 +1,25 @@
+Mission:
+ATLAS-001
+
+Title:
+Evolution Engine
+
+Goal:
+Teach Atlas how to evolve itself. Atlas continuously compares Current State against the North Star, identifies capability gaps, and recommends evolution by value — not blind roadmap order.
+
+Focus:
+Evolution Engine module under src/atlas/constitution/
+Current State Registry with capability maturity
+Gap analysis and value-scored evolution recommendations
+Evolution answers: where we are, where we want to be, why next step
+Wire into Mission Orchestrator before package generation
+npm run atlas:evolve CLI
+
+Constraints:
+Derives from ATLAS-000 Constitution
+No Doughbert logic in Atlas core
+TypeScript compiles clean
+Humans provide intent only — no Architecture Briefs
+
+Success:
+npm run atlas:evolve -- "I want Atlas to become better at planning." determines everything else and generates Engineering Package.

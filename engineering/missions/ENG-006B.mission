@@ -1,0 +1,25 @@
+Mission:
+ENG-006B
+
+Title:
+Engineering Package Structure
+
+Goal:
+Mission Orchestrator genereert een compleet Engineering Package vanuit alleen een Mission ID.
+
+Focus:
+Engineering Package folder
+Package manifest
+Claude entrypoint
+Architecture brief inference
+Validation plan
+Audit checklist
+Release notes stub
+
+Constraints:
+Geen breaking changes
+npm run atlas:brief blijft werken
+ChatGPT schrijft nooit meer Architecture Briefs
+
+Success:
+npm run atlas:mission BRAIN-004 levert het volledige Engineering Package zonder extra ChatGPT instructies.

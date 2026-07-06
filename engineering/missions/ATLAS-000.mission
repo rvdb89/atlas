@@ -1,0 +1,26 @@
+Mission:
+ATLAS-000
+
+Title:
+Atlas Constitution
+
+Goal:
+Atlas must understand WHY it exists before deciding WHAT to build. The Constitution becomes the highest source of truth — everything else derives from it.
+
+Focus:
+Constitution module under src/atlas/constitution/
+North Star, principles, capabilities, systems
+Roadmap and mission derivation rules
+Priority and North Star evaluation rules
+Intent resolver for human input
+MissionKnowledge derives from Constitution
+engineering/constitution/atlas-constitution.md artifact
+
+Constraints:
+No Doughbert logic in Atlas core
+TypeScript compiles clean
+npm run atlas:brief and atlas:mission keep working
+Auditor approves after implementation
+
+Success:
+Human input evolves from "Build a Decision Engine" to "I want Atlas to become better at reasoning" — Atlas determines the rest from the Constitution.

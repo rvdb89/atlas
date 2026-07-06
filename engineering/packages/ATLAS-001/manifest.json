@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "1.0",
+  "packageType": "engineering",
+  "missionId": "ATLAS-001",
+  "title": "Evolution Engine",
+  "templateLabel": "Engineering Mission",
+  "atlasVersion": "0.20.0",
+  "atlasBuild": "atlas-001-evolution",
+  "generatedAt": "2026-07-06T20:24:45.813Z",
+  "outputDir": "engineering/packages/ATLAS-001",
+  "entrypoint": "engineering/packages/ATLAS-001/claude-engineering-package.md",
+  "legacyBriefPath": "engineering/briefs/ATLAS-001.md",
+  "inputRequired": "missionIdOnly",
+  "inferencePipeline": [
+    "evolution-engine",
+    "decision-framework",
+    "constitution",
+    "north-star",
+    "principles",
+    "capabilities",
+    "systems",
+    "roadmap",
+    "mission-registry",
+    "engineering-standards",
+    "architecture-rules",
+    "mission-dependencies",
+    "definition-of-done",
+    "validation-plan",
+    "engineering-package"
+  ],
+  "constitutionId": "ATLAS-000",
+  "constitutionPath": "engineering/constitution/atlas-constitution.md",
+  "decisionFrameworkId": "ATLAS-001",
+  "evolutionEngineId": "ATLAS-001",
+  "dependencies": [
+    {
+      "missionId": "ATLAS-000",
+      "title": "Atlas Constitution",
+      "relationship": "requires",
+      "reason": "Evolution Engine derives from Constitution"
+    }
+  ],
+  "files": {
+    "manifest": "engineering/packages/ATLAS-001/manifest.json",
+    "claudeEntrypoint": "engineering/packages/ATLAS-001/claude-engineering-package.md",
+    "architectureBrief": "engineering/packages/ATLAS-001/architecture-brief.md",
+    "validationPlan": "engineering/packages/ATLAS-001/validation-plan.md",
+    "auditChecklist": "engineering/packages/ATLAS-001/audit-checklist.md",
+    "releaseNotes": "engineering/packages/ATLAS-001/release-notes.md"
+  }
+}

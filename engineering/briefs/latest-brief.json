@@ -1,8 +1,12 @@
 {
-  "lastMission": "ENG-002",
-  "lastGeneratedBrief": "engineering/briefs/ENG-002.md",
+  "lastMission": "ATLAS-001",
+  "lastGeneratedBrief": "engineering/briefs/ATLAS-001.md",
   "templateUsed": "Engineering Mission",
   "status": "generated",
-  "generatedAt": "2026-07-05T21:48:58.128Z",
-  "title": "Mission Brief Generator"
+  "generatedAt": "2026-07-06T20:24:45.813Z",
+  "title": "Evolution Engine",
+  "packageDir": "engineering/packages/ATLAS-001",
+  "claudePackagePath": "engineering/packages/ATLAS-001/claude-engineering-package.md",
+  "releaseNotesPath": "engineering/packages/ATLAS-001/release-notes.md",
+  "latestPackagePath": "engineering/packages/latest-package.json"
 }

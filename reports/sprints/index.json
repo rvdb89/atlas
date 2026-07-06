@@ -1,5 +1,75 @@
 [
   {
+    "date": "2026-07-06T20:26:48.365Z",
+    "sprintName": "Atlas Auditor Hardening",
+    "score": 83,
+    "recommendation": "APPROVED_WITH_NOTES",
+    "warnings": 5,
+    "blockers": 0,
+    "reportLink": "reports/sprints/sprint-audit-2026-07-06-22-26.md",
+    "strict": true
+  },
+  {
+    "date": "2026-07-06T20:24:48.800Z",
+    "sprintName": "Atlas Auditor Hardening",
+    "score": 83,
+    "recommendation": "APPROVED_WITH_NOTES",
+    "warnings": 5,
+    "blockers": 0,
+    "reportLink": "reports/sprints/sprint-audit-2026-07-06-22-24.md",
+    "strict": true
+  },
+  {
+    "date": "2026-07-06T20:11:22.057Z",
+    "sprintName": "Atlas Auditor Hardening",
+    "score": 83,
+    "recommendation": "APPROVED_WITH_NOTES",
+    "warnings": 5,
+    "blockers": 0,
+    "reportLink": "reports/sprints/sprint-audit-2026-07-06-22-11.md",
+    "strict": true
+  },
+  {
+    "date": "2026-07-06T20:05:13.540Z",
+    "sprintName": "Atlas Auditor Hardening",
+    "score": 83,
+    "recommendation": "APPROVED_WITH_NOTES",
+    "warnings": 5,
+    "blockers": 0,
+    "reportLink": "reports/sprints/sprint-audit-2026-07-06-22-05.md",
+    "strict": true
+  },
+  {
+    "date": "2026-07-06T19:48:00.251Z",
+    "sprintName": "Atlas Auditor Hardening",
+    "score": 83,
+    "recommendation": "APPROVED_WITH_NOTES",
+    "warnings": 4,
+    "blockers": 0,
+    "reportLink": "reports/sprints/sprint-audit-2026-07-06-21-48.md",
+    "strict": true
+  },
+  {
+    "date": "2026-07-06T19:35:28.095Z",
+    "sprintName": "Atlas Auditor Hardening",
+    "score": 83,
+    "recommendation": "APPROVED_WITH_NOTES",
+    "warnings": 4,
+    "blockers": 0,
+    "reportLink": "reports/sprints/sprint-audit-2026-07-06-21-35.md",
+    "strict": true
+  },
+  {
+    "date": "2026-07-06T19:30:37.032Z",
+    "sprintName": "Atlas Auditor Hardening",
+    "score": 76,
+    "recommendation": "APPROVED_WITH_NOTES",
+    "warnings": 4,
+    "blockers": 0,
+    "reportLink": "reports/sprints/sprint-audit-2026-07-06-21-30.md",
+    "strict": true
+  },
+  {
     "date": "2026-07-06T19:22:50.658Z",
     "sprintName": "Atlas Auditor Hardening",
     "score": 93,

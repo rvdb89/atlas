@@ -1,0 +1,8 @@
+{
+  "missionId": "BRAIN-001",
+  "title": "Planner Engine",
+  "outputDir": "engineering/packages/BRAIN-001",
+  "entrypoint": "engineering/packages/BRAIN-001/claude-engineering-package.md",
+  "evolutionEngineId": "ATLAS-001",
+  "generatedAt": "2026-07-06T20:24:58.311Z"
+}

@@ -26,6 +26,7 @@ export function buildValidationSection(card: MissionCard) {
   const checks = [
     ...template.validationChecks,
     `npm run atlas:brief genereert ${card.mission}.md`,
+    `npm run atlas:mission ${card.mission} genereert engineering package`,
     `Mission ${card.mission} DoD volledig afvinkbaar`,
   ];
 

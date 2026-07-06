@@ -1,4 +1,8 @@
 import type { AuditContext, AuditContextInput } from "./audit.types";
+import {
+  getConstitutionArchitectureRules,
+  getConstitutionNorthStarGoals,
+} from "@/atlas/constitution";
 
 export const CURRENT_ARCHITECTURE_BRIEF: AuditContextInput["brief"] = {
   sprintId: "brain-sprint-3.6",
@@ -23,23 +27,8 @@ export const CURRENT_ARCHITECTURE_BRIEF: AuditContextInput["brief"] = {
     "npm run atlas:audit -- --strict works",
     "No existing functionality breaks",
   ],
-  architectureRules: [
-    "Atlas core remains domain-independent",
-    "Brain modules remain provider-independent",
-    "AI providers stay behind abstraction layer",
-    "Studio uses registries where possible",
-    "Workflows remain extensible",
-    "No hardcoded Doughbert logic in generic modules",
-    "No Claude-specific logic outside provider layer",
-    "Registry pattern for extensibility",
-  ],
-  northStarGoals: [
-    "Atlas as AI Operating System",
-    "Generic architecture over vertical coupling",
-    "Autonomy through planning, memory, and context",
-    "Less manual intervention per workflow",
-    "Extensible agents and decision support",
-  ],
+  architectureRules: getConstitutionArchitectureRules(),
+  northStarGoals: getConstitutionNorthStarGoals(),
 };
 
 export function createAuditContext(input: AuditContextInput): AuditContext {

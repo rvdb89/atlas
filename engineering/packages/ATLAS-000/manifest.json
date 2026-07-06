@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0",
+  "packageType": "engineering",
+  "missionId": "ATLAS-000",
+  "title": "Atlas Constitution",
+  "templateLabel": "Engineering Mission",
+  "atlasVersion": "0.19.0",
+  "atlasBuild": "atlas-001",
+  "generatedAt": "2026-07-06T20:11:19.079Z",
+  "outputDir": "engineering/packages/ATLAS-000",
+  "entrypoint": "engineering/packages/ATLAS-000/claude-engineering-package.md",
+  "legacyBriefPath": "engineering/briefs/ATLAS-000.md",
+  "inputRequired": "missionIdOnly",
+  "inferencePipeline": [
+    "decision-framework",
+    "constitution",
+    "north-star",
+    "principles",
+    "capabilities",
+    "systems",
+    "roadmap",
+    "mission-registry",
+    "engineering-standards",
+    "architecture-rules",
+    "mission-dependencies",
+    "definition-of-done",
+    "validation-plan",
+    "engineering-package"
+  ],
+  "constitutionId": "ATLAS-000",
+  "constitutionPath": "engineering/constitution/atlas-constitution.md",
+  "decisionFrameworkId": "ATLAS-001",
+  "dependencies": [],
+  "files": {
+    "manifest": "engineering/packages/ATLAS-000/manifest.json",
+    "claudeEntrypoint": "engineering/packages/ATLAS-000/claude-engineering-package.md",
+    "architectureBrief": "engineering/packages/ATLAS-000/architecture-brief.md",
+    "validationPlan": "engineering/packages/ATLAS-000/validation-plan.md",
+    "auditChecklist": "engineering/packages/ATLAS-000/audit-checklist.md",
+    "releaseNotes": "engineering/packages/ATLAS-000/release-notes.md"
+  }
+}

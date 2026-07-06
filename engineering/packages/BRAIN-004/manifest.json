@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "packageType": "engineering",
+  "missionId": "BRAIN-004",
+  "title": "Decision Engine",
+  "templateLabel": "Brain Mission",
+  "atlasVersion": "0.20.0",
+  "atlasBuild": "atlas-001-evolution",
+  "generatedAt": "2026-07-06T20:24:45.623Z",
+  "outputDir": "engineering/packages/BRAIN-004",
+  "entrypoint": "engineering/packages/BRAIN-004/claude-engineering-package.md",
+  "legacyBriefPath": "engineering/briefs/BRAIN-004.md",
+  "inputRequired": "missionIdOnly",
+  "inferencePipeline": [
+    "evolution-engine",
+    "decision-framework",
+    "constitution",
+    "north-star",
+    "principles",
+    "capabilities",
+    "systems",
+    "roadmap",
+    "mission-registry",
+    "engineering-standards",
+    "architecture-rules",
+    "mission-dependencies",
+    "definition-of-done",
+    "validation-plan",
+    "engineering-package"
+  ],
+  "constitutionId": "ATLAS-000",
+  "constitutionPath": "engineering/constitution/atlas-constitution.md",
+  "decisionFrameworkId": "ATLAS-001",
+  "evolutionEngineId": "ATLAS-001",
+  "dependencies": [
+    {
+      "missionId": "ATLAS-000",
+      "title": "Atlas Constitution",
+      "relationship": "requires",
+      "reason": "Constitution is the highest source of truth"
+    },
+    {
+      "missionId": "BRAIN-001",
+      "title": "Planner Engine",
+      "relationship": "requires",
+      "reason": "Prior BRAIN mission in sequence"
+    },
+    {
+      "missionId": "BRAIN-002",
+      "title": "Memory Engine",
+      "relationship": "requires",
+      "reason": "Memory engine supplies decision history"
+    },
+    {
+      "missionId": "BRAIN-003",
+      "title": "Context Engine",
+      "relationship": "requires",
+      "reason": "Context engine informs decision inputs"
+    }
+  ],
+  "files": {
+    "manifest": "engineering/packages/BRAIN-004/manifest.json",
+    "claudeEntrypoint": "engineering/packages/BRAIN-004/claude-engineering-package.md",
+    "architectureBrief": "engineering/packages/BRAIN-004/architecture-brief.md",
+    "validationPlan": "engineering/packages/BRAIN-004/validation-plan.md",
+    "auditChecklist": "engineering/packages/BRAIN-004/audit-checklist.md",
+    "releaseNotes": "engineering/packages/BRAIN-004/release-notes.md"
+  }
+}

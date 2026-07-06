@@ -1,5 +1,109 @@
 # Architecture Brief — BRAIN-004
 
+> Inferred by Atlas from Mission ID and Constitution. ChatGPT does not write this document.
+
+### Decision Framework
+
+- Constitution · **ATLAS-000**
+- Evolution Engine · **ATLAS-001**
+- North Star score · 9/10
+- Selection rationale · Mission ID BRAIN-004 provided — evolution assessment confirms alignment. Roadmap context: Reasoning and decision policies advance autonomy Selected by evolution value score — not static roadmap priority.
+
+## Atlas Inference Pipeline
+
+```
+Constitution
+↓
+North Star
+↓
+Principles
+↓
+Capabilities
+↓
+Systems
+↓
+Roadmap
+↓
+Mission Registry
+↓
+Engineering Packages
+↓
+Claude
+↓
+Atlas Auditor
+```
+
+## Mission Metadata
+
+- Mission ID · **BRAIN-004**
+- Title · **Decision Engine**
+- Registry source · engineering/missions/BRAIN-004.mission
+- Template · Brain Mission
+- Atlas · 0.20.0 (atlas-001-evolution)
+- Generated · 2026-07-06T20:24:45.623Z
+
+## Engineering Standards
+
+- All engineering knowledge derives from the Atlas Constitution
+- Humans provide intent or Mission ID — not Architecture Briefs
+- ChatGPT must not define missions or write Architecture Briefs
+- Deterministic, rule-based orchestration before AI generation
+- Small focused changes with TypeScript strictness
+- Atlas Auditor validates whether work advances the North Star
+- Release decisions follow blockers — warnings inform, never block alone
+- Mission packages generated via npm run atlas:mission
+- Legacy brief output remains backward compatible only
+
+## North Star
+
+- Atlas becomes an AI Operating System that translates human intent into autonomous execution — with less manual intervention per workflow and more trustworthy release decisions.
+- Atlas interprets natural-language intent and proposes the next mission
+- Roadmap self-updates from Constitution, audit findings, and capability gaps
+- Brain layers (planner, memory, context, decision) operate as one autonomy stack
+- Engineering packages are generated without external brief writing
+- Atlas als AI Operating System
+- Generieke architectuur boven vertical coupling
+- Meer autonomie, minder handmatige tussenkomst
+- Uitbreidbare planning, memory, context en agents
+- Autonome besluitvorming via Decision Engine
+- Context-aware execution
+
+## Architecture Rules
+
+- ChatGPT must not define missions or write Architecture Briefs
+- Generic architecture over vertical coupling
+- Provider independence in Brain and core platform layers
+- Registry pattern for extensibility across systems
+- Atlas core blijft domein-onafhankelijk
+- Registry pattern voor uitbreidbaarheid
+- Geen vertical-specifieke logica in generieke modules
+- TypeScript-first en strict compileerbaar
+- Brain modules blijven provider-onafhankelijk
+- Geen Claude- of Doughbert-logica in brain core
+
+## Mission Dependencies
+
+- **ATLAS-000** · Atlas Constitution · _requires_ — Constitution is the highest source of truth
+- **BRAIN-001** · Planner Engine · _requires_ — Prior BRAIN mission in sequence
+- **BRAIN-002** · Memory Engine · _requires_ — Memory engine supplies decision history
+- **BRAIN-003** · Context Engine · _requires_ — Context engine informs decision inputs
+
+## Definition of Done
+
+- [ ] Decision Engine module exists under src/atlas/
+- [ ] Decision Engine implemented per mission scope
+- [ ] Decision Policies implemented per mission scope
+- [ ] Decision Registry implemented per mission scope
+- [ ] Constraint respected: Geen breaking changes
+- [ ] TypeScript compiles clean
+- [ ] npm run atlas:mission BRAIN-004 regenerates package
+- [ ] npm run atlas:audit -- --strict returns APPROVED or APPROVED_WITH_NOTES
+- [ ] Decision Engine volledig operationeel.
+
+---
+
+## Detailed Architecture Brief
+
 ## Titel
 
 # BRAIN-004 — Decision Engine

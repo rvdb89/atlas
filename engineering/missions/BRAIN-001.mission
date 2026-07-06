@@ -1,0 +1,22 @@
+Mission:
+BRAIN-001
+
+Title:
+Planner Engine
+
+Goal:
+Extend Atlas Brain planning capability for goal decomposition and execution queues.
+
+Focus:
+Planner registry and engine hardening
+Planning capability in Decision Framework roadmap
+Command Center planner visibility
+Integration with context and memory layers
+
+Constraints:
+Provider-independent Brain module
+No Doughbert logic in generic planner core
+Registry pattern for planner extensions
+
+Success:
+npm run atlas:decide -- "I want Atlas to become better at planning." recommends BRAIN-001 and generates Engineering Package.

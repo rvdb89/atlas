@@ -104,7 +104,7 @@ function main(): void {
     fix: existsSync(join(ROOT_DIR, "node_modules/typescript")) ? undefined : "npm install",
   });
 
-  for (const script of ["atlas", "atlas:command", "atlas:inspect", "atlas:health", "atlas:doctor", "atlas:audit", "atlas:brief"]) {
+  for (const script of ["atlas", "atlas:command", "atlas:inspect", "atlas:health", "atlas:doctor", "atlas:audit", "atlas:brief", "atlas:mission"]) {
     results.push({
       level: checkPackageScript(script) ? "ok" : "error",
       label: `Script ${script}`,

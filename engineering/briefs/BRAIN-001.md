@@ -1,33 +1,37 @@
-# Architecture Brief — BRAIN-004
+# Architecture Brief — BRAIN-001
 
 ## Titel
 
-# BRAIN-004 — Decision Engine
+# BRAIN-001 — Planner Engine
 
 ## Mission Metadata
 
-- Mission ID · **BRAIN-004**
-- Title · **Decision Engine**
+- Mission ID · **BRAIN-001**
+- Title · **Planner Engine**
 - Template · Brain Mission
 - Phase · PHASE 2 — ATLAS BRAIN
 - Atlas Version · 0.20.0 (atlas-001-evolution)
-- Generated · 2026-07-06T20:24:45.622Z
+- Generated · 2026-07-06T20:24:58.311Z
 
 ## Doel
 
-Atlas leert beslissingen nemen.
+Extend Atlas Brain planning capability for goal decomposition and execution queues.
 
 ## Scope
 
 Atlas Brain capabilities: planning, memory, context, decision en agents.
 
 ### Focus
-- Decision Engine
-- Decision Policies
-- Decision Registry
+- Planner registry and engine hardening
+- Planning capability in Decision Framework roadmap
+- Command Center planner visibility
+- Integration with context and memory layers
 
 ## Niet doen
 
+- Provider-independent Brain module
+- No Doughbert logic in generic planner core
+- Registry pattern for planner extensions
 - Geen breaking changes
 - Geen ongevraagde refactors
 - Geen externe database zonder expliciete opdracht
@@ -43,20 +47,22 @@ Atlas Brain capabilities: planning, memory, context, decision en agents.
 - Geen Claude- of Doughbert-logica in brain core
 
 ### Mission Architecture
-- Implement Decision Engine using registry-based Atlas patterns.
-- Implement Decision Policies using registry-based Atlas patterns.
-- Implement Decision Registry using registry-based Atlas patterns.
+- Implement Planner registry and engine hardening using registry-based Atlas patterns.
+- Implement Planning capability in Decision Framework roadmap using registry-based Atlas patterns.
+- Implement Command Center planner visibility using registry-based Atlas patterns.
+- Implement Integration with context and memory layers using registry-based Atlas patterns.
 
 ## Technische eisen
 
 - Clean TypeScript zonder placeholders
 - Exports via index.ts barrels
 - Bootstrap chain blijft intact
-- Implement Decision Engine under src/atlas/ with index.ts exports
+- Implement Planner Engine under src/atlas/ with index.ts exports
 - Integrate with Atlas bootstrap without breaking existing modules
-- Deliver Decision Engine with rule-based local logic
-- Deliver Decision Policies with rule-based local logic
-- Deliver Decision Registry with rule-based local logic
+- Deliver Planner registry and engine hardening with rule-based local logic
+- Deliver Planning capability in Decision Framework roadmap with rule-based local logic
+- Deliver Command Center planner visibility with rule-based local logic
+- Deliver Integration with context and memory layers with rule-based local logic
 
 ## Security
 
@@ -72,11 +78,11 @@ Atlas Brain capabilities: planning, memory, context, decision en agents.
 - Uitbreidbare planning, memory, context en agents
 - Autonome besluitvorming via Decision Engine
 - Context-aware execution
-- Mission BRAIN-004 advances Decision Engine toward Atlas autonomy
+- Mission BRAIN-001 advances Planner Engine toward Atlas autonomy
 
 ## Definition of Done
 
-- [ ] Decision Engine module bestaat onder src/atlas/
+- [ ] Planner Engine module bestaat onder src/atlas/
 - [ ] Mission Card parser werkt
 - [ ] Brief templates zijn geregistreerd
 - [ ] Markdown generator produceert volledige brief
@@ -84,8 +90,10 @@ Atlas Brain capabilities: planning, memory, context, decision en agents.
 - [ ] Generated brief wordt opgeslagen in engineering/briefs/
 - [ ] Command Center toont laatste gegenereerde brief
 - [ ] TypeScript compileert clean
-- [ ] Decision Engine volledig operationeel.
-- [ ] Constraint gerespecteerd: Geen breaking changes
+- [ ] npm run atlas:decide -- "I want Atlas to become better at planning." recommends BRAIN-001 and generates Engineering Package.
+- [ ] Constraint gerespecteerd: Provider-independent Brain module
+- [ ] Constraint gerespecteerd: No Doughbert logic in generic planner core
+- [ ] Constraint gerespecteerd: Registry pattern for planner extensions
 
 ## Validatie
 
@@ -94,9 +102,9 @@ Atlas Brain capabilities: planning, memory, context, decision en agents.
 - npm run atlas:audit
 - npm run atlas:mission <MISSION_ID>
 - Bestaande workflows blijven intact
-- npm run atlas:brief genereert BRAIN-004.md
-- npm run atlas:mission BRAIN-004 genereert engineering package
-- Mission BRAIN-004 DoD volledig afvinkbaar
+- npm run atlas:brief genereert BRAIN-001.md
+- npm run atlas:mission BRAIN-001 genereert engineering package
+- Mission BRAIN-001 DoD volledig afvinkbaar
 
 ## Rapportage
 
@@ -104,7 +112,7 @@ Atlas Brain capabilities: planning, memory, context, decision en agents.
 - Architectuur uitleg
 - Definition of Done status
 - Open items voor volgende sprint
-- Generated brief path: engineering/briefs/BRAIN-004.md
+- Generated brief path: engineering/briefs/BRAIN-001.md
 - Atlas Auditor cross-check via npm run atlas:audit
 - Mission Generator status zichtbaar in Command Center
 
@@ -116,9 +124,9 @@ Atlas Brain capabilities: planning, memory, context, decision en agents.
 - Atlas genereert het Engineering Package via npm run atlas:mission
 - Claude ontvangt alleen claude-engineering-package.md
 - Rapportage na sprint via Atlas Auditor
-- Mission card format voor BRAIN-004 gebruiken
-- Success criteria: Decision Engine volledig operationeel.
+- Mission card format voor BRAIN-001 gebruiken
+- Success criteria: npm run atlas:decide -- "I want Atlas to become better at planning." recommends BRAIN-001 and generates Engineering Package.
 
 ---
 
-_Generated by Atlas Mission Brief Generator · 2026-07-06T20:24:45.622Z_
+_Generated by Atlas Mission Brief Generator · 2026-07-06T20:24:58.311Z_
