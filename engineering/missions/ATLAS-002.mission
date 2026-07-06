@@ -1,0 +1,25 @@
+Mission:
+ATLAS-002
+
+Title:
+Organizational Model
+
+Goal:
+Atlas is no longer an Engineering Manager. Atlas becomes the Branch Director (Vestigingsdirecteur) of the Robbert AI Organization — routing intent to AI departments and workers.
+
+Focus:
+Organizational Model under src/atlas/organization/
+Leadership hierarchy: Robbert → ChatGPT → Atlas → Departments → Workers
+Eight AI departments with worker assignments
+Intent routing: Capability → Department → Worker → Execution Plan
+Engineering Package only when software work is required
+Constitution updated with organizational identity
+
+Constraints:
+ChatGPT defines architecture only — never manages workers
+Every AI Worker reports to Atlas
+TypeScript compiles clean
+Atlas Auditor approves
+
+Success:
+npm run atlas:organize -- "I want Atlas to improve my Instagram growth." routes to Marketing department with execution plan — no Engineering Package unless software is required.

@@ -30,6 +30,20 @@ export function generateClaudeEngineeringPackage(input: {
     "",
     renderBulletList(context.northStarEvaluation.reasons),
     "",
+    "## Organizational Model",
+    "",
+    `- **Atlas role:** Branch Director (Vestigingsdirecteur)`,
+    `- **Organization model:** ${context.decisionTrace.evolution?.organization?.modelId ?? "ATLAS-002"}`,
+    ...(context.decisionTrace.evolution?.organization
+      ? [
+          `- **Departments:** ${context.decisionTrace.evolution.organization.departmentAssignments.map((d) => d.departmentName).join(", ")}`,
+          `- **Workers assigned:** ${context.decisionTrace.evolution.organization.workerAssignments.length}`,
+          `- **Engineering Package required:** ${context.decisionTrace.evolution.organization.engineeringPackageRequired ? "Yes" : "No"}`,
+          "",
+          context.decisionTrace.evolution.organization.branchDirectorRationale,
+          "",
+        ]
+      : []),
     "## Evolution Engine",
     "",
     `- **Engine ID:** ${context.decisionTrace.evolution?.engineId ?? context.decisionTrace.frameworkId}`,

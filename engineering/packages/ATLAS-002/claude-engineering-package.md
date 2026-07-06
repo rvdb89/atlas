@@ -1,4 +1,4 @@
-# Claude Engineering Package — BRAIN-001
+# Claude Engineering Package — ATLAS-002
 
 > **Atlas Mission Orchestrator** — Humans provide intent or Mission ID. Atlas derives everything from the Constitution.
 
@@ -8,7 +8,7 @@
 - **Source of truth:** `engineering/constitution/atlas-constitution.md`
 - **North Star alignment:** Yes (9/10)
 
-- Mission BRAIN-001 is on the Constitution roadmap (Planning capability enables goal decomposition and execution queues).
+- Mission ATLAS-002 is on the Constitution roadmap (Atlas becomes Branch Director — routing intent to departments, not just code).
 - Mission focus advances autonomy capabilities.
 - Mission strengthens Atlas platform execution infrastructure.
 - Mission ID follows Atlas platform naming conventions.
@@ -30,10 +30,10 @@ Atlas (Branch Director) routes software work to Engineering department. Engineer
 
 - **Engine ID:** ATLAS-001
 - **North Star aligned:** Yes (9/10)
-- **Selected mission:** BRAIN-001
+- **Selected mission:** ATLAS-002
 - **Next best mission:** ATLAS-001
 
-Mission ID BRAIN-001 provided — evolution assessment confirms alignment. Roadmap context: Planning capability enables goal decomposition and execution queues Selected by evolution value score — not static roadmap priority.
+Mission ID ATLAS-002 provided — evolution assessment confirms alignment. Roadmap context: Atlas becomes Branch Director — routing intent to departments, not just code Selected by evolution value score — not static roadmap priority.
 
 ### Where are we / where we want to be
 
@@ -52,14 +52,14 @@ Mission ID BRAIN-001 provided — evolution assessment confirms alignment. Roadm
 - **Current State** (pass) — 8 platform capabilities assessed
 - **North Star** (pass) — North Star alignment confirmed
 - **Capability Gaps** (pass) — 6 platform gap(s) identified
-- **Recommended Evolution** (pass) — BRAIN-001 · Planner Engine
-- **Mission Registry** (pass) — BRAIN-001 registered
+- **Recommended Evolution** (pass) — ATLAS-002 · Organizational Model
+- **Mission Registry** (pass) — ATLAS-002 registered
 - **Engineering Package** (pass) — Ready to generate
 
 ## Input received
 
 ```
-BRAIN-001
+ATLAS-002
 ```
 
 No additional instructions from ChatGPT are required or expected.
@@ -92,29 +92,32 @@ Atlas Auditor
 
 ## Mission (from Registry)
 
-- **Mission ID:** BRAIN-001
-- **Title:** Planner Engine
-- **Registry source:** engineering/missions/BRAIN-001.mission
-- **Template:** brain
+- **Mission ID:** ATLAS-002
+- **Title:** Organizational Model
+- **Registry source:** engineering/missions/ATLAS-002.mission
+- **Template:** engineering
 - **Atlas:** 0.21.0 (atlas-002)
-- **Generated:** 2026-07-06T20:33:58.165Z
+- **Generated:** 2026-07-06T20:33:58.547Z
 
 ## Goal
 
-Extend Atlas Brain planning capability for goal decomposition and execution queues.
+Atlas is no longer an Engineering Manager. Atlas becomes the Branch Director (Vestigingsdirecteur) of the Robbert AI Organization — routing intent to AI departments and workers.
 
 ## Implementation focus
 
-- Planner registry and engine hardening
-- Planning capability in Decision Framework roadmap
-- Command Center planner visibility
-- Integration with context and memory layers
+- Organizational Model under src/atlas/organization/
+- Leadership hierarchy: Robbert → ChatGPT → Atlas → Departments → Workers
+- Eight AI departments with worker assignments
+- Intent routing: Capability → Department → Worker → Execution Plan
+- Engineering Package only when software work is required
+- Constitution updated with organizational identity
 
 ## Constraints
 
-- Provider-independent Brain module
-- No Doughbert logic in generic planner core
-- Registry pattern for planner extensions
+- ChatGPT defines architecture only — never manages workers
+- Every AI Worker reports to Atlas
+- TypeScript compiles clean
+- Atlas Auditor approves
 
 ## Engineering Standards (inferred)
 
@@ -137,8 +140,6 @@ Extend Atlas Brain planning capability for goal decomposition and execution queu
 - Generieke architectuur boven vertical coupling
 - Meer autonomie, minder handmatige tussenkomst
 - Uitbreidbare planning, memory, context en agents
-- Autonome besluitvorming via Decision Engine
-- Context-aware execution
 
 ## Architecture Rules (inferred)
 
@@ -149,44 +150,47 @@ Extend Atlas Brain planning capability for goal decomposition and execution queu
 - Registry pattern voor uitbreidbaarheid
 - Geen vertical-specifieke logica in generieke modules
 - TypeScript-first en strict compileerbaar
-- Brain modules blijven provider-onafhankelijk
-- Geen Claude- of Doughbert-logica in brain core
+- CLI tools volgen Atlas script conventies
+- Generated artifacts landen in engineering/ directories
 
 ## Mission Dependencies (inferred)
 
-- **ATLAS-000** · Atlas Constitution · _requires_ — Constitution defines planning capability
-- **ATLAS-001** · Evolution Engine · _requires_ — Planning missions pass through Evolution Engine
+- **ATLAS-000** · Atlas Constitution · _requires_ — Organizational Model extends Constitution identity
+- **ATLAS-001** · Evolution Engine · _requires_ — Evolution complements organizational routing
 
 ## Definition of Done
 
-- [ ] Planner Engine module exists under src/atlas/
-- [ ] Planner registry and engine hardening implemented per mission scope
-- [ ] Planning capability in Decision Framework roadmap implemented per mission scope
-- [ ] Command Center planner visibility implemented per mission scope
-- [ ] Integration with context and memory layers implemented per mission scope
-- [ ] Constraint respected: Provider-independent Brain module
-- [ ] Constraint respected: No Doughbert logic in generic planner core
-- [ ] Constraint respected: Registry pattern for planner extensions
+- [ ] Organizational Model module exists under src/atlas/
+- [ ] Organizational Model under src/atlas/organization/ implemented per mission scope
+- [ ] Leadership hierarchy: Robbert → ChatGPT → Atlas → Departments → Workers implemented per mission scope
+- [ ] Eight AI departments with worker assignments implemented per mission scope
+- [ ] Intent routing: Capability → Department → Worker → Execution Plan implemented per mission scope
+- [ ] Engineering Package only when software work is required implemented per mission scope
+- [ ] Constitution updated with organizational identity implemented per mission scope
+- [ ] Constraint respected: ChatGPT defines architecture only — never manages workers
+- [ ] Constraint respected: Every AI Worker reports to Atlas
+- [ ] Constraint respected: TypeScript compiles clean
+- [ ] Constraint respected: Atlas Auditor approves
 - [ ] TypeScript compiles clean
-- [ ] npm run atlas:mission BRAIN-001 regenerates package
+- [ ] npm run atlas:mission ATLAS-002 regenerates package
 - [ ] npm run atlas:audit -- --strict returns APPROVED or APPROVED_WITH_NOTES
-- [ ] npm run atlas:decide -- "I want Atlas to become better at planning." recommends BRAIN-001 and generates Engineering Package.
+- [ ] npm run atlas:organize -- "I want Atlas to improve my Instagram growth." routes to Marketing department with execution plan — no Engineering Package unless software is required.
 
 ## Validation Plan
 
 - npx tsc --noEmit
 - npm run atlas:health
 - npm run atlas:audit
-- npm run atlas:mission BRAIN-001
+- npm run atlas:mission ATLAS-002
 - Bestaande workflows blijven intact
 - npm run atlas:constitution
-- npm run atlas:evolve -- "intent for BRAIN-001"
-- npm run atlas:mission BRAIN-001
+- npm run atlas:evolve -- "intent for ATLAS-002"
+- npm run atlas:mission ATLAS-002
 
 ## Commands to run before finishing
 
 ```bash
-npm run atlas:mission BRAIN-001
+npm run atlas:mission ATLAS-002
 npm run atlas:audit
 npm run atlas:audit -- --strict
 npx tsc --noEmit
@@ -206,8 +210,8 @@ npm run atlas:health
 
 ## Success criteria
 
-npm run atlas:decide -- "I want Atlas to become better at planning." recommends BRAIN-001 and generates Engineering Package.
+npm run atlas:organize -- "I want Atlas to improve my Instagram growth." routes to Marketing department with execution plan — no Engineering Package unless software is required.
 
 ---
 
-_Generated by Atlas Mission Orchestrator · 2026-07-06T20:33:58.165Z_
+_Generated by Atlas Mission Orchestrator · 2026-07-06T20:33:58.547Z_

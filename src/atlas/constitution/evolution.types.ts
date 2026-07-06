@@ -77,4 +77,5 @@ export type EvolutionResult = {
     details: string[];
   }>;
   evaluatedAt: string;
+  organization?: import("../organization/organization.types").OrganizationRoutingResult;
 };

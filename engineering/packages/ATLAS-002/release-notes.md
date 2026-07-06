@@ -1,7 +1,7 @@
-# Release Notes — BRAIN-001
+# Release Notes — ATLAS-002
 
-- Mission · **BRAIN-001**
-- Title · **Planner Engine**
+- Mission · **ATLAS-002**
+- Title · **Organizational Model**
 - Atlas · 0.21.0 (atlas-002)
 - Status · **Pending implementation**
 
@@ -9,7 +9,7 @@
 
 _Fill in after sprint completion._
 
-Extend Atlas Brain planning capability for goal decomposition and execution queues.
+Atlas is no longer an Engineering Manager. Atlas becomes the Branch Director (Vestigingsdirecteur) of the Robbert AI Organization — routing intent to AI departments and workers.
 
 ## Delivered
 
@@ -21,7 +21,7 @@ Extend Atlas Brain planning capability for goal decomposition and execution queu
 
 ## Validation
 
-- [ ] npm run atlas:mission BRAIN-001
+- [ ] npm run atlas:mission ATLAS-002
 - [ ] npm run atlas:audit -- --strict
 - [ ] npx tsc --noEmit
 

@@ -61,6 +61,7 @@
     "atlas:mission": "tsx scripts/atlas-mission.ts",
     "atlas:constitution": "tsx scripts/atlas-constitution.ts",
     "atlas:intent": "tsx scripts/atlas-intent.ts",
+    "atlas:organize": "tsx scripts/atlas-organize.ts",
     "atlas:decide": "tsx scripts/atlas-evolve.ts",
     "atlas:evolve": "tsx scripts/atlas-evolve.ts",
     "reset-project": "node ./scripts/reset-project.js",

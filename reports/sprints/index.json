@@ -1,5 +1,15 @@
 [
   {
+    "date": "2026-07-06T20:34:01.588Z",
+    "sprintName": "Atlas Auditor Hardening",
+    "score": 76,
+    "recommendation": "APPROVED_WITH_NOTES",
+    "warnings": 7,
+    "blockers": 0,
+    "reportLink": "reports/sprints/sprint-audit-2026-07-06-22-34.md",
+    "strict": true
+  },
+  {
     "date": "2026-07-06T20:26:48.365Z",
     "sprintName": "Atlas Auditor Hardening",
     "score": 83,

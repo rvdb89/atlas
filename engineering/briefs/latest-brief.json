@@ -1,12 +1,12 @@
 {
-  "lastMission": "ATLAS-001",
-  "lastGeneratedBrief": "engineering/briefs/ATLAS-001.md",
+  "lastMission": "ATLAS-002",
+  "lastGeneratedBrief": "engineering/briefs/ATLAS-002.md",
   "templateUsed": "Engineering Mission",
   "status": "generated",
-  "generatedAt": "2026-07-06T20:24:45.813Z",
-  "title": "Evolution Engine",
-  "packageDir": "engineering/packages/ATLAS-001",
-  "claudePackagePath": "engineering/packages/ATLAS-001/claude-engineering-package.md",
-  "releaseNotesPath": "engineering/packages/ATLAS-001/release-notes.md",
+  "generatedAt": "2026-07-06T20:33:58.547Z",
+  "title": "Organizational Model",
+  "packageDir": "engineering/packages/ATLAS-002",
+  "claudePackagePath": "engineering/packages/ATLAS-002/claude-engineering-package.md",
+  "releaseNotesPath": "engineering/packages/ATLAS-002/release-notes.md",
   "latestPackagePath": "engineering/packages/latest-package.json"
 }

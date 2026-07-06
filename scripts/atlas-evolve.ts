@@ -135,6 +135,16 @@ function main(): void {
   console.log(`  ${evolution.answers.whyNextBestStep}`);
   console.log("");
 
+  if (evolution.organization && !evolution.organization.engineeringPackageRequired) {
+    console.log(chalk.bold("Branch Director routing"));
+    console.log(`  ${evolution.organization.branchDirectorRationale}`);
+    console.log("");
+    console.log(chalk.green("Operational routing complete"));
+    console.log(chalk.dim("No Engineering Package required — Atlas coordinates AI Workers directly."));
+    console.log("");
+    return;
+  }
+
   if (!evolution.selectedMissionId || !evolution.missionRegistered) {
     console.log(chalk.yellow("Cannot generate package — mission not registered."));
     console.log("");

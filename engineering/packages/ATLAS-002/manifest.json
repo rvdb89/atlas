@@ -1,5 +1,15 @@
 {
   "schemaVersion": "1.0",
+  "packageType": "engineering",
+  "missionId": "ATLAS-002",
+  "title": "Organizational Model",
+  "templateLabel": "Engineering Mission",
+  "atlasVersion": "0.21.0",
+  "atlasBuild": "atlas-002",
+  "generatedAt": "2026-07-06T20:33:58.547Z",
+  "outputDir": "engineering/packages/ATLAS-002",
+  "entrypoint": "engineering/packages/ATLAS-002/claude-engineering-package.md",
+  "legacyBriefPath": "engineering/briefs/ATLAS-002.md",
   "inputRequired": "missionIdOnly",
   "inferencePipeline": [
     "organization",
@@ -19,16 +29,11 @@
     "validation-plan",
     "engineering-package"
   ],
-  "missionId": "ATLAS-002",
-  "title": "Organizational Model",
-  "templateLabel": "Engineering Mission",
-  "atlasVersion": "0.21.0",
-  "atlasBuild": "atlas-002",
-  "generatedAt": "2026-07-06T20:33:58.547Z",
-  "outputDir": "engineering/packages/ATLAS-002",
-  "entrypoint": "engineering/packages/ATLAS-002/claude-engineering-package.md",
-  "legacyBriefPath": "engineering/briefs/ATLAS-002.md",
-  "releaseNotesPath": "engineering/packages/ATLAS-002/release-notes.md",
+  "constitutionId": "ATLAS-000",
+  "constitutionPath": "engineering/constitution/atlas-constitution.md",
+  "decisionFrameworkId": "ATLAS-001",
+  "evolutionEngineId": "ATLAS-001",
+  "organizationModelId": "ATLAS-002",
   "dependencies": [
     {
       "missionId": "ATLAS-000",

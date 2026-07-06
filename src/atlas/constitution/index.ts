@@ -7,3 +7,11 @@ export * from "./ConstitutionEngine";
 export * from "./EvolutionEngine";
 export * from "./DecisionFramework";
 export * from "./ConstitutionRenderer";
+
+export { routeOrganization, renderOrganizationMarkdown } from "../organization/OrganizationEngine";
+export {
+  ORGANIZATION_MODEL_ID,
+  getOrganizationalModel,
+  renderOrganizationHierarchy,
+} from "../organization/OrganizationalModel";
+export type * from "../organization/organization.types";

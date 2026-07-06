@@ -16,6 +16,7 @@ export type PackageManifest = {
   constitutionPath: string;
   decisionFrameworkId: string;
   evolutionEngineId: string;
+  organizationModelId: string;
   dependencies: Array<{
     missionId: string;
     title: string;
@@ -80,6 +81,7 @@ export function buildPackageManifest(input: {
     constitutionPath: input.context.constitutionPath,
     decisionFrameworkId: input.context.decisionTrace.frameworkId,
     evolutionEngineId: input.context.decisionTrace.evolution?.engineId ?? input.context.decisionTrace.frameworkId,
+    organizationModelId: input.context.decisionTrace.evolution?.organization?.modelId ?? "ATLAS-002",
     dependencies: input.context.dependencies.map((dep) => ({
       missionId: dep.missionId,
       title: dep.title,

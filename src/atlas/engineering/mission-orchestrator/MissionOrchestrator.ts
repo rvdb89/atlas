@@ -36,8 +36,8 @@ export function orchestrateMission(missionId: string, options: MissionOrchestrat
     return { ok: false, message: resolved.message };
   }
 
-  const atlasVersion = options.atlasVersion ?? "0.20.0";
-  const atlasBuild = options.atlasBuild ?? "atlas-001-evolution";
+  const atlasVersion = options.atlasVersion ?? "0.21.0";
+  const atlasBuild = options.atlasBuild ?? "atlas-002";
   const outputDir = options.outputDir ?? `engineering/packages/${resolved.entry.id}`;
   const briefOutputDir = options.briefOutputDir ?? "engineering/briefs";
 
@@ -171,11 +171,11 @@ export function getInferredMissionContext(missionId: string): InferredMissionCon
 export function getMissionOrchestratorView(): MissionOrchestratorView {
   if (!lastPackage) {
     return {
-      lastMission: "ATLAS-001",
-      lastPackageDir: "engineering/packages/ATLAS-001",
-      claudePackagePath: "engineering/packages/ATLAS-001/claude-engineering-package.md",
-      briefPath: "engineering/briefs/ATLAS-001.md",
-      releaseNotesPath: "engineering/packages/ATLAS-001/release-notes.md",
+      lastMission: "ATLAS-002",
+      lastPackageDir: "engineering/packages/ATLAS-002",
+      claudePackagePath: "engineering/packages/ATLAS-002/claude-engineering-package.md",
+      briefPath: "engineering/briefs/ATLAS-002.md",
+      releaseNotesPath: "engineering/packages/ATLAS-002/release-notes.md",
       status: "idle",
       generatedAt: new Date().toISOString(),
     };

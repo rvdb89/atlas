@@ -2,13 +2,13 @@
 import type { AuditLatestSummary } from "../audit.types";
 
 export const LATEST_AUDIT_SUMMARY: AuditLatestSummary = {
-  "generatedAt": "2026-07-06T20:26:48.365Z",
+  "generatedAt": "2026-07-06T20:34:01.588Z",
   "sprintTitle": "Atlas Auditor Hardening",
   "sprintId": "brain-sprint-3.6",
-  "overallScore": 83,
+  "overallScore": 76,
   "recommendation": "APPROVED_WITH_NOTES",
-  "warnings": 5,
+  "warnings": 7,
   "blockers": 0,
-  "reportPath": "reports/sprints/sprint-audit-2026-07-06-22-26.md",
+  "reportPath": "reports/sprints/sprint-audit-2026-07-06-22-34.md",
   "nextAction": "✓ Commit · ✓ Push · ✓ Create follow-up mission"
 };

@@ -1,5 +1,6 @@
 import type { DecisionFrameworkDefinition } from "./decision.types";
 import type { EvolutionEngineDefinition } from "./evolution.types";
+import type { OrganizationalModelDefinition } from "../organization/organization.types";
 
 export type ConstitutionCapability = {
   id: string;
@@ -41,6 +42,7 @@ export type AtlasConstitution = {
   roadmap: ConstitutionRoadmapItem[];
   decisionFramework: DecisionFrameworkDefinition;
   evolutionEngine: EvolutionEngineDefinition;
+  organizationalModel: OrganizationalModelDefinition;
 };
 
 export type IntentResolution = {

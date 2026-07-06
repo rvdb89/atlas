@@ -4,8 +4,8 @@
 
 - Mission · **BRAIN-001**
 - Title · **Planner Engine**
-- Atlas · 0.20.0 (atlas-001-evolution)
-- Generated · 2026-07-06T20:24:58.311Z
+- Atlas · 0.21.0 (atlas-002)
+- Generated · 2026-07-06T20:33:58.166Z
 
 ## Platform audit gates
 
@@ -39,10 +39,9 @@
 
 ## Architecture rules
 
-- [ ] ChatGPT must not define missions or write Architecture Briefs
+- [ ] ChatGPT (Chief Architect) defines architecture and strategic direction — never manages workers
 - [ ] Generic architecture over vertical coupling
 - [ ] Provider independence in Brain and core platform layers
-- [ ] Registry pattern for extensibility across systems
 - [ ] Atlas core blijft domein-onafhankelijk
 - [ ] Registry pattern voor uitbreidbaarheid
 - [ ] Geen vertical-specifieke logica in generieke modules

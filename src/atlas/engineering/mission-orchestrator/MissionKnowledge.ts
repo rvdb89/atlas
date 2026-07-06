@@ -21,6 +21,7 @@ export type MissionDependency = {
 };
 
 export type MissionPipelineStepId =
+  | "organization"
   | "evolution-engine"
   | "decision-framework"
   | "constitution"
@@ -78,6 +79,10 @@ const KNOWN_DEPENDENCIES: Record<
   Array<{ missionId: string; title?: string; reason: string; relationship?: MissionDependency["relationship"] }>
 > = {
   "ATLAS-000": [],
+  "ATLAS-002": [
+    { missionId: "ATLAS-000", title: "Atlas Constitution", reason: "Organizational Model extends Constitution identity", relationship: "requires" },
+    { missionId: "ATLAS-001", title: "Evolution Engine", reason: "Evolution complements organizational routing", relationship: "requires" },
+  ],
   "ATLAS-001": [
     { missionId: "ATLAS-000", title: "Atlas Constitution", reason: "Evolution Engine derives from Constitution", relationship: "requires" },
   ],
@@ -102,6 +107,7 @@ const KNOWN_DEPENDENCIES: Record<
 };
 
 const PIPELINE_STEPS: MissionPipelineStep[] = [
+  { id: "organization", label: "Organizational Model", source: "constitution" },
   { id: "evolution-engine", label: "Evolution Engine", source: "constitution" },
   { id: "decision-framework", label: "Decision Framework", source: "constitution" },
   { id: "constitution", label: "Constitution", source: "constitution" },

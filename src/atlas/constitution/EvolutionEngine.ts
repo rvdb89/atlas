@@ -16,6 +16,8 @@ import {
   getTargetMaturity,
   isNorthStarCritical,
 } from "./CurrentStateRegistry";
+import { routeOrganization } from "../organization/OrganizationEngine";
+import { getOrganizationalModel } from "../organization/OrganizationalModel";
 
 const INTENT_CAPABILITY_PATTERNS: Array<{ pattern: RegExp; capabilityId: string }> = [
   { pattern: /\bevolv(e|ution|ing)\b|\bself[- ]improv/i, capabilityId: "orchestration" },
@@ -267,6 +269,10 @@ export function runEvolution(input: EvolutionInput): EvolutionResult {
   const normalizedIntent =
     intent || `Evolve registered mission ${input.missionId} toward North Star alignment.`;
 
+  const organization = routeOrganization({ intent: normalizedIntent });
+  const orgModel = getOrganizationalModel();
+  const engineeringRequired = input.missionId ? true : organization.engineeringPackageRequired;
+
   const intentCapabilityIds = matchIntentCapabilities(normalizedIntent);
   const currentState = assessCurrentState();
   const gaps = identifyGaps(intentCapabilityIds);
@@ -292,82 +298,176 @@ export function runEvolution(input: EvolutionInput): EvolutionResult {
     ];
   }
 
-  const selected = recommendations[0] ?? null;
-  const selectedMissionId = selected?.missionId ?? null;
-  const nextBestMissionId = recommendations[1]?.missionId ?? null;
-  const northStarEval = evaluateNorthStarScore(recommendations, intentCapabilityIds);
-  const answers = buildAnswers({
-    intent: normalizedIntent,
-    gaps,
-    recommendations,
-    selected,
-  });
+  let selected = recommendations[0] ?? null;
+  let selectedMissionId = engineeringRequired ? (selected?.missionId ?? input.missionId?.toUpperCase() ?? null) : null;
+  let nextBestMissionId = engineeringRequired ? (recommendations[1]?.missionId ?? null) : null;
+
+  const organizationResult = {
+    ...organization,
+    engineeringMissionId: engineeringRequired && selectedMissionId ? selectedMissionId : null,
+  };
+
+  const northStarEval = engineeringRequired
+    ? evaluateNorthStarScore(recommendations, intentCapabilityIds)
+    : {
+        aligned: organization.departmentAssignments.length > 0,
+        score: organization.departmentAssignments.length > 0 ? 7 : 3,
+        reasons: [
+          getConstitutionNorthStarGoals()[0],
+          "Operational intent routed through Organizational Model.",
+          organization.branchDirectorRationale,
+        ],
+      };
+
+  const answers = engineeringRequired
+    ? buildAnswers({ intent: normalizedIntent, gaps, recommendations, selected })
+    : {
+        whereAreWeToday: `Atlas (Branch Director) coordinating ${organization.departmentAssignments.length} department(s).`,
+        whereDoWeWantToBe: getConstitutionNorthStarGoals()[0],
+        missingCapabilities: organization.organizationalCapabilities,
+        highestValueCapability: organization.organizationalCapabilities[0] ?? null,
+        systemToEvolve: organization.departmentAssignments[0]?.departmentId ?? null,
+        missionsToCreate: [],
+        whyNextBestStep: organization.branchDirectorRationale,
+      };
 
   const missionRegistered = selectedMissionId
     ? (input.missionRegistered?.(selectedMissionId) ?? true)
     : false;
 
+  const orgCapabilityDetails = organization.organizationalCapabilities.map((id) => {
+    const cap = orgModel.organizationalCapabilities.find((item) => item.id === id);
+    return cap ? `${cap.name} (${id})` : id;
+  });
+
   const steps: EvolutionResult["steps"] = [
     step("intent", "Intent", "pass", "Intent recognized", [normalizedIntent]),
     step(
-      "current-state",
-      "Current State",
-      "pass",
-      `${currentState.length} capabilities assessed`,
-      currentState.map(
-        (item) =>
-          `${item.name}: ${Math.round(item.maturity * 100)}% (${item.status}) — ${item.evidence[0]}`,
+      "capability",
+      "Capability",
+      orgCapabilityDetails.length > 0 ? "pass" : "warn",
+      orgCapabilityDetails.length > 0 ? `${orgCapabilityDetails.length} capability(ies) mapped` : "General operational capability",
+      orgCapabilityDetails.length > 0 ? orgCapabilityDetails : ["Routed via Operations default"],
+    ),
+    step(
+      "departments",
+      "Department(s)",
+      organization.departmentAssignments.length > 0 ? "pass" : "warn",
+      `${organization.departmentAssignments.length} department(s) selected`,
+      organization.departmentAssignments.map(
+        (item) => `${item.departmentName} (${item.role}) — ${item.rationale}`,
       ),
     ),
     step(
-      "north-star",
-      "North Star",
-      northStarEval.aligned ? "pass" : "warn",
-      northStarEval.aligned ? "North Star alignment confirmed" : "North Star alignment uncertain",
-      northStarEval.reasons,
-    ),
-    step(
-      "capability-gaps",
-      "Capability Gaps",
-      gaps.length > 0 ? "pass" : "warn",
-      `${gaps.length} gap(s) identified`,
-      gaps.slice(0, 6).map(
-        (item) =>
-          `${item.name}: ${Math.round(item.currentMaturity * 100)}% → ${Math.round(item.targetMaturity * 100)}% (gap ${Math.round(item.gap * 100)}%)${item.intentRelevant ? " · intent-relevant" : ""}`,
+      "worker-assignment",
+      "Worker Assignment",
+      organization.workerAssignments.length > 0 ? "pass" : "warn",
+      `${organization.workerAssignments.length} worker(s) assigned`,
+      organization.workerAssignments.map(
+        (item) => `${item.workerName} · ${item.departmentId} — ${item.task}`,
       ),
     ),
     step(
-      "recommended-evolution",
-      "Recommended Evolution",
-      selected ? "pass" : "warn",
-      selected ? `${selected.missionId} · ${selected.title} (score ${selected.valueScore.toFixed(2)})` : "No evolution path",
-      recommendations.slice(0, 4).map(
-        (item) => `${item.missionId} · score ${item.valueScore.toFixed(2)} — ${item.why}`,
+      "execution-plan",
+      "Execution Plan",
+      organization.executionPlan.length > 0 ? "pass" : "warn",
+      `${organization.executionPlan.length} step(s) planned`,
+      organization.executionPlan.map(
+        (item) => `${item.order}. ${item.action} → ${item.deliverable}`,
       ),
     ),
+  ];
+
+  if (engineeringRequired) {
+    steps.push(
+      step(
+        "current-state",
+        "Current State",
+        "pass",
+        `${currentState.length} platform capabilities assessed`,
+        currentState.slice(0, 4).map(
+          (item) => `${item.name}: ${Math.round(item.maturity * 100)}% (${item.status})`,
+        ),
+      ),
+      step(
+        "north-star",
+        "North Star",
+        northStarEval.aligned ? "pass" : "warn",
+        northStarEval.aligned ? "North Star alignment confirmed" : "North Star alignment uncertain",
+        northStarEval.reasons,
+      ),
+      step(
+        "capability-gaps",
+        "Capability Gaps",
+        gaps.length > 0 ? "pass" : "warn",
+        `${gaps.length} platform gap(s) identified`,
+        gaps.slice(0, 4).map(
+          (item) =>
+            `${item.name}: gap ${Math.round(item.gap * 100)}%${item.intentRelevant ? " · intent-relevant" : ""}`,
+        ),
+      ),
+      step(
+        "recommended-evolution",
+        "Recommended Evolution",
+        selected ? "pass" : "warn",
+        selected ? `${selected.missionId} · ${selected.title}` : "No evolution path",
+        recommendations.slice(0, 3).map((item) => `${item.missionId} — ${item.why}`),
+      ),
+    );
+  } else {
+    steps.push(
+      step(
+        "north-star",
+        "North Star",
+        "pass",
+        "Operational alignment confirmed",
+        northStarEval.reasons,
+      ),
+    );
+  }
+
+  steps.push(
     step(
       "mission-registry",
       "Mission Registry",
-      selectedMissionId && missionRegistered ? "pass" : selectedMissionId ? "warn" : "fail",
-      selectedMissionId
-        ? missionRegistered
-          ? `${selectedMissionId} registered`
-          : `${selectedMissionId} not in registry`
-        : "No mission selected",
-      selectedMissionId
+      engineeringRequired
+        ? selectedMissionId && missionRegistered
+          ? "pass"
+          : selectedMissionId
+            ? "warn"
+            : "fail"
+        : "pass",
+      engineeringRequired
+        ? selectedMissionId
+          ? missionRegistered
+            ? `${selectedMissionId} registered`
+            : `${selectedMissionId} not in registry`
+          : "No mission selected"
+        : "Not required — operational routing only",
+      engineeringRequired
         ? [missionRegistered ? "Ready for Engineering Package." : "Add mission card to registry."]
-        : ["Cannot generate package without mission."],
+        : ["Atlas assigns AI Workers directly — no mission registry needed."],
     ),
     step(
       "engineering-package",
       "Engineering Package",
-      selectedMissionId && missionRegistered ? "pass" : "warn",
-      selectedMissionId && missionRegistered ? "Ready to generate" : "Pending",
-      selectedMissionId && missionRegistered
-        ? [`npm run atlas:evolve -- "${normalizedIntent}"`, `npm run atlas:mission -- ${selectedMissionId}`]
-        : [],
+      engineeringRequired
+        ? selectedMissionId && missionRegistered
+          ? "pass"
+          : "warn"
+        : "pass",
+      engineeringRequired
+        ? selectedMissionId && missionRegistered
+          ? "Ready to generate"
+          : "Pending"
+        : "Not required — no software work for this intent",
+      engineeringRequired && selectedMissionId && missionRegistered
+        ? [`npm run atlas:mission -- ${selectedMissionId}`]
+        : engineeringRequired
+          ? []
+          : ["Atlas (Branch Director) coordinates departments without code generation."],
     ),
-  ];
+  );
 
   return {
     engineId: EVOLUTION_ENGINE_ID,
@@ -379,10 +479,13 @@ export function runEvolution(input: EvolutionInput): EvolutionResult {
     evolutionRecommendations: recommendations,
     answers,
     selectedMissionId,
-    selectionRationale: answers.whyNextBestStep,
+    selectionRationale: engineeringRequired
+      ? answers.whyNextBestStep
+      : organization.branchDirectorRationale,
     nextBestMissionId,
     missionRegistered,
     steps,
+    organization: organizationResult,
     evaluatedAt,
   };
 }
