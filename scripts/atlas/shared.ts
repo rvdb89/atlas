@@ -20,14 +20,17 @@ export {
 
 /** @deprecated Use ATLAS_STUDIO_PORT */
 export const ATLAS_PORT = ATLAS_STUDIO_PORT;
-export const ATLAS_STUDIO_DEFAULT_PATH = "/studio/ceo-workflow";
+export const ATLAS_CONTROL_PATH = "/studio/control";
+export const ATLAS_STUDIO_DEFAULT_PATH = ATLAS_CONTROL_PATH;
 export const ATLAS_STUDIO_FALLBACK_PATH = "/studio";
-/** @deprecated Use ATLAS_STUDIO_DEFAULT_PATH — kept for Command Center links */
+export const ATLAS_CEO_WORKFLOW_PATH = "/studio/ceo-workflow";
+/** @deprecated Use ATLAS_CONTROL_PATH — kept for Command Center links */
 export const COMMAND_CENTER_PATH = "/studio/command-center";
 export const COMMAND_CENTER_URL = `http://localhost:${ATLAS_PORT}${COMMAND_CENTER_PATH}`;
 
 export const ATLAS_STUDIO_ROUTE_LABELS: Record<string, string> = {
-  [ATLAS_STUDIO_DEFAULT_PATH]: "CEO Workflow",
+  [ATLAS_CONTROL_PATH]: "Atlas Control",
+  [ATLAS_CEO_WORKFLOW_PATH]: "CEO Workflow",
   [ATLAS_STUDIO_FALLBACK_PATH]: "Studio",
   [COMMAND_CENTER_PATH]: "Command Center",
 };
@@ -43,11 +46,19 @@ export function resolveAtlasStudioLaunchRoute(session?: {
     };
   }
 
+  const controlRouteFile = join(ROOT_DIR, "src/app/studio/control.tsx");
+  if (existsSync(controlRouteFile)) {
+    return {
+      path: ATLAS_CONTROL_PATH,
+      label: ATLAS_STUDIO_ROUTE_LABELS[ATLAS_CONTROL_PATH],
+    };
+  }
+
   const ceoRouteFile = join(ROOT_DIR, "src/app/studio/ceo-workflow.tsx");
   if (existsSync(ceoRouteFile)) {
     return {
-      path: ATLAS_STUDIO_DEFAULT_PATH,
-      label: ATLAS_STUDIO_ROUTE_LABELS[ATLAS_STUDIO_DEFAULT_PATH],
+      path: ATLAS_CEO_WORKFLOW_PATH,
+      label: ATLAS_STUDIO_ROUTE_LABELS[ATLAS_CEO_WORKFLOW_PATH],
     };
   }
 
@@ -233,6 +244,7 @@ export function detectDevProcesses(): string[] {
 }
 
 export const STUDIO_ROUTES = [
+  "src/app/studio/control.tsx",
   "src/app/studio/command-center.tsx",
   "src/app/studio/ceo-workflow.tsx",
   "src/app/studio/health.tsx",

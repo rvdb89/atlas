@@ -5,7 +5,7 @@
 - Mission · **STUDIO-002**
 - Title · **Branch Director Debrief Flow**
 - Atlas · 0.26.0 (brain-005)
-- Generated · 2026-07-06T22:10:09.586Z
+- Generated · 2026-07-07T17:53:17.902Z
 
 ## Required commands
 

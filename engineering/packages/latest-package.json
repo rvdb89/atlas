@@ -1,8 +1,8 @@
 {
-  "missionId": "BRAIN-005",
-  "title": "Capability Registry & Roadmap Intelligence",
-  "outputDir": "engineering/packages/BRAIN-005",
-  "entrypoint": "engineering/packages/BRAIN-005/claude-engineering-package.md",
+  "missionId": "STUDIO-002",
+  "title": "Branch Director Debrief Flow",
+  "outputDir": "engineering/packages/STUDIO-002",
+  "entrypoint": "engineering/packages/STUDIO-002/claude-engineering-package.md",
   "decisionEngineId": "BRAIN-004",
-  "generatedAt": "2026-07-06T22:21:18.034Z"
+  "generatedAt": "2026-07-07T17:53:17.902Z"
 }

@@ -55,6 +55,7 @@ export function registerAtlasOsDefaults(): void {
 
   const commands: Array<Parameters<typeof commandRegistry.register>[0]> = [
     { id: "run-workflow", label: "Run Workflow", group: "Workflows", keywords: ["proof", "pipeline"], run: (ctx) => nav(ctx, "/studio/proof-of-power") },
+    { id: "open-atlas-control", label: "Open Atlas Control", group: "Navigation", keywords: ["control", "dashboard", "command"], run: (ctx) => nav(ctx, "/studio/control") },
     { id: "open-ceo-workflow", label: "Open CEO Workflow", group: "Navigation", keywords: ["ceo", "release", "intent"], run: (ctx) => nav(ctx, "/studio/ceo-workflow") },
     { id: "open-command-center", label: "Open Command Center", group: "Navigation", keywords: ["cockpit"], run: (ctx) => nav(ctx, "/studio/command-center") },
     { id: "open-proof-of-power", label: "Open Proof of Power", group: "Navigation", run: (ctx) => nav(ctx, "/studio/proof-of-power") },
@@ -242,6 +243,20 @@ export function registerAtlasOsDefaults(): void {
         <Metric label="Entities" value={studioDataService.getDashboardStats().entities} />
         <Text style={{ marginTop: 8, fontSize: 12, color: STUDIO_COLORS.secondary }}>
           Atlas OS cockpit overview
+        </Text>
+      </InspectorPanel>
+    ),
+  });
+
+  inspectorRegistry.register({
+    id: "atlas-control",
+    title: "Atlas Control",
+    order: 0,
+    matchRoute: (pathname) => pathname.includes("/control"),
+    render: () => (
+      <InspectorPanel title="Executive view">
+        <Text style={{ fontSize: 12, color: STUDIO_COLORS.secondary }}>
+          Daily command center for company health, agents, approvals, and Branch Director advice.
         </Text>
       </InspectorPanel>
     ),

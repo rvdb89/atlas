@@ -18,5 +18,6 @@ export * from "./proof-of-power";
 export * from "./health";
 export * from "./developer";
 export * from "./command-center";
+export * from "./control";
 export * from "./ceo-workflow";
 export * from "./os";

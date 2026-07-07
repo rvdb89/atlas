@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-07-06T22:21:20.728Z",
+  "generatedAt": "2026-07-07T17:53:20.530Z",
   "sprintTitle": "Atlas Auditor Hardening",
   "sprintId": "brain-sprint-3.6",
-  "overallScore": 93,
+  "overallScore": 89,
   "recommendation": "APPROVED_WITH_NOTES",
-  "warnings": 3,
+  "warnings": 4,
   "blockers": 0,
-  "reportPath": "reports/sprints/sprint-audit-2026-07-07-00-21.md",
+  "reportPath": "reports/sprints/sprint-audit-2026-07-07-19-53.md",
   "nextAction": "✓ Commit · ✓ Push · ✓ Create follow-up initiative"
 }
