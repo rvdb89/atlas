@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { CONTROL_COLORS, CONTROL_RADIUS } from "./theme";
-import type { ControlStatus } from "./types";
+import ControlStateBadge from "./ControlStateBadge";
+import type { ControlStatus, KpiStatus, KpiTrend } from "./types";
 
 const STATUS_LABEL: Record<ControlStatus, string> = {
   healthy: "Healthy",
@@ -11,6 +12,7 @@ const STATUS_LABEL: Record<ControlStatus, string> = {
   idle: "Idle",
   active: "Active",
   pending: "Pending",
+  planning: "Planning",
 };
 
 const STATUS_COLOR: Record<ControlStatus, string> = {
@@ -20,6 +22,13 @@ const STATUS_COLOR: Record<ControlStatus, string> = {
   idle: CONTROL_COLORS.textMuted,
   active: CONTROL_COLORS.accent,
   pending: CONTROL_COLORS.gold,
+  planning: CONTROL_COLORS.textSoft,
+};
+
+const KPI_STATUS_COLOR: Record<KpiStatus, string> = {
+  healthy: CONTROL_COLORS.success,
+  attention: CONTROL_COLORS.warning,
+  critical: CONTROL_COLORS.danger,
 };
 
 type ControlCardProps = {
@@ -27,10 +36,20 @@ type ControlCardProps = {
   subtitle?: string;
   status?: ControlStatus;
   statusLabel?: string;
+  liveFromState?: boolean;
+  stateDetail?: string;
   children?: ReactNode;
 };
 
-export default function ControlCard({ title, subtitle, status, statusLabel, children }: ControlCardProps) {
+export default function ControlCard({
+  title,
+  subtitle,
+  status,
+  statusLabel,
+  liveFromState,
+  stateDetail,
+  children,
+}: ControlCardProps) {
   const badgeLabel = statusLabel ?? (status ? STATUS_LABEL[status] : undefined);
   const badgeColor = status ? STATUS_COLOR[status] : CONTROL_COLORS.textMuted;
 
@@ -47,6 +66,7 @@ export default function ControlCard({ title, subtitle, status, statusLabel, chil
           </View>
         ) : null}
       </View>
+      {liveFromState ? <ControlStateBadge detail={stateDetail} compact /> : null}
       {children}
     </View>
   );
@@ -76,20 +96,28 @@ export function ControlRow({
   );
 }
 
-export function ControlMetric({
+export function ControlKpi({
   label,
   value,
-  hint,
+  trend,
+  status,
 }: {
   label: string;
   value: string;
-  hint?: string;
+  trend: KpiTrend;
+  status: KpiStatus;
 }) {
+  const trendSymbol = { up: "↑", down: "↓", flat: "→" }[trend];
+  const statusColor = KPI_STATUS_COLOR[status];
+
   return (
     <View style={styles.metric}>
-      <Text style={styles.metricLabel}>{label}</Text>
+      <View style={styles.kpiHeader}>
+        <Text style={styles.metricLabel}>{label}</Text>
+        <Text style={[styles.kpiTrend, { color: statusColor }]}>{trendSymbol}</Text>
+      </View>
       <Text style={styles.metricValue}>{value}</Text>
-      {hint ? <Text style={styles.metricHint}>{hint}</Text> : null}
+      <View style={[styles.kpiStatusDot, { backgroundColor: statusColor }]} />
     </View>
   );
 }
@@ -205,5 +233,23 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 12,
     color: CONTROL_COLORS.textMuted,
+  },
+
+  kpiHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  kpiTrend: {
+    fontSize: 14,
+    fontWeight: "900",
+  },
+
+  kpiStatusDot: {
+    marginTop: 8,
+    width: 8,
+    height: 8,
+    borderRadius: 999,
   },
 });

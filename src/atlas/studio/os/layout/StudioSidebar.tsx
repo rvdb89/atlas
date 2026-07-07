@@ -1,9 +1,32 @@
 import { usePathname, router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { ATLAS_STUDIO_NAV } from "../../navigation/routes";
+import { ATLAS_STUDIO_NAV, ATLAS_STUDIO_SECONDARY_NAV } from "../../navigation/routes";
 import { STUDIO_COLORS, STUDIO_RADIUS } from "../../core/theme";
 import { useStudioOs } from "../StudioOsContext";
+import type { StudioRouteItem } from "../../navigation/routes";
+
+function renderNavItem(item: StudioRouteItem, pathname: string, muted = false) {
+  const active =
+    pathname === item.route ||
+    (item.route !== "/studio" && pathname.startsWith(`${item.route}/`));
+
+  return (
+    <Pressable
+      key={item.id}
+      style={[styles.navItem, active ? styles.navItemActive : null, muted ? styles.navItemSecondary : null]}
+      onPress={() => router.push(item.route as never)}
+    >
+      <Text style={styles.navEmoji}>{item.emoji}</Text>
+      <View style={styles.navCopy}>
+        <Text style={[styles.navTitle, active ? styles.navTitleActive : null, muted ? styles.navTitleSecondary : null]}>
+          {item.title}
+        </Text>
+        <Text style={[styles.navDescription, muted ? styles.navDescriptionSecondary : null]}>{item.description}</Text>
+      </View>
+    </Pressable>
+  );
+}
 
 export default function StudioSidebar() {
   const pathname = usePathname();
@@ -12,29 +35,17 @@ export default function StudioSidebar() {
   return (
     <View style={styles.sidebar}>
       <Text style={styles.brand}>Atlas OS</Text>
-      <Text style={styles.tagline}>Mission Control</Text>
+      <Text style={styles.tagline}>Atlas Control</Text>
 
       <Pressable style={styles.paletteButton} onPress={openPalette}>
         <Text style={styles.paletteLabel}>⌘K Command Palette</Text>
       </Pressable>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {ATLAS_STUDIO_NAV.map((item) => {
-          const active = pathname === item.route || pathname.startsWith(`${item.route}/`);
-          return (
-            <Pressable
-              key={item.id}
-              style={[styles.navItem, active ? styles.navItemActive : null]}
-              onPress={() => router.push(item.route as never)}
-            >
-              <Text style={styles.navEmoji}>{item.emoji}</Text>
-              <View style={styles.navCopy}>
-                <Text style={[styles.navTitle, active ? styles.navTitleActive : null]}>{item.title}</Text>
-                <Text style={styles.navDescription}>{item.description}</Text>
-              </View>
-            </Pressable>
-          );
-        })}
+        {ATLAS_STUDIO_NAV.map((item) => renderNavItem(item, pathname))}
+
+        <Text style={styles.sectionLabel}>Secondary</Text>
+        {ATLAS_STUDIO_SECONDARY_NAV.map((item) => renderNavItem(item, pathname, true))}
       </ScrollView>
     </View>
   );
@@ -116,5 +127,28 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontSize: 11,
     color: STUDIO_COLORS.secondary,
+  },
+
+  sectionLabel: {
+    marginTop: 12,
+    marginBottom: 6,
+    paddingHorizontal: 10,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+    color: STUDIO_COLORS.secondary,
+  },
+
+  navItemSecondary: {
+    opacity: 0.88,
+  },
+
+  navTitleSecondary: {
+    fontWeight: "600",
+  },
+
+  navDescriptionSecondary: {
+    fontSize: 10,
   },
 });

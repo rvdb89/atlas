@@ -1,10 +1,25 @@
-import { createMockControlSnapshot } from "./mockControlData";
-import type { ControlLoadResult } from "./types";
+import { loadCompanyState } from "@/atlas/company-state";
 
-/** Replace mock body with live aggregators when CONTROL data sources are wired. */
+import { mapCompanyStateToControlView } from "./controlViewMapper";
+import type { ControlLoadResult, ControlSnapshot } from "./types";
+
+let cachedView: ControlSnapshot | null = null;
+
+/** Loads Atlas Control view from the Company State Engine — read-only visualization. */
 export async function loadControlSnapshot(): Promise<ControlLoadResult> {
+  const result = await loadCompanyState({ source: "mock" });
+  cachedView = mapCompanyStateToControlView(result.state, result.source);
   return {
-    source: "mock",
-    snapshot: createMockControlSnapshot(),
+    source: result.source,
+    snapshot: cachedView,
   };
+}
+
+export function getCachedControlSnapshot(): ControlSnapshot | null {
+  return cachedView;
+}
+
+export function cacheControlView(snapshot: ControlSnapshot): ControlSnapshot {
+  cachedView = snapshot;
+  return snapshot;
 }

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
+import { usePathname } from "expo-router";
 
 import { STUDIO_COLORS } from "../../core/theme";
 import CommandPalette from "../command-palette/CommandPalette";
@@ -13,9 +14,15 @@ type StudioOsShellProps = {
 };
 
 export default function StudioOsShell({ children }: StudioOsShellProps) {
+  const pathname = usePathname();
+  const isAtlasControl = pathname === "/studio/control";
   const { width } = useWindowDimensions();
   const showSidebar = width >= 960;
   const showInspector = width >= 1280;
+
+  if (isAtlasControl) {
+    return <View style={styles.controlRoot}>{children}</View>;
+  }
 
   return (
     <View style={styles.root}>
@@ -32,6 +39,11 @@ export default function StudioOsShell({ children }: StudioOsShellProps) {
 }
 
 const styles = StyleSheet.create({
+  controlRoot: {
+    flex: 1,
+    backgroundColor: "#030508",
+  },
+
   root: {
     flex: 1,
     backgroundColor: STUDIO_COLORS.cream,
