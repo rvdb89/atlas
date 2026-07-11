@@ -22,6 +22,20 @@ function formatMemoryUpdatedAt(iso: string): string {
 
 export default function MemorySectionV2({ snapshot }: MemorySectionV2Props) {
   const memoryDept = snapshot.operations.find((op) => op.department === "memory");
+  // CEO decision 2026-07-12 — "memory" is guaranteed to be present in snapshot.operations by
+  // both data sources: mockCompanyModels.ts's hardcoded department list, and
+  // buildRealDepartments() in scripts/atlas/realCompanyData.ts (unconditional "computed" entry,
+  // independent of agent data). The old `?? "Attention"` / `?? "Memory upgrade proposal"`
+  // fallbacks were unreachable dead code that would have silently shown a fictional status if
+  // that invariant ever broke. Failing loudly here instead.
+  if (!memoryDept) {
+    throw new Error(
+      "MemorySectionV2: 'memory' department is missing from snapshot.operations. This is " +
+        "guaranteed to exist by mockCompanyModels.ts (mock path) and buildRealDepartments() in " +
+        "scripts/atlas/realCompanyData.ts (live runtime path) — if this fires, that invariant has " +
+        "been broken.",
+    );
+  }
   const memory = snapshot.memory;
   const lastUpdatedLabel = memory.lastUpdated ? new Date(memory.lastUpdated).toLocaleString() : "No entries yet";
 
@@ -30,8 +44,8 @@ export default function MemorySectionV2({ snapshot }: MemorySectionV2Props) {
       <View style={styles.row}>
         <View style={styles.block}>
           <Text style={styles.label}>Department status</Text>
-          <StatusPill label={memoryDept?.statusLabel ?? "Attention"} tone="warning" />
-          <Text style={styles.focus}>{memoryDept?.currentFocus ?? "Memory upgrade proposal"}</Text>
+          <StatusPill label={memoryDept.statusLabel} tone="warning" />
+          <Text style={styles.focus}>{memoryDept.currentFocus}</Text>
         </View>
         <View style={styles.block}>
           <Text style={styles.label}>BRAIN-002 Memory Engine</Text>
