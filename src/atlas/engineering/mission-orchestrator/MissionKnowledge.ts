@@ -73,9 +73,6 @@ export const ATLAS_ENGINEERING_STANDARDS = getConstitutionEngineeringStandards()
 /** @deprecated Use getConstitutionArchitectureRules() from @/atlas/constitution */
 export const ATLAS_ARCHITECTURE_RULES = getConstitutionArchitectureRules();
 
-/** @deprecated Use getConstitutionNorthStarGoals() from @/atlas/constitution */
-export const ATLAS_NORTH_STAR_GOALS = getConstitutionNorthStarGoals();
-
 const KNOWN_DEPENDENCIES: Record<
   string,
   Array<{ missionId: string; title?: string; reason: string; relationship?: MissionDependency["relationship"] }>

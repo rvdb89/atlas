@@ -62,6 +62,7 @@
     "atlas:brief": "tsx scripts/atlas-brief.ts",
     "atlas:mission": "tsx scripts/atlas-mission.ts",
     "atlas:constitution": "tsx scripts/atlas-constitution.ts",
+    "atlas:northstar": "tsx scripts/atlas-northstar-sync.ts",
     "atlas:intent": "tsx scripts/atlas-intent.ts",
     "atlas:organize": "tsx scripts/atlas-organize.ts",
     "atlas:decide": "tsx scripts/atlas-decide.ts",

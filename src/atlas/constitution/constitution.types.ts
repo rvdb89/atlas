@@ -30,6 +30,7 @@ export type AtlasConstitution = {
   version: string;
   generatedAt: string;
   whyAtlasExists: string;
+  vision: string;
   northStar: string;
   principles: string[];
   longTermVision: string[];

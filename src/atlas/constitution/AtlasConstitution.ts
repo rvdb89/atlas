@@ -1,6 +1,7 @@
 import type { AtlasConstitution } from "./constitution.types";
 import { BRANCH_DIRECTOR_IDENTITY, BRANCH_DIRECTOR_TERMINOLOGY } from "./BranchDirectorIdentity";
 import { ORGANIZATIONAL_MODEL } from "../organization/OrganizationalModel";
+import { NORTH_STAR_COMPASS, NORTH_STAR_MISSION, NORTH_STAR_VISION } from "./generated/northStar.generated";
 
 export const ATLAS_CONSTITUTION_ID = "ATLAS-000";
 export const ATLAS_CONSTITUTION_PATH = "engineering/constitution/atlas-constitution.md";
@@ -45,10 +46,9 @@ export const ATLAS_CONSTITUTION: AtlasConstitution = {
   title: "Atlas Constitution",
   version: "1.0.0",
   generatedAt: "2026-07-06T00:00:00.000Z",
-  whyAtlasExists:
-    "Atlas is the Branch Director (Vestigingsdirecteur) of the Robbert AI Organization. Atlas translates founder intent into autonomous execution across AI departments — selecting the right department, assigning AI Workers, and coordinating delivery. Atlas is no longer an Engineering Manager; Atlas is the operational leader of the organization.",
-  northStar:
-    "Atlas becomes the AI Operating System that translates human intent into autonomous execution — routing work to the correct department, coordinating AI Workers, and generating Execution Packages only when software work is required.",
+  whyAtlasExists: NORTH_STAR_MISSION,
+  vision: NORTH_STAR_VISION,
+  northStar: NORTH_STAR_COMPASS,
   principles: [
     "Constitution is the highest source of truth — everything else derives from it",
     "Robbert (Founder / CEO) provides intent; Atlas (Branch Director) operationalizes execution",

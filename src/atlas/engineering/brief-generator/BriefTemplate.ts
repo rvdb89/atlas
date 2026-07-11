@@ -1,4 +1,5 @@
 import type { MissionCard, MissionTemplateId } from "./MissionCard";
+import { getConstitutionNorthStarGoals } from "@/atlas/constitution";
 
 export type BriefTemplate = {
   id: MissionTemplateId;
@@ -28,12 +29,9 @@ const BASE_SECURITY = [
   "Provider credentials alleen via environment/config layer",
 ];
 
-const BASE_NORTH_STAR = [
-  "Atlas als AI Operating System",
-  "Generieke architectuur boven vertical coupling",
-  "Meer autonomie, minder handmatige tussenkomst",
-  "Uitbreidbare planning, memory, context en agents",
-];
+// North Star-tekst komt uitsluitend uit NORTH_STAR.md, via AtlasConstitution.ts.
+// Geen losstaande kopie meer hier — voorkomt drift tussen briefs en de strategische bron.
+const BASE_NORTH_STAR = getConstitutionNorthStarGoals();
 
 const BASE_VALIDATION = [
   "npx tsc --noEmit",
