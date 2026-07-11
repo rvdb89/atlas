@@ -21,10 +21,10 @@ import ActivityFeedV2 from "./ActivityFeedV2";
 import AiHeart from "./AiHeart";
 import BugsSectionV2 from "./BugsSectionV2";
 import CeoInboxV2 from "./CeoInboxV2";
+import CockpitOpening from "./CockpitOpening";
 import CockpitSidebar, { type CockpitNavId } from "./CockpitSidebar";
 import CommandPanel from "./CommandPanel";
 import CompanyPortfolioV2 from "./CompanyPortfolioV2";
-import HeroSection from "./HeroSection";
 import KpiStrip from "./KpiStrip";
 import LivePlanSectionV2 from "./LivePlanSectionV2";
 import ManagementTeamV2 from "./ManagementTeamV2";
@@ -145,10 +145,11 @@ export default function ControlScreenV2() {
             >
               <View style={[styles.mainPadding, styles.contentRow]}>
                 <View style={styles.centerColumn}>
-                  <HeroSection
+                  <CockpitOpening
                     snapshot={snapshot}
-                    onPrimary={primaryCommandAction}
-                    onSecondary={secondaryCommandAction}
+                    onApprove={approveInbox}
+                    onViewInbox={() => handleNavSelect("inbox")}
+                    onViewActivity={() => handleNavSelect("activity")}
                   />
 
                   <KpiStrip snapshot={snapshot} />
@@ -190,7 +191,7 @@ export default function ControlScreenV2() {
                     <MemorySectionV2 snapshot={snapshot} />
                   </View>
 
-                  <View style={styles.sectionGap}>
+                  <View style={styles.sectionGap} onLayout={handleSectionLayout("activity")}>
                     <ActivityFeedV2 snapshot={snapshot} />
                   </View>
 

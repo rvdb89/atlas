@@ -326,7 +326,6 @@ function applyRuntimeState(runtime: RuntimeStateFile): void {
     const confidencePct =
       runtime.latest.confidence !== null ? Math.round(runtime.latest.confidence * 100) : current.recommendation.confidence;
 
-    const label = runtime.latest.source === "ai" ? "Claude" : "rule-based";
     const mergedApprovals = reconcileApplyWarnings(
       mergeApprovals(current.approvals, runtime.candidateApprovals),
       runtime.appliedHistory,
@@ -348,7 +347,20 @@ function applyRuntimeState(runtime: RuntimeStateFile): void {
         // 2026-07-11 bugfix note above for the incident this closes.
         const effectiveInitiativeId = runtime.latest.recommendedInitiativeId ?? current.recommendation.relatedInitiativeId;
         return {
-          headline: `Atlas Runtime — live ${label} verdict (cycle ${runtime.latest.cycle})`,
+          // Bugfix 2026-07-11 (CEO-reported): used to read "Atlas Runtime — live Claude verdict
+          // (cycle N)" — a technical process label, not something Atlas would ever say to the
+          // CEO (CEO_COCKPIT.md: "Atlas speaks to the CEO, not about itself"). This field is
+          // read unclamped both by CockpitOpening's Briefing and by CommandPanel's "Today's
+          // focus" — fixing it here corrects both without redesigning either component.
+          //
+          // Refinement 2026-07-11 (CEO-reported): the "nothing selected" fallback read as a
+          // system message ("No specific initiative needs attention today."). Reworded to sound
+          // like an excellent executive assistant reporting that everything within Atlas's own
+          // authority stayed on course — matching CEO_COCKPIT.md chapter 1/7's "only escalate
+          // what Atlas genuinely cannot decide alone".
+          headline: runtime.latest.recommendedInitiativeId
+            ? `Today's priority is ${runtime.latest.recommendedInitiativeTitle ?? runtime.latest.recommendedInitiativeId}.`
+            : "Atlas handled everything within its authority today.",
           recommendation: runtime.latest.recommendedInitiativeId
             ? `Focus on ${runtime.latest.recommendedInitiativeId}${
                 runtime.latest.recommendedInitiativeTitle ? ` — ${runtime.latest.recommendedInitiativeTitle}` : ""

@@ -11,6 +11,7 @@ export type CockpitNavId =
   | "roadmap"
   | "bugs"
   | "memory"
+  | "activity"
   | "settings";
 
 const NAV_ITEMS: Array<{ id: CockpitNavId; label: string; icon: string }> = [
