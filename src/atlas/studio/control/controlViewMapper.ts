@@ -15,6 +15,7 @@ import type {
   InboxDecisionStatus,
   InboxUrgency,
   InitiativeLane,
+  LivePlanSummary,
   ManagementMember,
   ManagementStatus,
   MemorySummary,
@@ -87,6 +88,20 @@ export function mapCompanyStateToControlView(
     activity: state.activity.map(mapActivity),
     atlasAdvice: mapAtlasAdvice(state),
     memory: mapMemory(state),
+    livePlan: mapLivePlan(state),
+  };
+}
+
+function mapLivePlan(state: CompanyState): LivePlanSummary | null {
+  if (!state.livePlan) return null;
+  return {
+    id: state.livePlan.id,
+    missionId: state.livePlan.missionId,
+    goal: state.livePlan.goal,
+    status: state.livePlan.status,
+    steps: state.livePlan.steps.map((step) => ({ ...step })),
+    createdAt: state.livePlan.createdAt,
+    updatedAt: state.livePlan.updatedAt,
   };
 }
 

@@ -366,6 +366,7 @@ export function createMockCompanyModels(): CompanyModels {
       lastUpdated: "2026-07-07",
       recent: [],
     },
+    livePlan: null,
     bugs: [
       {
         id: "issue-memory",

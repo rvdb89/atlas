@@ -1,5 +1,12 @@
 import { registerPlanner } from "./PlannerRegistry";
-import { knowledgePlanner, publishingPlanner, recipePlanner } from "./planners/defaultPlanners";
+import {
+  contentMissionPlanner,
+  executionPlanner,
+  knowledgePlanner,
+  publishingPlanner,
+  recipePlanner,
+  tipsPlanner,
+} from "./planners/defaultPlanners";
 
 let bootstrapped = false;
 
@@ -9,6 +16,9 @@ export function bootstrapAtlasPlanner(): void {
   registerPlanner(knowledgePlanner);
   registerPlanner(recipePlanner);
   registerPlanner(publishingPlanner);
+  registerPlanner(tipsPlanner);
+  registerPlanner(executionPlanner);
+  registerPlanner(contentMissionPlanner);
 
   bootstrapped = true;
 }

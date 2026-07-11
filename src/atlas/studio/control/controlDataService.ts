@@ -20,6 +20,7 @@ import type {
   EntityStatus,
   SprintModel,
   RecommendationDecision,
+  LivePlanModel,
 } from "@/atlas/company-state";
 
 import { mapCompanyStateToControlView } from "./controlViewMapper";
@@ -73,6 +74,31 @@ type RuntimeMemoryEntry = {
   statusLabel: string;
   lastUpdated: string;
   recent: RuntimeMemoryRecentEntry[];
+};
+
+/** Context/Planner integration (2026-07-11) · Mirrors src/atlas/brain/planner/planner.types.ts's
+ * ExecutionPlan as written into atlas-runtime-state.json's `plan` field — only the subset
+ * this dashboard actually renders is typed here (see LivePlanModel for the trimmed shape it
+ * gets mapped into). */
+type RuntimeExecutionPlanStep = {
+  id: string;
+  order: number;
+  kind: string;
+  label: string;
+  description: string;
+  status: "pending" | "running" | "completed" | "failed" | "skipped";
+  startedAt?: string;
+  completedAt?: string;
+};
+
+type RuntimeExecutionPlan = {
+  id: string;
+  missionId?: string;
+  goal: string;
+  status: "draft" | "ready" | "executing" | "completed" | "failed" | "cancelled";
+  steps: RuntimeExecutionPlanStep[];
+  createdAt: string;
+  updatedAt: string;
 };
 
 type RuntimeMissionPackage = {
@@ -196,6 +222,7 @@ type RuntimeStateFile = {
   appliedHistory: RuntimeAppliedMission[];
   businesses: RuntimeBusiness[];
   apps: RuntimeApp[];
+  plan: RuntimeExecutionPlan | null;
 };
 
 /** Fetches the Atlas Runtime snapshot (written by `npm run atlas:runtime`) if it exists. */
@@ -227,15 +254,23 @@ async function fetchRuntimeState(): Promise<RuntimeStateFile | null> {
  * CEO Inbox for e.g. CONTENT-003 (which correctly emptied to 0 pending there) would still see
  * "Approve CONTENT-003" sitting at the top of the page after every refresh — the Inbox and
  * the top card were reading two different signals and only one of them remembered approvals. */
+/** Bugfix 2026-07-11 · Found live: a cycle that produces no fresh initiative (e.g. the AI
+ * provider was briefly unreachable) used to make this always return "pending" outright,
+ * ignoring that the top card's relatedInitiativeId/packagePath fall back to the last cached
+ * recommendation in that same situation (see the `recommendation:` object below). Result: the
+ * card showed "Approve ENG-006B" for a mission that had been fully applied hours earlier,
+ * while the CEO Inbox correctly showed 0 pending — two views of the same state disagreeing.
+ * Fix: decide off the same *effective* initiative id the card actually displays (fresh this
+ * cycle, or the cached fallback), not off runtime.latest alone. */
 function deriveRecommendationDecision(
   runtime: RuntimeStateFile,
   mergedApprovals: ApprovalModel[],
+  effectiveInitiativeId: string | undefined,
 ): RecommendationDecision {
-  const initiativeId = runtime.latest.recommendedInitiativeId;
-  if (!initiativeId) return "pending";
+  if (!effectiveInitiativeId) return "pending";
 
   // The mission already shipped via the Apply Engine — nothing left to approve.
-  if (runtime.appliedHistory.some((entry) => entry.missionId === initiativeId)) {
+  if (runtime.appliedHistory.some((entry) => entry.missionId === effectiveInitiativeId)) {
     return "approved";
   }
 
@@ -243,7 +278,7 @@ function deriveRecommendationDecision(
   // ControlDecisionEngine.ts) — one shared source of truth, so approving something in the
   // Inbox and approving it via this card's own button always agree, from either direction,
   // without needing a page reload to reconcile.
-  return computeRecommendationDecision(initiativeId, mergedApprovals);
+  return computeRecommendationDecision(effectiveInitiativeId, mergedApprovals);
 }
 
 const PKG_APPROVAL_PATTERN = /^pkg-(.+)$/;
@@ -307,20 +342,26 @@ function applyRuntimeState(runtime: RuntimeStateFile): void {
       // reload is a clean slate; the banner comes back immediately if the CEO clicks Approve
       // again from here.
       decisionFeedback: {},
-      recommendation: {
-        headline: `Atlas Runtime — live ${label} verdict (cycle ${runtime.latest.cycle})`,
-        recommendation: runtime.latest.recommendedInitiativeId
-          ? `Focus on ${runtime.latest.recommendedInitiativeId}${
-              runtime.latest.recommendedInitiativeTitle ? ` — ${runtime.latest.recommendedInitiativeTitle}` : ""
-            }`
-          : "No initiative selected this cycle — operational routing only.",
-        rationale: runtime.latest.reasoning,
-        confidence: confidencePct,
-        relatedInitiativeId: runtime.latest.recommendedInitiativeId ?? current.recommendation.relatedInitiativeId,
-        decision: deriveRecommendationDecision(runtime, mergedApprovals),
-        packagePath: runtime.activePackage?.claudePackagePath ?? current.recommendation.packagePath,
-        packageIsNew: runtime.activePackage ? !runtime.activePackage.alreadyExisted : current.recommendation.packageIsNew,
-      },
+      recommendation: (() => {
+        // Computed once so relatedInitiativeId and decision can never disagree about which
+        // mission the card is actually talking about — see deriveRecommendationDecision's
+        // 2026-07-11 bugfix note above for the incident this closes.
+        const effectiveInitiativeId = runtime.latest.recommendedInitiativeId ?? current.recommendation.relatedInitiativeId;
+        return {
+          headline: `Atlas Runtime — live ${label} verdict (cycle ${runtime.latest.cycle})`,
+          recommendation: runtime.latest.recommendedInitiativeId
+            ? `Focus on ${runtime.latest.recommendedInitiativeId}${
+                runtime.latest.recommendedInitiativeTitle ? ` — ${runtime.latest.recommendedInitiativeTitle}` : ""
+              }`
+            : "No initiative selected this cycle — operational routing only.",
+          rationale: runtime.latest.reasoning,
+          confidence: confidencePct,
+          relatedInitiativeId: effectiveInitiativeId,
+          decision: deriveRecommendationDecision(runtime, mergedApprovals, effectiveInitiativeId),
+          packagePath: runtime.activePackage?.claudePackagePath ?? current.recommendation.packagePath,
+          packageIsNew: runtime.activePackage ? !runtime.activePackage.alreadyExisted : current.recommendation.packageIsNew,
+        };
+      })(),
       activity: [
         ...runtime.activity.map((entry) => ({
           id: entry.id,
@@ -360,6 +401,10 @@ function applyRuntimeState(runtime: RuntimeStateFile): void {
       bugs: runtime.bugs.length > 0 ? runtime.bugs.map(mapRuntimeBug) : current.bugs,
       businesses: runtime.businesses.length > 0 ? runtime.businesses.map(mapRuntimeBusiness) : current.businesses,
       apps: runtime.apps.length > 0 ? runtime.apps.map(mapRuntimeApp) : current.apps,
+      // Context/Planner integration (2026-07-11) · Always reflects the latest snapshot as-is
+      // (not additive like approvals) — a plan that finished or aged out of the runtime's
+      // executionQueue should disappear from the dashboard too, not linger from a stale poll.
+      livePlan: mapRuntimePlan(runtime.plan),
       sprints: runtime.roadmap.length > 0 ? deriveSprintsFromRoadmap(runtime.roadmap) : current.sprints,
       // Additive only: real triggers are proposed as new approvals, but anything the CEO
       // already approved or deferred (same id) is never re-added or overwritten.
@@ -430,6 +475,19 @@ function mapRuntimeApp(app: RuntimeApp): AppModel {
     health: app.health,
     lastRelease: app.lastRelease,
     currentInitiative: app.currentInitiative,
+  };
+}
+
+function mapRuntimePlan(plan: RuntimeExecutionPlan | null): LivePlanModel | null {
+  if (!plan) return null;
+  return {
+    id: plan.id,
+    missionId: plan.missionId,
+    goal: plan.goal,
+    status: plan.status,
+    steps: plan.steps.map((step) => ({ ...step })),
+    createdAt: plan.createdAt,
+    updatedAt: plan.updatedAt,
   };
 }
 

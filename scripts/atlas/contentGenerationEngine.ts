@@ -3,6 +3,7 @@ import { basename, dirname, join } from "node:path";
 
 import { bootstrapAtlas } from "@/atlas/bootstrap";
 import { isAnthropicConfigured } from "@/atlas/config/env";
+import { updatePlanStepByKind } from "@/atlas/brain/planner";
 import { runPublishingPipeline } from "@/atlas/publishing/pipeline/PublishingPipeline";
 import type { ContentType, PublicationDraft } from "@/atlas/publishing/types";
 import type {
@@ -53,6 +54,21 @@ const CONTENT_ARTICLE_PACING_MS = 3000;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Context/Planner integration (2026-07-11) · Best-effort only — a planner hiccup (e.g. this
+// mission's plan aged out of the capped executionQueue) must never block real article
+// generation. See PlannerEngine.ts's updatePlanStepByKind for the null-if-gone contract.
+function safeStepUpdate(
+  missionId: string,
+  kind: "copywriter",
+  patch: Parameters<typeof updatePlanStepByKind>[2],
+): void {
+  try {
+    updatePlanStepByKind(missionId, kind, patch);
+  } catch {
+    // best-effort only
+  }
 }
 
 export type ContentMissionArticle = {
@@ -538,6 +554,7 @@ export async function runContentGenerationEngine(missionIdInput: string): Promis
   // but this Node-side runtime process never did (it only called individual brain
   // bootstraps directly). Idempotent and safe to call again if something else already did.
   bootstrapAtlas();
+  safeStepUpdate(missionId, "copywriter", { status: "running" });
 
   const articleSources: string[] = [];
   const varNames: string[] = [];
@@ -634,6 +651,7 @@ export async function runContentGenerationEngine(missionIdInput: string): Promis
   }
 
   if (varNames.length === 0) {
+    safeStepUpdate(missionId, "copywriter", { status: "failed" });
     return {
       ok: false,
       missionId,
@@ -727,6 +745,8 @@ export async function runContentGenerationEngine(missionIdInput: string): Promis
     ),
     "utf8",
   );
+
+  safeStepUpdate(missionId, "copywriter", { status: "completed" });
 
   return {
     ok: true,

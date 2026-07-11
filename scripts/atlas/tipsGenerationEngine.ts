@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { bootstrapAtlas } from "@/atlas/bootstrap";
 import { isAnthropicConfigured } from "@/atlas/config/env";
 import { executeTask, formatTaskExecutionLog } from "@/atlas/ai/core/Orchestrator";
+import { updatePlanStepByKind } from "@/atlas/brain/planner";
 
 import {
   buildChangesMarkdown,
@@ -39,6 +40,20 @@ import { ROOT_DIR } from "./shared";
  */
 
 const TIPS_TARGET_FILE = "src/modules/doughbert/tips/tips.ts";
+
+// Context/Planner integration (2026-07-11) · Best-effort only, same contract as
+// contentGenerationEngine.ts's safeStepUpdate — a planner hiccup must never block a real tip.
+function safeStepUpdate(
+  missionId: string,
+  kind: "copywriter",
+  patch: Parameters<typeof updatePlanStepByKind>[2],
+): void {
+  try {
+    updatePlanStepByKind(missionId, kind, patch);
+  } catch {
+    // best-effort only
+  }
+}
 
 export type TipsCategoryRequest = { categoryId: string; categoryLabel: string; count: number };
 
@@ -166,6 +181,7 @@ export async function runTipsGenerationEngine(missionIdInput: string): Promise<E
   }
 
   bootstrapAtlas();
+  safeStepUpdate(missionId, "copywriter", { status: "running" });
 
   const tipsPath = join(ROOT_DIR, TIPS_TARGET_FILE);
   if (!existsSync(tipsPath)) {
@@ -234,6 +250,7 @@ export async function runTipsGenerationEngine(missionIdInput: string): Promise<E
   }
 
   if (added.length === 0) {
+    safeStepUpdate(missionId, "copywriter", { status: "failed" });
     return {
       ok: false,
       missionId,
@@ -301,6 +318,8 @@ export async function runTipsGenerationEngine(missionIdInput: string): Promise<E
     ),
     "utf8",
   );
+
+  safeStepUpdate(missionId, "copywriter", { status: "completed" });
 
   return {
     ok: true,

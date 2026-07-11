@@ -34,6 +34,8 @@ import { listPendingFixMissions } from "./atlas/replanOnFailure";
 import { getAppsStatus, launchApp } from "./atlas/appsRegistry";
 import { getCapabilityState } from "@/atlas/constitution";
 import { getMissionCardById } from "@/atlas/engineering/mission-orchestrator";
+import { buildPlanForMission, findPlanByMissionId, registerPlan, updatePlanStatusById } from "@/atlas/brain/planner";
+import type { ExecutionPlan } from "@/atlas/brain/planner";
 import {
   buildRealRoadmap,
   buildRealDepartments,
@@ -298,6 +300,13 @@ function writeSnapshot(input: {
   appliedHistory: RuntimeAppliedMission[];
   businesses: RuntimeBusiness[];
   apps: RuntimeApp[];
+  /** Context/Planner integration (2026-07-11) · The live ExecutionPlan for whichever mission
+   * the runtime is currently focused on, if one was registered — see buildPlanForMission() in
+   * ensureExecutionProposal(). null just means no plan exists yet for this cycle's mission
+   * (e.g. it was already fully applied, or planning itself failed — best-effort, never
+   * blocks). This is what lets Atlas Control show "what Atlas is doing right now" step by
+   * step instead of only a final diff once everything is already done. */
+  plan: ExecutionPlan | null;
 }): void {
   mkdirSync(PUBLIC_DIR, { recursive: true });
   writeFileSync(
@@ -322,6 +331,7 @@ function writeSnapshot(input: {
         appliedHistory: input.appliedHistory,
         businesses: input.businesses,
         apps: input.apps,
+        plan: input.plan,
       },
       null,
       2,
@@ -375,6 +385,22 @@ async function ensureExecutionProposal(missionId: string | null): Promise<Execut
     return "none";
   }
 
+  // Context/Planner integration (2026-07-11) · Register a real ExecutionPlan for this mission
+  // BEFORE dispatching to the engine, using the exact same three-way branch the dispatch below
+  // uses — deterministic, not the fuzzy matchScore text-matching the standalone Proof-of-Power
+  // demo relies on. This is what makes the CEO Inbox/dashboard able to show "what Atlas is
+  // doing right now" instead of only ever showing a final diff once everything is already
+  // done. Best-effort: a planner problem must never block the real mission work below it.
+  const missionKind = isContentMission(missionId) ? "content" : isTipsMission(missionId) ? "tips" : "execution";
+  try {
+    const goal = getMissionCardById(missionId)?.title ?? missionId;
+    registerPlan(buildPlanForMission(missionId, goal, missionKind));
+    updatePlanStatusById(missionId, { status: "executing", startedAt: new Date().toISOString() });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(chalk.dim(`  planner: could not register a plan for ${missionId} (${message}) — continuing anyway`));
+  }
+
   try {
     // Content missions (CONTENT-002, ...) route through the real copywriter/fact-checker/
     // link-engine agent team instead of the generic code-writing engine — see
@@ -385,11 +411,12 @@ async function ensureExecutionProposal(missionId: string | null): Promise<Execut
     // pipeline would be pure overhead (see tipsGenerationEngine.ts). Same downstream contract
     // either way (proposed-changes/ + CEO Inbox + Apply Engine), so nothing else in this
     // function needs to branch.
-    const result = isContentMission(missionId)
-      ? await runContentGenerationEngine(missionId)
-      : isTipsMission(missionId)
-        ? await runTipsGenerationEngine(missionId)
-        : await runExecutionEngine(missionId);
+    const result =
+      missionKind === "content"
+        ? await runContentGenerationEngine(missionId)
+        : missionKind === "tips"
+          ? await runTipsGenerationEngine(missionId)
+          : await runExecutionEngine(missionId);
     if (result.ok) {
       writeExecutionAttemptMarker(missionId, true, `Drafted ${result.files.length} file(s).`);
       console.log(
@@ -402,11 +429,13 @@ async function ensureExecutionProposal(missionId: string | null): Promise<Execut
 
     writeExecutionAttemptMarker(missionId, false, result.message);
     console.log(chalk.dim(`  execution: could not draft a proposal for ${missionId} yet (${result.message})`));
+    updatePlanStatusById(missionId, { status: "failed", completedAt: new Date().toISOString() });
     return "none";
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     writeExecutionAttemptMarker(missionId, false, message);
     console.error(chalk.red(`  execution: drafting threw for ${missionId}:`), message);
+    updatePlanStatusById(missionId, { status: "failed", completedAt: new Date().toISOString() });
     return "none";
   }
 }
@@ -562,6 +591,16 @@ async function runCycle(cycle: number, startedAt: string, intervalMs: number): P
   // never fabricated or hand-maintained.
   const appliedHistory = buildAppliedHistory();
 
+  // Context/Planner integration (2026-07-11) · Best-effort lookup — chosenMissionId can be
+  // null (nothing to recommend this cycle) or its plan can have aged out of the capped
+  // executionQueue; either way this must never throw or block the snapshot write.
+  let plan: ExecutionPlan | null = null;
+  try {
+    plan = chosenMissionId ? findPlanByMissionId(chosenMissionId) : null;
+  } catch {
+    plan = null;
+  }
+
   writeSnapshot({
     startedAt,
     intervalMs,
@@ -585,6 +624,7 @@ async function runCycle(cycle: number, startedAt: string, intervalMs: number): P
     appliedHistory,
     businesses,
     apps,
+    plan,
   });
 
   persistMemoryToDisk();

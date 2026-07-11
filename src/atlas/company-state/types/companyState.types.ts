@@ -147,6 +147,29 @@ export type CompanyMemoryState = {
   }>;
 };
 
+export type CompanyLivePlanStepState = {
+  id: string;
+  order: number;
+  kind: string;
+  label: string;
+  description: string;
+  status: "pending" | "running" | "completed" | "failed" | "skipped";
+  startedAt?: string;
+  completedAt?: string;
+};
+
+/** Context/Planner integration (2026-07-11) · Mirrors LivePlanModel — see its comment in
+ * businessModels.types.ts. null when no plan is currently registered for the focused mission. */
+export type CompanyLivePlanState = {
+  id: string;
+  missionId?: string;
+  goal: string;
+  status: "draft" | "ready" | "executing" | "completed" | "failed" | "cancelled";
+  steps: CompanyLivePlanStepState[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type CompanyBugState = {
   id: string;
   title: string;
@@ -214,6 +237,7 @@ export type CompanyState = {
   blockers: CompanyBlockerState[];
   kpis: CompanyKpiState[];
   activity: CompanyActivityState[];
+  livePlan: CompanyLivePlanState | null;
 };
 
 export type CompanyStateSource = "mock" | "live";

@@ -242,6 +242,31 @@ export type MemorySummary = {
   recent: RecentMemorySummaryEntry[];
 };
 
+/** Context/Planner integration (2026-07-11) · "What Atlas is doing right now", step by
+ * step, for whichever mission the runtime is currently focused on. Mirrors
+ * CompanyLivePlanState — see its comment in company-state/types/companyState.types.ts. null
+ * when no plan is currently registered. */
+export type LivePlanStepSummary = {
+  id: string;
+  order: number;
+  kind: string;
+  label: string;
+  description: string;
+  status: "pending" | "running" | "completed" | "failed" | "skipped";
+  startedAt?: string;
+  completedAt?: string;
+};
+
+export type LivePlanSummary = {
+  id: string;
+  missionId?: string;
+  goal: string;
+  status: "draft" | "ready" | "executing" | "completed" | "failed" | "cancelled";
+  steps: LivePlanStepSummary[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 /** Section 10 — Atlas Advice */
 export type AtlasAdvice = {
   headline: string;
@@ -301,6 +326,7 @@ export type ControlSnapshot = {
   activity: CompanyActivityEvent[];
   atlasAdvice: AtlasAdvice;
   memory: MemorySummary;
+  livePlan: LivePlanSummary | null;
 };
 
 export type ControlDataSource = "mock" | "live";

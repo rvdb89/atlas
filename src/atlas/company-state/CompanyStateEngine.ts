@@ -138,6 +138,7 @@ export function buildCompanyState(models: CompanyModels): CompanyState {
     blockers: models.blockers.map((blocker) => ({ ...blocker })),
     kpis: calculateCompanyKpis(models),
     activity: models.activity.map((event) => ({ ...event })),
+    livePlan: models.livePlan ? { ...models.livePlan, steps: models.livePlan.steps.map((step) => ({ ...step })) } : null,
   };
 }
 

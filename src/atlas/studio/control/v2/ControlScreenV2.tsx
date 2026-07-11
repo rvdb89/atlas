@@ -26,6 +26,7 @@ import CommandPanel from "./CommandPanel";
 import CompanyPortfolioV2 from "./CompanyPortfolioV2";
 import HeroSection from "./HeroSection";
 import KpiStrip from "./KpiStrip";
+import LivePlanSectionV2 from "./LivePlanSectionV2";
 import ManagementTeamV2 from "./ManagementTeamV2";
 import MemorySectionV2 from "./MemorySectionV2";
 import RoadmapV2 from "./RoadmapV2";
@@ -153,6 +154,10 @@ export default function ControlScreenV2() {
                   <KpiStrip snapshot={snapshot} />
 
                   <AiHeart companyHealth={snapshot.companyState.companyHealth} />
+
+                  <View style={styles.sectionGap} onLayout={handleSectionLayout("livePlan")}>
+                    <LivePlanSectionV2 snapshot={snapshot} />
+                  </View>
 
                   <View style={styles.sectionGap} onLayout={handleSectionLayout("inbox")}>
                     <CeoInboxV2

@@ -174,6 +174,32 @@ export type MemoryModel = {
   }>;
 };
 
+export type LivePlanStepModel = {
+  id: string;
+  order: number;
+  kind: string;
+  label: string;
+  description: string;
+  status: "pending" | "running" | "completed" | "failed" | "skipped";
+  startedAt?: string;
+  completedAt?: string;
+};
+
+/** Context/Planner integration (2026-07-11) · Mirrors src/atlas/brain/planner/planner.types.ts's
+ * ExecutionPlan, hand-duplicated here for the same reason MemoryModel.recent is (see its
+ * comment above): this types file stays dependency-free by convention. Lets Atlas Control show
+ * "what Atlas is doing right now" step by step, not just a final diff once everything is
+ * already done. null means no plan is currently registered for the focused mission. */
+export type LivePlanModel = {
+  id: string;
+  missionId?: string;
+  goal: string;
+  status: "draft" | "ready" | "executing" | "completed" | "failed" | "cancelled";
+  steps: LivePlanStepModel[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type BugModel = {
   id: string;
   title: string;
@@ -233,4 +259,5 @@ export type CompanyModels = {
   activity: ActivityModel[];
   recommendation: RecommendationModel;
   decisionFeedback: DecisionFeedbackModel;
+  livePlan: LivePlanModel | null;
 };

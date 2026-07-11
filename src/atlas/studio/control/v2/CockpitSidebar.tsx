@@ -4,6 +4,7 @@ import { V2 } from "./v2Theme";
 
 export type CockpitNavId =
   | "control"
+  | "livePlan"
   | "inbox"
   | "companies"
   | "agents"
@@ -14,6 +15,7 @@ export type CockpitNavId =
 
 const NAV_ITEMS: Array<{ id: CockpitNavId; label: string; icon: string }> = [
   { id: "control", label: "Atlas Control", icon: "◆" },
+  { id: "livePlan", label: "Nu bezig", icon: "▶" },
   { id: "inbox", label: "CEO Inbox", icon: "✉" },
   { id: "companies", label: "Companies", icon: "◈" },
   { id: "agents", label: "Agents", icon: "◎" },

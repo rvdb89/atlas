@@ -5,6 +5,7 @@ import { executeTask } from "@/atlas/ai/core/Orchestrator";
 import { bootstrapAiProviders } from "@/atlas/ai/providers/bootstrap";
 import { isAnthropicConfigured } from "@/atlas/config/env";
 import { missionRegistry, orchestrateMission, registerMissionFromSource } from "@/atlas/engineering/mission-orchestrator";
+import { updatePlanStepByKind } from "@/atlas/brain/planner";
 
 import { ROOT_DIR } from "./shared";
 
@@ -468,6 +469,20 @@ export function buildChangesMarkdown(input: {
 
 /** Runs the Execution Engine for one already-registered mission. Always resolves; never
  * throws — callers (CLI, future runtime hooks) get a structured ok/false result instead. */
+// Context/Planner integration (2026-07-11) · Best-effort only, same contract as the content/
+// tips engines' safeStepUpdate — a planner hiccup must never block real mission drafting.
+function safeStepUpdate(
+  missionId: string,
+  kind: "context-gather" | "implement",
+  patch: Parameters<typeof updatePlanStepByKind>[2],
+): void {
+  try {
+    updatePlanStepByKind(missionId, kind, patch);
+  } catch {
+    // best-effort only
+  }
+}
+
 export async function runExecutionEngine(missionIdInput: string): Promise<ExecutionEngineResult> {
   const missionId = missionIdInput.trim().toUpperCase();
 
@@ -505,13 +520,16 @@ export async function runExecutionEngine(missionIdInput: string): Promise<Execut
     architectureBrief,
     validationPlan,
   ].join("\n");
+  safeStepUpdate(missionId, "context-gather", { status: "running" });
   // Discovered-by-name paths go first: they're specifically how we now avoid recreating an
   // already-existing, already-wired module under a new path (see discoverLikelyExistingPaths).
   const candidatePaths = [...new Set([...discoverLikelyExistingPaths(pkg.title), ...extractReferencedPaths(referencedText)])];
   const { files: existingFiles, missing: missingContextPaths } = gatherExistingFileContext(candidatePaths);
+  safeStepUpdate(missionId, "context-gather", { status: "completed" });
 
   try {
     bootstrapAiProviders();
+    safeStepUpdate(missionId, "implement", { status: "running" });
 
     const payload = {
       missionId: pkg.missionId,
@@ -536,6 +554,7 @@ export async function runExecutionEngine(missionIdInput: string): Promise<Execut
     const fellBackToMock = metadata.transport === "mock" || Boolean(metadata.fallbackUsed || metadata.liveError);
     if (fellBackToMock) {
       const liveError = typeof metadata.liveError === "string" ? metadata.liveError : undefined;
+      safeStepUpdate(missionId, "implement", { status: "failed" });
       return {
         ok: false,
         missionId,
@@ -603,6 +622,8 @@ export async function runExecutionEngine(missionIdInput: string): Promise<Execut
       "utf8",
     );
 
+    safeStepUpdate(missionId, "implement", { status: "completed" });
+
     return {
       ok: true,
       missionId,
@@ -617,6 +638,7 @@ export async function runExecutionEngine(missionIdInput: string): Promise<Execut
       missingContextPaths,
     };
   } catch (error) {
+    safeStepUpdate(missionId, "implement", { status: "failed" });
     return {
       ok: false,
       missionId,
