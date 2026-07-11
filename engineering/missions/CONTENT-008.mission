@@ -1,0 +1,24 @@
+Mission:
+CONTENT-008
+
+Title:
+Overgeslagen artikel Kamertemperatuur alsnog schrijven
+
+Goal:
+Bij CONTENT-003 (temperaturen) haalden 5 van de 6 artikelen de publicatiedrempel, maar "kamertemperatuur" bleef te dun en werd overgeslagen — CONTENT-003 zelf staat al als "toegepast" geregistreerd, dus dit ene artikel wordt niet vanzelf opnieuw geprobeerd. Deze mission is een gerichte retry van precies dat ene artikel, via dezelfde echte copywriter/fact-checker/link-engine agent-ploeg als de rest van de content-missies.
+
+Focus:
+scripts/atlas/contentGenerationEngine.ts (voert deze mission uit — CONTENT_MISSIONS["CONTENT-008"])
+src/modules/doughbert/knowledge/temperaturen/index.ts (bevat al de 5 andere temperaturen-artikelen — blijft ongewijzigd)
+src/modules/doughbert/knowledge/temperaturen-kamertemperatuur/index.ts (nieuw bestand, wordt aangemaakt — bewust apart van temperaturen/index.ts zodat de al toegepaste 5 artikelen niet worden overschreven)
+src/modules/doughbert/knowledge/collectSources.ts (krijgt automatisch een import + toevoeging aan de raw-array)
+src/modules/doughbert/knowledge/bulk/catalogArticles.ts (de engine verwijdert hier automatisch de oude title-only stub voor kamertemperatuur)
+
+Constraints:
+Deze mission draait via de content-pipeline (contentGenerationEngine.ts), niet via de generieke mission.implement-flow
+Alleen als het artikel de publicatiedrempel haalt (minimaal 3 echte secties + samenvatting) wordt het meegenomen; blijft het te dun, dan wordt dat gerapporteerd en blijft de bestaande stub gewoon staan
+De 5 al toegepaste temperaturen-artikelen worden niet opnieuw gegenereerd en niet overschreven
+TypeScript blijft compileren zonder nieuwe errors
+
+Success:
+Het kamertemperatuur-artikel toont echte, leesbare content in de Kennisbibliotheek (categorie temperaturen) in plaats van een lege pagina, geschreven door de echte agent-ploeg.

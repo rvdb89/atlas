@@ -1,0 +1,7 @@
+{
+  "typecheckOk": true,
+  "typecheckSummary": "TypeScript compileert schoon (app + scripts).",
+  "suggestedCommitMessage": "CONTENT-006: Content: bakwetenschap\n\n12 van de 12 bakwetenschap-artikelen geschreven door het echte copywriter-team (real AI, geen mock), fact-checked en gelinkt — niet door de generieke code-schrijver.\n\n3 bestand(en) aangepast — automatisch toegepast na goedkeuring in de CEO Inbox.",
+  "staged": false,
+  "stageNote": "Stagen mislukt: Command failed: git add -- src/modules/doughbert/knowledge/science/index.ts src/modules/doughbert/knowledge/collectSources.ts src/modules/doughbert/knowledge/bulk/catalogArticles.ts"
+}

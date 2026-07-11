@@ -1,0 +1,21 @@
+Mission:
+BRAIN-008
+
+Title:
+Semantisch zoeken in Memory Engine aansluiten
+
+Goal:
+Bij onderzoek naar "echte" semantisch zoeken (embeddings) bleek er al een gratis, provider-neutrale "begrips-zoekfunctie" te bestaan (MemorySemanticSearch.ts, term-vector cosine similarity, gebouwd bij BRAIN-002) — maar die werd nergens echt aangeroepen. Deze mission sluit die aan op de echte besluitvorming, zonder nieuwe kosten of API-sleutel.
+
+Focus:
+src/atlas/brain/context/ContextBuilder.ts (collectMemoryContext() — combineert nu memoryEngine.searchMemory() (exacte tekst) met memoryEngine.semanticSearchMemory() (begripsmatig), gedupliceerd op entry-id, hoogste score wint)
+src/atlas/brain/memory/MemorySemanticSearch.ts (bestaande implementatie, ongewijzigd — term-frequency cosine similarity, geen externe embedding-API)
+src/atlas/brain/memory/MemoryEngine.ts (semanticSearchMemory() — bestaande methode, ongewijzigd, nu voor het eerst echt aangeroepen)
+
+Constraints:
+Geen externe embedding-API of nieuwe API-sleutel — blijft binnen de bestaande, gratis, provider-neutrale aanpak
+Best-effort: een falende semantische zoekopdracht mag nooit de gewone tekst-zoekopdracht blokkeren (MemoryEngine.semanticSearchMemory() vangt fouten al af en geeft dan een leeg resultaat)
+TypeScript blijft compileren zonder nieuwe errors
+
+Success:
+Een herinnering die met andere bewoordingen over hetzelfde onderwerp gaat (geen letterlijke tekstoverlap met het huidige doel) wordt nu wél meegenomen in de context die de Decision Engine gebruikt, in plaats van onzichtbaar te blijven.

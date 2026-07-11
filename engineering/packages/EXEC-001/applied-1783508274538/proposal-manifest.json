@@ -1,0 +1,18 @@
+{
+  "missionId": "EXEC-001",
+  "title": "Execution Engine",
+  "generatedAt": "2026-07-08T10:57:54.312Z",
+  "summary": "De Execution en Apply Engine bestonden al volledig; de ontbrekende schakel was de automatische local-only apply-bridge die de CEO Inbox 'Approve'-knop moet aanroepen, dus die is nu toegevoegd als losstaand, herbruikbaar module.",
+  "files": [
+    {
+      "path": "scripts/atlas/applyBridge.ts",
+      "action": "create",
+      "reason": "Implementeert de nog ontbrekende automatische local-only apply-bridge (127.0.0.1:8791/apply) bovenop de al bestaande, veilige applyProposedChanges-logica."
+    }
+  ],
+  "risks": [
+    "startApplyBridge() wordt nog niet automatisch aangeroepen — zonder wiring in atlas-runtime.ts blijft de CEO Inbox 'Approve'-knop niet functioneel voor package-review items.",
+    "De server valideert alleen method+pad+missionId-aanwezigheid; verdere input-hardening (bv. rate limiting, request size limit) is niet toegevoegd om de scope klein te houden."
+  ],
+  "followUp": "Controleer scripts/atlas-runtime.ts (niet meegeleverd in existingFiles) en roep daar startApplyBridge() aan bij opstarten van de achtergrond-loop, en verifieer dat de Atlas Control CEO Inbox 'Approve'-knop voor package-review items een POST naar http://127.0.0.1:8791/apply met { missionId } doet; test execution en git automation blijven openstaande scope-items voor een vervolgmissie."
+}

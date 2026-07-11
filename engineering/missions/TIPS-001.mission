@@ -1,0 +1,29 @@
+Mission:
+TIPS-001
+
+Title:
+Tips uitbreiden — 14 nieuwe baktips
+
+Goal:
+Content-capability's grootste openstaande gat is voor het grootste deel al onderweg (CONTENT-010), maar tips.ts bleef daarbij buiten beeld: 31 losse, korte baktips over 7 categorieën, laatst uitgebreid toen de app werd opgezet. Dit is een bewust apart, kleiner vervolg — tips zijn een heel andere, veel simpelere databron dan de KnowledgeBite-artikelen (één zin, geen secties, geen bronnen, geen links), dus dit gebruikt een eigen, lichte generatie-engine (tipsGenerationEngine.ts) in plaats van de zware copywriter/fact-checker/link-engine-pipeline die daar overkill voor zou zijn. Deze eerste missie voegt 2 nieuwe tips toe aan elk van de 7 bestaande categorieën (14 in totaal) — de bestaande 31 tips blijven volledig ongewijzigd.
+
+Focus:
+scripts/atlas/tipsGenerationEngine.ts (nieuw — TIP_MISSIONS["TIPS-001"], runTipsGenerationEngine)
+src/atlas/ai/types/index.ts (nieuw taaktype "tips.write" toegevoegd aan AtlasTaskType)
+src/atlas/ai/tasks/routes.ts (route voor tips.write — copywriter, klein maxTokens-budget, geen zware pipeline)
+src/atlas/ai/providers/provider-config.ts (TASK_PROVIDER_CONFIG + CLAUDE_LIVE_TASKS-entry voor tips.write — dit is de tabel die daadwerkelijk wordt toegepast, niet routes.ts alleen, zie de knowledge.write-toelichting in hetzelfde bestand)
+src/atlas/ai/providers/ClaudeProvider.ts (tips.write toegevoegd aan de live-Claude-taken van de echte provider)
+src/atlas/ai/prompts/tips/index.ts (nieuw — tips.write.v1 prompt, gericht op één zin, 40-160 tekens, geen herhaling van bestaande tips)
+src/atlas/ai/prompts/library.ts (registreert TIPS_PROMPTS + tips.write in TASK_PROMPT_IDS)
+src/modules/doughbert/tips/tips.ts (doelbestand — alleen aanvullen, nooit bestaande tips overschrijven)
+scripts/atlas-runtime.ts (dispatch: isTipsMission(missionId) routeert naar runTipsGenerationEngine, naast de bestaande content- en generieke-executie-branch)
+
+Constraints:
+De bestaande 31 tips in tips.ts worden woordelijk bewaard — deterministische serialisatie, geen AI-herschrijving van het hele bestand
+Nieuwe tips die inhoudelijk overlappen met een bestaande tip (exacte of bijna-exacte tekst) worden stil overgeslagen, niet toegevoegd als duplicaat
+Eén gebundelde AI-aanroep per categorie (niet per tip) om het aantal aanroepen laag te houden
+Draait via dezelfde CEO Inbox/Apply Engine-flow als elke andere missie — geen enkele tip wordt automatisch toegepast zonder goedkeuring
+Wordt niet meteen getriggerd zolang CONTENT-010 nog in de wachtrij/uitvoering staat — deze missie staat klaar voor de eerstvolgende vrije cyclus, niet gedwongen ertussendoor
+
+Success:
+14 nieuwe, unieke, publiceerbare tips liggen klaar als reviewbaar voorstel in de CEO Inbox, verdeeld over alle 7 bestaande categorieën, zonder dat er ook maar één bestaande tip is aangeraakt.

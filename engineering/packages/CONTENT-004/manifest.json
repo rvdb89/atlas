@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.0",
+  "packageType": "engineering",
+  "missionId": "CONTENT-004",
+  "title": "Kennisartikelen Fermentatie vullen",
+  "templateLabel": "Engineering Mission",
+  "atlasVersion": "0.26.0",
+  "atlasBuild": "brain-005",
+  "generatedAt": "2026-07-09T20:30:54.273Z",
+  "outputDir": "engineering/packages/CONTENT-004",
+  "entrypoint": "engineering/packages/CONTENT-004/claude-engineering-package.md",
+  "legacyBriefPath": "engineering/briefs/CONTENT-004.md",
+  "inputRequired": "missionIdOnly",
+  "inferencePipeline": [
+    "decision-engine",
+    "organization",
+    "evolution-engine",
+    "decision-framework",
+    "constitution",
+    "north-star",
+    "principles",
+    "capabilities",
+    "systems",
+    "roadmap",
+    "mission-registry",
+    "engineering-standards",
+    "architecture-rules",
+    "mission-dependencies",
+    "definition-of-done",
+    "validation-plan",
+    "engineering-package"
+  ],
+  "constitutionId": "ATLAS-000",
+  "constitutionPath": "engineering/constitution/atlas-constitution.md",
+  "decisionFrameworkId": "ATLAS-001",
+  "decisionEngineId": "BRAIN-004",
+  "evolutionEngineId": "ATLAS-001",
+  "organizationModelId": "ATLAS-002",
+  "branchDirectorIdentityId": "ATLAS-003",
+  "dependencies": [
+    {
+      "missionId": "CONTENT-001",
+      "title": "Recipe Knowledge Content Wiring",
+      "relationship": "requires",
+      "reason": "Prior CONTENT mission in sequence"
+    },
+    {
+      "missionId": "CONTENT-002",
+      "title": "Kennisartikelen Hydratatie vullen",
+      "relationship": "requires",
+      "reason": "Prior CONTENT mission in sequence"
+    },
+    {
+      "missionId": "CONTENT-003",
+      "title": "Kennisartikelen Temperaturen vullen",
+      "relationship": "requires",
+      "reason": "Prior CONTENT mission in sequence"
+    }
+  ],
+  "files": {
+    "manifest": "engineering/packages/CONTENT-004/manifest.json",
+    "claudeEntrypoint": "engineering/packages/CONTENT-004/claude-engineering-package.md",
+    "architectureBrief": "engineering/packages/CONTENT-004/architecture-brief.md",
+    "validationPlan": "engineering/packages/CONTENT-004/validation-plan.md",
+    "auditChecklist": "engineering/packages/CONTENT-004/audit-checklist.md",
+    "releaseNotes": "engineering/packages/CONTENT-004/release-notes.md"
+  }
+}

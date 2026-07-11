@@ -4,5 +4,6 @@ export * from "./MemorySearch";
 export * from "./MemoryRegistry";
 export * from "./MemoryContext";
 export * from "./MemoryEngine";
+export * from "./MemoryRetention";
 export * from "./bootstrap";
 export * from "./workflowMemory";

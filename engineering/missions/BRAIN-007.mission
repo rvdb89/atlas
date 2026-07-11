@@ -1,0 +1,22 @@
+Mission:
+BRAIN-007
+
+Title:
+Kennis-catalogus in Context Engine verbreden
+
+Goal:
+ContextBuilder.ts's collectKnowledgeContext() injecteerde tot nu toe 3 hardgecodeerde placeholder-ids ("entity-catalog", "intelligence-insights", "publishing-templates", zonder echte inhoud) in élke context-snapshot, ongeacht het onderwerp. Deze mission vervangt dat door de echte, gepubliceerde artikel-catalogus.
+
+Focus:
+src/atlas/brain/context/ContextBuilder.ts (collectKnowledgeContext() — haalt nu de echte catalogus op via tryGetActiveModule().getArticleCatalog(), filtert stub-only artikelen eruit, rangschikt op onderwerp-relevantie)
+src/atlas/publishing/plugin/registry.ts (tryGetActiveModule — bestaande, module-onafhankelijke abstractie, al gebruikt door studioService.ts)
+src/modules/doughbert/plugin.ts (getArticleCatalog() — bestaande implementatie, ongewijzigd)
+src/atlas/brain/context/ContextSnapshot.ts (deriveContextHealth() gelezen ter verificatie — kennis bleek geen onderdeel van de health-berekening te zijn; alleen de documentatie hierover was onjuist, niet de code)
+
+Constraints:
+Geen directe import van doughbert-specifieke bestanden in de Context Engine — alleen via de bestaande module-abstractie (tryGetActiveModule), zodat de Context Engine module-onafhankelijk blijft
+Alleen artikelen met echte inhoud (samenvatting of minstens één sectie) worden meegenomen — nooit een titel-only stub, zelfde regel als hasRealKnowledgeContent elders in de codebase
+TypeScript blijft compileren zonder nieuwe errors
+
+Success:
+Context-snapshots die de Decision Engine voedt bevatten nu echte, onderwerp-relevante kennis uit de gepubliceerde artikelcatalogus in plaats van drie vaste, betekenisloze placeholder-strings.

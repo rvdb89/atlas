@@ -1,0 +1,24 @@
+{
+  "missionId": "BRAIN-002",
+  "title": "Memory Engine",
+  "generatedAt": "2026-07-08T15:11:28.777Z",
+  "summary": "De Memory Engine module (opslag, registry, context, search, workflow-memory, persistence via atlas-runtime.ts) is al volledig geïmplementeerd en gebruikt reports/memory/store.json als enige persistente bron; ik voeg alleen het echt ontbrekende stukje toe: lokale, provider-onafhankelijke semantische recall bovenop de bestaande keyword-search, zonder de bestaande persistence-wrapper te dupliceren.",
+  "files": [
+    {
+      "path": "src/atlas/brain/memory/MemorySemanticSearch.ts",
+      "action": "create",
+      "reason": "Geen reden opgegeven."
+    },
+    {
+      "path": "src/atlas/brain/memory/MemoryEngine.ts",
+      "action": "modify",
+      "reason": "Geen reden opgegeven."
+    }
+  ],
+  "risks": [
+    "De term-frequency-cosine aanpak is geen echte vector-embedding (geen semantisch model), dus synoniemen zonder gedeelde woordstammen worden nog steeds gemist",
+    "semanticSearchMemory doorzoekt de volledige provider-lijst zonder paginatie, wat bij een zeer grote memory-store (duizenden entries) een cpu-piek kan geven",
+    "De nieuwe methode is nog niet aangeroepen vanuit AutonomousDecision.ts of workflowMemory.ts, dus de daadwerkelijke winst is pas zichtbaar zodra een caller hem gebruikt"
+  ],
+  "followUp": "Overweeg om recallRecentDecisions() in AutonomousDecision.ts (optioneel) ook semanticSearchMemory te laten gebruiken naast het huidige type-based filter, zodat de Decision Engine ook conceptueel gerelateerde eerdere verdicts terugvindt, niet alleen de laatste van type 'decision'; controleer daarnaast of reports/memory/store.json in productie al reële entries bevat om te bevestigen dat de bestaande persistence-wrapper in atlas-runtime.ts inderdaad blijft groeien na restarts."
+}

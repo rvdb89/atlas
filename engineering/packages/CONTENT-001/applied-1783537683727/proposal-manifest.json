@@ -1,0 +1,19 @@
+{
+  "missionId": "CONTENT-001",
+  "title": "Recipe Knowledge Content Wiring",
+  "generatedAt": "2026-07-08T19:00:06.025Z",
+  "summary": "buildRecipeArticles() koppelt nu recipe.introduction en recipe.tips als echte contentOverrides (summary + doughbertAdvice) aan elk gegenereerd Knowledge Bite artikel, in plaats van alles leeg te laten; status blijft bewust \"draft\" totdat er ook echte sections zijn. De structurele koppeling van recipe.knowledge (RecipeKnowledge, o.a. Pain de Campagne) naar volledige sections kon niet veilig worden meegenomen omdat het schema van dat type niet is meegeleverd.",
+  "files": [
+    {
+      "path": "src/modules/doughbert/knowledge/bulk/recipeArticles.ts",
+      "action": "modify",
+      "reason": "Koppelt het al bestaande recipe.introduction en recipe.tips daadwerkelijk aan het gegenereerde Knowledge Bite artikel in plaats van een lege summary en nul secties te laten staan."
+    }
+  ],
+  "risks": [
+    "Ik heb aangenomen dat KnowledgeArticleInput (src/types/knowledgeArticleInput.ts, niet in existingFiles) een veld 'contentOverrides' van het type Partial<KnowledgeBiteBody> ondersteunt — dit is gebaseerd op de expliciete term 'content-overrides' in de architecture brief en het bestaande metadataOverrides/contentOverrides-patroon in knowledgeBiteContent.ts, maar is niet geverifieerd tegen de echte typedefinitie.",
+    "Als KnowledgeArticleInput dat veld niet heeft, geeft TypeScript een 'object literal may only specify known properties'-fout op contentOverrides en moet dat type-bestand alsnog worden uitgebreid.",
+    "recipe.knowledge (RecipeKnowledge, o.a. painDeCampagneKnowledge) is bewust niet gekoppeld omdat het schema van RecipeKnowledge (src/types/knowledge.ts) niet is meegeleverd — zonder dat schema zou ik de structuur van de secties moeten gokken."
+  ],
+  "followUp": "Controleer of src/types/knowledgeArticleInput.ts daadwerkelijk een contentOverrides-veld heeft dat overeenkomt met Partial<KnowledgeBiteBody>; voeg dat veld toe aan het type als het nog ontbreekt. Lees vervolgens src/types/knowledge.ts (RecipeKnowledge shape) en src/modules/doughbert/types/knowledgeBite.ts (KnowledgeBiteSectionId enum) om painDeCampagneKnowledge en de overige recept-secties (via createStandardSection/createKnowledgeBiteSection) echt als sections te koppelen — dat is het grootste resterende gat uit de missie. Controleer daarna welke recepten (bagels, focaccia, brioche, meergranen, alle pizza's) al voldoende introduction/tips hebben om ook hun status buiten 'draft' te zetten zodra er ook echte sections zijn, en welke consumer van buildRecipeArticles() de contentOverrides daadwerkelijk toepast op het uiteindelijke Knowledge Bite artikel."
+}

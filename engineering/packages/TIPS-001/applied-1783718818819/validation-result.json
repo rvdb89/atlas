@@ -1,0 +1,9 @@
+{
+  "typecheckOk": true,
+  "typecheckSummary": "TypeScript compileert schoon (app + scripts + tests).",
+  "testsOk": true,
+  "testSummary": "Tests geslaagd.",
+  "suggestedCommitMessage": "TIPS-001: Tips uitbreiden\n\n14 nieuwe tip(s) geschreven door de echte copywriter (real AI, geen mock) over 7 categorieën — de bestaande 31 tips blijven exact zoals ze waren.\n\n1 bestand(en) aangepast — automatisch toegepast na goedkeuring in de CEO Inbox.",
+  "staged": false,
+  "stageNote": "Stagen mislukt: Command failed: git add -- src/modules/doughbert/tips/tips.ts"
+}

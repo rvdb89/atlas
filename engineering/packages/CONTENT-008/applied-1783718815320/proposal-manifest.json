@@ -1,0 +1,25 @@
+{
+  "missionId": "CONTENT-008",
+  "title": "Content: temperaturen",
+  "generatedAt": "2026-07-10T19:20:46.575Z",
+  "summary": "1 van de 1 temperaturen-artikelen geschreven door het echte copywriter-team (real AI, geen mock), fact-checked en gelinkt — niet door de generieke code-schrijver.",
+  "files": [
+    {
+      "path": "src/modules/doughbert/knowledge/temperaturen-kamertemperatuur/index.ts",
+      "action": "create",
+      "reason": "1/1 artikelen in de temperaturen-categorie, echt geschreven door het copywriter/fact-checker/link-engine team."
+    },
+    {
+      "path": "src/modules/doughbert/knowledge/collectSources.ts",
+      "action": "modify",
+      "reason": "Registreert kamertemperatuurArticles in de centrale artikel-collectie."
+    },
+    {
+      "path": "src/modules/doughbert/knowledge/bulk/catalogArticles.ts",
+      "action": "modify",
+      "reason": "Verwijdert 1 title-only stub(s) die nu vervangen zijn door echte content — voorkomt dat de oude lege placeholder de nieuwe content in de dedup verdringt."
+    }
+  ],
+  "risks": [],
+  "followUp": "Alle artikelen gehaald — controleer de content op toon en feitelijke juistheid voor het toepassen."
+}

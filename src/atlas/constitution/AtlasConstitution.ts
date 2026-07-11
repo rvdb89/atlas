@@ -80,6 +80,8 @@ export const ATLAS_CONSTITUTION: AtlasConstitution = {
     { id: "audit", name: "Self-review", description: "Branch Director Review and release decision engine" },
     { id: "engineering", name: "Engineering", description: "Execution package generation and platform tooling" },
     { id: "studio", name: "Studio", description: "Mission Control, Command Center, and operator UX" },
+    { id: "execution", name: "Execution", description: "Turns an engineering package into real, reviewable code changes" },
+    { id: "content", name: "Content", description: "Detects gaps in vertical-module content (articles, guides, product copy) and drafts real, publish-quality content changes — the same review/apply loop as code, applied to content" },
   ],
   systems: [
     {
@@ -266,6 +268,30 @@ export const ATLAS_CONSTITUTION: AtlasConstitution = {
       title: "Engineering Package Structure",
       rationale: "Package becomes primary Claude artifact",
       priority: 50,
+      systemId: "engineering",
+    },
+    {
+      missionId: "EXEC-001",
+      title: "Execution Engine",
+      rationale:
+        "Closes the loop from engineering package to real code — the missing link toward Atlas autonomously building a new app on command",
+      priority: 45,
+      systemId: "engineering",
+    },
+    {
+      missionId: "CONTENT-001",
+      title: "Recipe Knowledge Content Wiring",
+      rationale:
+        "Every recipe-linked Knowledge page is an auto-generated 'draft' stub with no real body, even where the recipe itself already has real written content (introduction, tips, a full RecipeKnowledge object for Pain de Campagne) — closes the gap using the Execution + Apply Engine loop, not a new pipeline",
+      priority: 46,
+      systemId: "engineering",
+    },
+    {
+      missionId: "CONTENT-002",
+      title: "Kennisartikelen Hydratatie vullen",
+      rationale:
+        "62 catalog Knowledge Bite articles across 6 categories are title-only stubs with zero real content — starts with the smallest, best-grounded category (hydratatie, 6 articles) as a small, reviewable first pass rather than one large content dump",
+      priority: 47,
       systemId: "engineering",
     },
   ],

@@ -1,0 +1,26 @@
+Mission:
+CONTENT-001
+
+Title:
+Recipe Knowledge Content Wiring
+
+Goal:
+Elke Kennis-pagina die gekoppeld is aan een recept (Brood/Pizza) toont vandaag een lege placeholder: buildRecipeArticles() genereert voor elk recept met een knowledgeBiteId automatisch een Knowledge Bite met status "draft", lege summary en nul sections — ook voor recepten die zelf al echte, geschreven content hebben (introduction, tips, en voor Pain de Campagne een volledig ingevuld RecipeKnowledge-object dat nergens in de Kennis-flow terechtkomt). Los dit structureel op door het al bestaande, echte recept-materiaal te koppelen aan het gegenereerde Knowledge Bite artikel. Dit is een koppel-taak, geen contentgeneratie-taak: er wordt niets verzonnen dat niet al ergens in het recept staat.
+
+Focus:
+src/modules/doughbert/knowledge/bulk/recipeArticles.ts (buildRecipeArticles — hier wordt vandaag alleen de tagline gekopieerd als subtitle; content-overrides zoals summary/sections ontbreken volledig)
+src/modules/doughbert/recipes/breadRecipes.ts (Pain de Campagne heeft al knowledge: painDeCampagneKnowledge — een compleet, echt RecipeKnowledge-object; gebruik dit als het duidelijkste voorbeeld)
+src/modules/doughbert/recipes/recipes.ts (recept-registry voor Pizza — zelfde patroon, controleer welke recepten al introduction/tips/knowledge hebben)
+src/modules/doughbert/knowledge/knowledgeBiteContent.ts (mergeKnowledgeBiteBody, createStandardSection, createKnowledgeBiteSection — bestaande helpers, hergebruiken, niet dupliceren)
+src/modules/doughbert/types/recipe.ts (Recipe/RecipeKnowledge/RecipeStep shape — alleen lezen, niet wijzigen)
+src/types/knowledgeBite.ts (KnowledgeBiteBody/Section schema — alleen lezen)
+
+Constraints:
+Verzin geen nieuwe bakfeiten of tekst die niet al ergens in recipe.introduction, recipe.tips, recipe.steps of recipe.knowledge staat — dit is uitsluitend een koppel-fix, geen content-schrijftaak
+Zet status pas op iets anders dan "draft" voor een specifiek recept zodra dat recept echt gevulde sections heeft — nooit blind alles op "published" zetten
+Raak de mock AI Studio (runMockAiTask) en de publicationStore-pipeline (studioService, PublishingPipeline) niet aan — dat is een bewust apart, ongebruikt systeem en geen onderdeel van deze mission
+Klein en gefocust: als niet alle recepten in een enkel voorstel passen, geef in ieder geval elk recept met een bestaand knowledge-object (zoals Pain de Campagne) een echt gevuld artikel, en noem de rest expliciet in de follow-up
+TypeScript blijft compileren zonder nieuwe errors
+
+Success:
+Kennis-pagina's voor recepten die al bronmateriaal hebben (introduction/tips/knowledge) tonen dat materiaal echt, in plaats van een lege "draft" pagina — zichtbaar via de Kennis-categorieschermen (Brood/Pizza).

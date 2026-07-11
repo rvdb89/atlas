@@ -63,7 +63,14 @@ export default function CommandPanel({
 
           <View style={styles.quick}>
             <Text style={styles.label}>Quick actions</Text>
-            <V2Button label={cmd.primaryActionLabel} onPress={onPrimary} compact />
+            {/* Same rule as the hero card above: only show the recommendation's own Approve
+                button while it's genuinely still pending. Approving from the CEO Inbox (the
+                topPending button below, or the Inbox screen directly) now clears this too —
+                one shared decision state, so it never lingers here after being handled
+                elsewhere. */}
+            {advice.decision !== "approved" ? (
+              <V2Button label={cmd.primaryActionLabel} onPress={onPrimary} compact />
+            ) : null}
             <V2Button label={cmd.secondaryActionLabel} onPress={onSecondary} variant="secondary" compact />
             {topPending && onApproveTop ? (
               <V2Button

@@ -1,0 +1,29 @@
+Mission:
+EXEC-003
+
+Title:
+Echte automatische testsuite
+
+Goal:
+De Execution-capability had een expliciete, al bekende gap: dit project heeft geen enkele automatische testsuite — post-apply validatie (EXEC-002) was typecheck-only, dus code kon foutloos compileren terwijl de logica er toch echt naast zat. Zo'n bug zou een tweede keer onopgemerkt kunnen blijven, precies zoals de stille Claude-fallback (BRAIN-010) of de ongebonden geheugengroei (BRAIN-009) dat waren voordat iemand het toevallig opmerkte. Deze mission zet Node's ingebouwde testrunner (node:test) op via `tsx --test` — geen nieuwe npm-dependency nodig — en schrijft echte regressietests voor precies de drie stukjes logica die deze week een keer stilletjes fout gingen: welke Claude-fouten een retry verdienen (BRAIN-010), wanneer context "gezond" is (BRAIN-007-correctie), en hoeveel besluit-geheugens bewaard blijven (BRAIN-009).
+
+Focus:
+src/atlas/ai/providers/transport/createClaudeTransport.ts (isRetryableClaudeError geëxporteerd, was module-privé)
+src/atlas/ai/providers/transport/createClaudeTransport.test.ts (nieuw — regressietest voor de BRAIN-010 retry-classificatie)
+src/atlas/brain/context/ContextSnapshot.test.ts (nieuw — pint de echte deriveContextHealth-formule vast, inclusief de BRAIN-007-correctie dat kennis er nooit deel van uitmaakte)
+src/atlas/brain/memory/MemoryRetention.test.ts (nieuw — regressietest voor de BRAIN-009 retentiegrens: precies de nieuwste 200 decision-memories blijven bewaard)
+tsconfig.test.json (nieuw — smalle overlay-config voor *.test.ts, met "types": ["node"] zodat node:test/node:assert/strict resolven zonder Node-globals in de RN-app-config te lekken; zelfde patroon als scripts/tsconfig.json)
+tsconfig.json (root) — *.test.ts uitgesloten, zodat de RN-app-typecheck geen Node-testtypes nodig heeft
+scripts/atlas/postApplyValidation.ts (runTestSuite() draait `tsx --test` automatisch na elke Apply, naast de bestaande typecheck; PostApplyValidationResult uitgebreid met testsOk/testSummary)
+scripts/commit-check.ts (draait nu ook tsconfig.test.json + de testsuite, naast de bestaande checks)
+package.json ("test": "tsx --test" toegevoegd)
+src/atlas/studio/control/types.ts, controlDataService.ts, scripts/atlas/realCompanyData.ts, src/atlas/studio/control/v2/CeoInboxV2.tsx, scripts/atlas-apply.ts (testsOk/testSummary doorgevoerd tot en met de CEO Inbox en de CLI-output)
+
+Constraints:
+Geen nieuwe npm-dependency — dit project kon in deze omgeving niet bij de npm-registry (geblokkeerd door een allowlist), dus is bewust gekozen voor Node's ingebouwde node:test + node:assert/strict via tsx, niet vitest/jest
+Testbestanden mogen de RN-app-typecheck niet vervuilen met Node-only globals (Buffer/process/require) — vandaar de aparte, smalle tsconfig.test.json in plaats van "types": ["node"] op de hoofd-tsconfig
+Nooit een gate: net als typecheck in EXEC-002 is een falende testsuite zichtbaar in de Gesloten-tab en de CLI, maar draait nooit iets automatisch terug
+tsx --test zonder expliciete bestandslijst — Node's testrunner ontdekt *.test.ts overal in de repo automatisch (node_modules uitgezonderd), dus dit script hoeft nooit aangepast te worden zodra er een nieuw testbestand bijkomt
+
+Success:
+`npm test` (en elke automatische Apply) draait een echte, deterministische testsuite die drie eerder stilletjes kapotte stukjes logica nu vastpint; TypeScript compileert schoon op alle drie de configs (app/scripts/tests).

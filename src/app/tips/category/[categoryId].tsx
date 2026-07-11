@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { TipCard } from "@/components/tips/TipCards";
 import ScreenLayout from "@/components/ScreenLayout";
+import { BakeryColors } from "@/constants/theme";
 import { getTipCategory, getTipsByCategory, tipCategories } from "@/data/tips";
 import type { TipCategoryId } from "@/types/tip";
 
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
   headerMeta: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#B86B38",
+    color: BakeryColors.orangeAccent,
     textTransform: "uppercase",
     letterSpacing: 0.4,
   },
@@ -75,16 +76,16 @@ const styles = StyleSheet.create({
   },
 
   panel: {
-    backgroundColor: "#FFFDF8",
+    backgroundColor: BakeryColors.warmWhite,
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "rgba(184, 107, 56, 0.08)",
+    borderColor: "rgba(184, 107, 56, 0.12)",
   },
 
   body: {
     fontSize: 16,
     lineHeight: 24,
-    color: "#7A6652",
+    color: BakeryColors.textSecondary,
   },
 });

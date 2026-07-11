@@ -1,0 +1,23 @@
+Mission:
+CONTENT-004
+
+Title:
+Kennisartikelen Fermentatie vullen
+
+Goal:
+De categorie "fermentatie" in de Kennisbibliotheek bestaat uit 7 artikelen (bulkfermentatie, narijs, cold-proof, warm-fermenteren, overproof, underproof, fermentatieschemas) die vandaag alleen een titel hebben. Deze mission wordt uitgevoerd door de echte copywriter/fact-checker/link-engine agent-ploeg (zie scripts/atlas/contentGenerationEngine.ts) in plaats van de generieke code-schrijver, en schrijft alle 7 artikelen, elk via een eigen AI-call, op hetzelfde kwaliteitsniveau als de al voltooide hydratatie- en temperaturen-categorieën.
+
+Focus:
+scripts/atlas/contentGenerationEngine.ts (voert deze mission uit — CONTENT_MISSIONS["CONTENT-004"])
+src/modules/doughbert/knowledge/hydratatie/index.ts (kwaliteitsvoorbeeld)
+src/modules/doughbert/knowledge/fermentatie/index.ts (nieuw bestand, wordt aangemaakt)
+src/modules/doughbert/knowledge/collectSources.ts (krijgt automatisch een import + toevoeging aan de raw-array)
+src/modules/doughbert/knowledge/bulk/catalogArticles.ts (de engine verwijdert hier automatisch de oude title-only stub-entries voor exact de artikelen die deze keer echte content kregen)
+
+Constraints:
+Deze mission draait via de content-pipeline (contentGenerationEngine.ts), niet via de generieke mission.implement-flow
+Alleen artikelen die de publicatiedrempel halen (minimaal 3 echte secties + samenvatting) worden meegenomen; een artikel dat te dun blijft wordt overgeslagen en gerapporteerd
+TypeScript blijft compileren zonder nieuwe errors
+
+Success:
+Alle 7 artikelen in de fermentatie-categorie tonen echte, leesbare content in de Kennisbibliotheek, geschreven door de echte agent-ploeg.

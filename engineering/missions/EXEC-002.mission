@@ -1,0 +1,25 @@
+Mission:
+EXEC-002
+
+Title:
+Post-Apply Validatie en Commit-voorbereiding
+
+Goal:
+Sluit het laatste losse eindje van EXEC-001: tot nu toe controleerde niets automatisch of de code na een Apply nog compileert, en niets hielp bij het maken van de git-commit — de CEO moest dat altijd zelf handmatig checken via `git diff` / `npm run atlas:commit-check`. Deze mission maakt dat automatisch, direct na elke Apply, zonder de bestaande "een mens keurt altijd de echte commit goed"-belofte los te laten.
+
+Focus:
+scripts/atlas/postApplyValidation.ts (nieuwe module: typecheck + commit-bericht + git add, draait automatisch)
+scripts/atlas/applyEngine.ts (roept runPostApplyValidation aan direct na het archiveren naar applied-<timestamp>/, best-effort — een validatiefout verbergt of ontdoet nooit de al geslaagde Apply)
+scripts/atlas-apply.ts (CLI toont het validatieresultaat + voorgesteld commit-bericht direct in de terminal)
+scripts/atlas/realCompanyData.ts (buildAppliedHistory leest validation-result.json naast proposal-manifest.json)
+src/atlas/studio/control/controlDataService.ts + types.ts (RuntimeAppliedMission/AppliedMissionRecord uitgebreid met validation-veld)
+src/atlas/studio/control/v2/CeoInboxV2.tsx (Gesloten-tab toont typecheck-status + voorgesteld commit-bericht per toegepaste missie)
+
+Constraints:
+Nooit automatisch `git commit` — alleen `git add` van precies de bestanden die deze missie zelf toepaste (nooit `git add -A`), en een voorgesteld commit-bericht wegschrijven; de mens blijft degene die de echte commit maakt
+Een mislukte typecheck of een mislukte git add mag de Apply zelf nooit terugdraaien of verbergen — de bestanden staan al veilig in de working tree op het moment dat deze stap draait
+Best-effort en non-blocking: als deze stap zelf faalt, wordt dat gerapporteerd als "geen validatie beschikbaar", nooit als een crash van de Apply Engine
+Hergebruikt dezelfde TypeScript-checks als het bestaande `npm run atlas:commit-check` (root + scripts/tsconfig.json), geen nieuwe, afwijkende regels
+
+Success:
+Na elke Apply (via CEO Inbox-approve of `npm run atlas:apply`) ziet de CEO meteen of de code nog compileert en krijgt een kant-en-klaar commit-bericht, zonder dat er ooit automatisch wordt gecommit zonder menselijke review.

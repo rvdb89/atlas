@@ -3,6 +3,7 @@ import { useEffect, useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import ScreenLayout from "@/components/ScreenLayout";
+import { BakeryColors, BakeryFonts } from "@/constants/theme";
 import { applyRecipeToBakePlan, bakePlan } from "@/data/bakePlan";
 import { getRecipe, getRecipeBySlug } from "@/data/recipes";
 
@@ -70,13 +71,13 @@ export default function PlannerScreen() {
 
 const styles = StyleSheet.create({
   step: {
-    color: "#B86B38",
+    color: BakeryColors.orangeAccent,
     fontWeight: "700",
     marginBottom: 12,
   },
 
   card: {
-    backgroundColor: "#FFFDF8",
+    backgroundColor: BakeryColors.warmWhite,
     borderRadius: 24,
     padding: 16,
   },
@@ -84,19 +85,20 @@ const styles = StyleSheet.create({
   option: {
     padding: 18,
     borderRadius: 18,
-    backgroundColor: "#F7F1E8",
+    backgroundColor: BakeryColors.cream,
     marginBottom: 12,
   },
 
   optionTitle: {
+    fontFamily: BakeryFonts.display,
     fontSize: 18,
     fontWeight: "700",
-    color: "#2B2118",
+    color: BakeryColors.brown,
   },
 
   optionText: {
     fontSize: 15,
-    color: "#7A6652",
+    color: BakeryColors.textSecondary,
     marginTop: 4,
   },
 });

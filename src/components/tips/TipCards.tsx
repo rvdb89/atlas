@@ -1,18 +1,19 @@
 import { StyleSheet, Text, View } from "react-native";
 
+import { BakeryColors } from "@/constants/theme";
 import type { Tip } from "@/types/tip";
 
 const COLORS = {
-  warmWhite: "#FFFDF8",
-  brown: "#2B2118",
-  secondary: "#7A6652",
-  orangeAccent: "#B86B38",
+  warmWhite: BakeryColors.warmWhite,
+  brown: BakeryColors.brown,
+  secondary: BakeryColors.textSecondary,
+  orangeAccent: BakeryColors.orangeAccent,
 };
 
 export function TipCard({ tip }: { tip: Tip }) {
   return (
     <View style={styles.card}>
-      <Text style={styles.label}>💡 Tip</Text>
+      <Text style={styles.label}>Tip</Text>
       <Text style={styles.text}>{tip.text}</Text>
     </View>
   );
@@ -24,12 +25,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "rgba(184, 107, 56, 0.08)",
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
+    borderColor: "rgba(184, 107, 56, 0.12)",
   },
 
   label: {

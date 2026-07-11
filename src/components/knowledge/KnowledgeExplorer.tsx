@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { KnowledgeBiteCard } from "@/components/knowledge/KnowledgeCards";
+import { BakeryColors } from "@/constants/theme";
 import { knowledgeBiteList } from "@/data/knowledgeBites";
 import { searchKnowledgeBites } from "@/utils/knowledgeSearch";
 import type { KnowledgeBite } from "@/types/knowledgeBite";
@@ -67,28 +68,28 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: "800",
-    color: "#7A6652",
+    color: BakeryColors.textSecondary,
     textTransform: "uppercase",
     letterSpacing: 0.5,
     marginBottom: 10,
   },
 
   input: {
-    backgroundColor: "#FFFDF8",
+    backgroundColor: BakeryColors.warmWhite,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "rgba(184, 107, 56, 0.12)",
     paddingHorizontal: 18,
     paddingVertical: 14,
     fontSize: 16,
-    color: "#2B2118",
+    color: BakeryColors.brown,
   },
 
   hint: {
     marginTop: 10,
     fontSize: 14,
     lineHeight: 20,
-    color: "#7A6652",
+    color: BakeryColors.textSecondary,
   },
 
   results: {
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
   meta: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#B86B38",
+    color: BakeryColors.orangeAccent,
     textTransform: "uppercase",
     letterSpacing: 0.4,
   },

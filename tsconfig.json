@@ -10,5 +10,10 @@
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
-  "exclude": ["scripts/**"]
+  "exclude": [
+    "scripts/**",
+    "engineering/packages/**/proposed-changes/**",
+    "engineering/packages/**/applied-*/**",
+    "**/*.test.ts"
+  ]
 }

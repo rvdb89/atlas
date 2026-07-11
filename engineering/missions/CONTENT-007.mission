@@ -1,0 +1,24 @@
+Mission:
+CONTENT-007
+
+Title:
+Kennisartikelen Technieken vullen
+
+Goal:
+De categorie "technieken" in de Kennisbibliotheek bestaat uit 22 artikelen (handmatig-mengen t/m pizza-bakken-op-steen — mix- en vouwtechnieken, vorm- en bakspecifieke technieken) die vandaag alleen een titel hebben. Dit is de grootste van de zes lege categorieën en wordt als laatste opgepakt. Deze mission wordt uitgevoerd door de echte copywriter/fact-checker/link-engine agent-ploeg (zie scripts/atlas/contentGenerationEngine.ts) in plaats van de generieke code-schrijver.
+
+Focus:
+scripts/atlas/contentGenerationEngine.ts (voert deze mission uit — CONTENT_MISSIONS["CONTENT-007"])
+src/modules/doughbert/knowledge/hydratatie/index.ts (kwaliteitsvoorbeeld)
+src/modules/doughbert/knowledge/techniques/index.ts (bestaande lege map, wordt gevuld — categoryId blijft het Nederlandse "technieken", alleen de mapnaam op disk is Engels omdat die al zo was aangemaakt)
+src/modules/doughbert/knowledge/collectSources.ts (krijgt automatisch een import + toevoeging aan de raw-array)
+src/modules/doughbert/knowledge/bulk/catalogArticles.ts (de engine verwijdert hier automatisch de oude title-only stub-entries voor exact de artikelen die deze keer echte content kregen)
+
+Constraints:
+Deze mission draait via de content-pipeline (contentGenerationEngine.ts), niet via de generieke mission.implement-flow
+Alleen artikelen die de publicatiedrempel halen (minimaal 3 echte secties + samenvatting) worden meegenomen; een artikel dat te dun blijft wordt overgeslagen en gerapporteerd
+22 losse AI-aanroepen na elkaar — reken op een aanzienlijk langere cyclusduur dan de andere content-missies; overweeg desnoods deze mission in delen te draaien als één cyclus te lang duurt
+TypeScript blijft compileren zonder nieuwe errors
+
+Success:
+Alle 22 artikelen in de technieken-categorie tonen echte, leesbare content in de Kennisbibliotheek, geschreven door de echte agent-ploeg.

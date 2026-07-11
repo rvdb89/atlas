@@ -1,0 +1,23 @@
+Mission:
+CONTENT-005
+
+Title:
+Kennisartikelen Starter vullen
+
+Goal:
+De categorie "starter" in de Kennisbibliotheek bestaat uit 9 artikelen (wat-is-een-starter, starter-voeden, starter-activeren, starter-bewaren, starter-op-piek-herkennen, starterhydratie, slappe-starter, zure-starter, starter-redden) die vandaag alleen een titel hebben. Deze mission wordt uitgevoerd door de echte copywriter/fact-checker/link-engine agent-ploeg (zie scripts/atlas/contentGenerationEngine.ts) in plaats van de generieke code-schrijver.
+
+Focus:
+scripts/atlas/contentGenerationEngine.ts (voert deze mission uit — CONTENT_MISSIONS["CONTENT-005"])
+src/modules/doughbert/knowledge/hydratatie/index.ts (kwaliteitsvoorbeeld)
+src/modules/doughbert/knowledge/starter/index.ts (bestaande lege map, wordt gevuld)
+src/modules/doughbert/knowledge/collectSources.ts (krijgt automatisch een import + toevoeging aan de raw-array)
+src/modules/doughbert/knowledge/bulk/catalogArticles.ts (de engine verwijdert hier automatisch de oude title-only stub-entries voor exact de artikelen die deze keer echte content kregen)
+
+Constraints:
+Deze mission draait via de content-pipeline (contentGenerationEngine.ts), niet via de generieke mission.implement-flow
+Alleen artikelen die de publicatiedrempel halen (minimaal 3 echte secties + samenvatting) worden meegenomen; een artikel dat te dun blijft wordt overgeslagen en gerapporteerd
+TypeScript blijft compileren zonder nieuwe errors
+
+Success:
+Alle 9 artikelen in de starter-categorie tonen echte, leesbare content in de Kennisbibliotheek, geschreven door de echte agent-ploeg.

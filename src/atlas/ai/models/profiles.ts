@@ -8,6 +8,8 @@ const ROUTING_DEFAULTS: Pick<ModelProfile, "priority" | "rankScore" | "estimated
 };
 
 const MODEL_ROUTING: Partial<Record<string, Partial<ModelProfile>>> = {
+  "claude-sonnet-5": { priority: 7, rankScore: 97, fallbackModelId: "atlas-mock", estimatedCostPer1kTokens: 0.003 },
+  "claude-haiku-4-5": { priority: 9, rankScore: 93, fallbackModelId: "atlas-mock", estimatedCostPer1kTokens: 0.001 },
   "claude-sonnet": { priority: 10, rankScore: 95, fallbackModelId: "gpt-4o", estimatedCostPer1kTokens: 0.003 },
   "claude-3-5-sonnet-latest": { priority: 8, rankScore: 96, fallbackModelId: "atlas-mock", estimatedCostPer1kTokens: 0.003 },
   "gpt-4o": { priority: 20, rankScore: 92, fallbackModelId: "gemini-pro", estimatedCostPer1kTokens: 0.0025 },
@@ -33,6 +35,38 @@ function enrichModelProfile(seed: ModelProfileSeed): ModelProfile {
 
 /** Model metadata — vendor names only live here, never in agents or modules. */
 export const MODEL_PROFILES: Record<string, ModelProfileSeed> = {
+  "claude-sonnet-5": {
+    id: "claude-sonnet-5",
+    providerId: "claude",
+    name: "Claude Sonnet 5",
+    vendor: "Anthropic",
+    strengths: ["Copywriting", "Long context", "Structured output", "Reasoning", "Fact checking"],
+    costTier: "medium",
+    speedTier: "fast",
+    qualityTier: "best",
+    latencyMs: 1800,
+    contextWindow: 1_000_000,
+    supportedLanguages: ["nl", "en", "de", "fr", "es", "it"],
+    supportedOutputs: ["text", "markdown", "json", "validation", "score"],
+    supportedMedia: ["text"],
+    available: true,
+  },
+  "claude-haiku-4-5": {
+    id: "claude-haiku-4-5",
+    providerId: "claude",
+    name: "Claude Haiku 4.5",
+    vendor: "Anthropic",
+    strengths: ["Speed", "Cost efficiency", "Structured output"],
+    costTier: "low",
+    speedTier: "fast",
+    qualityTier: "excellent",
+    latencyMs: 900,
+    contextWindow: 200_000,
+    supportedLanguages: ["nl", "en", "de", "fr", "es", "it"],
+    supportedOutputs: ["text", "markdown", "json", "validation"],
+    supportedMedia: ["text"],
+    available: true,
+  },
   "claude-sonnet": {
     id: "claude-sonnet",
     providerId: "claude",
@@ -52,7 +86,7 @@ export const MODEL_PROFILES: Record<string, ModelProfileSeed> = {
   "claude-3-5-sonnet-latest": {
     id: "claude-3-5-sonnet-latest",
     providerId: "claude",
-    name: "Claude 3.5 Sonnet",
+    name: "Claude 3.5 Sonnet (retired — routes to Claude Sonnet 5)",
     vendor: "Anthropic",
     strengths: ["Copywriting", "Long context", "Structured output", "Fact checking"],
     costTier: "medium",

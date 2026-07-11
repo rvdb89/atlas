@@ -1,16 +1,10 @@
 import { router } from "expo-router";
 import type { ReactNode } from "react";
-import {
-  ImageBackground,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import ScreenLayout from "@/components/ScreenLayout";
 import RecipeKnowledgeBiteCTA from "@/components/RecipeKnowledgeBiteCTA";
+import { BakeryColors, BakeryFonts } from "@/constants/theme";
 import {
   getKnowledgeBite,
   getKnowledgeBiteForRecipe,
@@ -24,14 +18,14 @@ import type {
 } from "@/types/recipe";
 
 const COLORS = {
-  cream: "#F7F1E8",
-  warmWhite: "#FFFDF8",
-  card: "#F8F0E6",
-  brown: "#2B2118",
-  secondary: "#7A6652",
-  orange: "#B85F1D",
-  orangeAccent: "#B86B38",
-  peach: "#F3D1A5",
+  cream: BakeryColors.cream,
+  warmWhite: BakeryColors.warmWhite,
+  card: BakeryColors.card,
+  brown: BakeryColors.brown,
+  secondary: BakeryColors.textSecondary,
+  orange: BakeryColors.orange,
+  orangeAccent: BakeryColors.orangeAccent,
+  peach: BakeryColors.peach,
 };
 
 type RecipeDetailProps = {
@@ -73,22 +67,18 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
       title={recipe.name}
       subtitle={recipe.tagline}
     >
-      <ImageBackground
-        source={require("../../assets/images/hero afbeelding.png")}
-        style={styles.hero}
-        imageStyle={styles.heroImage}
-        resizeMode="cover"
-      >
-        <View style={styles.heroOverlay} />
-        <View style={styles.heroBadgeRow}>
-          <View style={styles.heroBadge}>
-            <Text style={styles.heroBadgeText}>{recipe.category}</Text>
-          </View>
-          <View style={styles.heroBadge}>
-            <Text style={styles.heroBadgeText}>{recipe.meta.difficultyLabel}</Text>
-          </View>
+      {recipe.image ? (
+        <Image source={recipe.image} style={styles.heroPhoto} resizeMode="cover" />
+      ) : null}
+
+      <View style={styles.badgeRow}>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{recipe.category}</Text>
         </View>
-      </ImageBackground>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{recipe.meta.difficultyLabel}</Text>
+        </View>
+      </View>
 
       <View style={styles.statsGrid}>
         <StatCard label="Totale tijd" value={recipe.meta.durationLabel} />
@@ -227,44 +217,30 @@ function IngredientRow({ ingredient }: { ingredient: RecipeIngredient }) {
 }
 
 const styles = StyleSheet.create({
-  hero: {
-    height: Platform.select({ web: 320, default: 280 }),
-    marginHorizontal: -24,
-    marginTop: -8,
-    marginBottom: 22,
-    overflow: "hidden",
-    justifyContent: "flex-end",
-  },
-
-  heroImage: {
-    resizeMode: "cover",
+  heroPhoto: {
     width: "100%",
-    height: "120%",
-    transform: [{ translateY: -40 }],
+    height: 220,
+    borderRadius: 24,
+    marginBottom: 16,
   },
 
-  heroOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: "rgba(43, 33, 24, 0.18)",
-  },
-
-  heroBadgeRow: {
+  badgeRow: {
     flexDirection: "row",
     gap: 10,
-    padding: 18,
+    marginBottom: 20,
   },
 
-  heroBadge: {
-    backgroundColor: "rgba(255, 253, 248, 0.92)",
+  badge: {
+    backgroundColor: COLORS.peach,
     borderRadius: 999,
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 7,
   },
 
-  heroBadgeText: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: COLORS.orangeAccent,
+  badgeText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#8A4A1E",
   },
 
   statsGrid: {
@@ -295,17 +271,18 @@ const styles = StyleSheet.create({
   statValue: {
     marginTop: 6,
     fontSize: 20,
-    fontWeight: "900",
+    fontWeight: "700",
     color: COLORS.brown,
   },
 
   section: {
-    marginTop: 24,
+    marginTop: 28,
   },
 
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: "900",
+    fontFamily: BakeryFonts.display,
+    fontSize: 21,
+    fontWeight: "700",
     color: COLORS.brown,
     marginBottom: 14,
   },
@@ -327,12 +304,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 18,
     borderWidth: 1,
-    borderColor: "rgba(184, 107, 56, 0.08)",
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+    borderColor: "rgba(184, 107, 56, 0.12)",
   },
 
   flourRow: {

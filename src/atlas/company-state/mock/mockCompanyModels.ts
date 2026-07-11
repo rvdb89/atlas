@@ -364,6 +364,7 @@ export function createMockCompanyModels(): CompanyModels {
       health: 68,
       statusLabel: "Mock feed — weakest capability",
       lastUpdated: "2026-07-07",
+      recent: [],
     },
     bugs: [
       {

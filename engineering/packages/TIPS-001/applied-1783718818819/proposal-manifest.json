@@ -1,0 +1,15 @@
+{
+  "missionId": "TIPS-001",
+  "title": "Tips uitbreiden",
+  "generatedAt": "2026-07-10T21:12:02.716Z",
+  "summary": "14 nieuwe tip(s) geschreven door de echte copywriter (real AI, geen mock) over 7 categorieën — de bestaande 31 tips blijven exact zoals ze waren.",
+  "files": [
+    {
+      "path": "src/modules/doughbert/tips/tips.ts",
+      "action": "modify",
+      "reason": "14 nieuwe tip(s) toegevoegd over 7 categorieën — alle 31 bestaande tips blijven ongewijzigd."
+    }
+  ],
+  "risks": [],
+  "followUp": "Alle gevraagde tips gehaald — controleer toon en feitelijke juistheid voor het toepassen."
+}

@@ -1,0 +1,25 @@
+Mission:
+BRAIN-011
+
+Title:
+Automatisch herplannen bij mislukte validatie
+
+Goal:
+Laatste stuk van de planning-gap die al een tijd op de lijst stond: "nog geen iteratief herplannen als een uitvoering de validatie niet haalt." Tot nu toe rapporteerde EXEC-002/EXEC-003's post-apply validatie een mislukte typecheck of testrun alleen als een rode waarschuwing — niemand en niets deed er daadwerkelijk iets mee. Deze mission maakt daar een echte, veilige reactie van: zodra een Apply de validatie niet haalt, stelt Atlas automatisch een gerichte hersteldmissie (FIX-XXX) op via de bestaande Execution Engine, met de echte foutmelding als context — en die duikt gegarandeerd op in de CEO Inbox, ongeacht welke andere missie op dat moment "actief" is. Er wordt nooit iets automatisch toegepast; de CEO keurt het fix-voorstel goed zoals elk ander voorstel.
+
+Focus:
+scripts/atlas/replanOnFailure.ts (nieuw — draftFixMissionForFailedValidation() genereert een FIX-XXX missiebestand en laat de Execution Engine er een echt voorstel voor opstellen; listPendingFixMissions() scant welke fix-voorstellen nog op review wachten)
+scripts/atlas/applyEngine.ts (applyProposedChanges is nu async; roept draftFixMissionForFailedValidation aan direct na runPostApplyValidation, best-effort, ApplyEngineResult kreeg een fixMission-veld)
+scripts/atlas-apply.ts (await de nu async applyProposedChanges, CLI toont het fix-voorstel als er een is)
+scripts/atlas-runtime.ts (apply-bridge HTTP-handler awaits nu applyProposedChanges; listPendingFixMissions() wordt elke cyclus doorgegeven aan buildCandidateApprovals)
+scripts/atlas/realCompanyData.ts (buildCandidateApprovals kreeg een pendingFixMissions-input — altijd zichtbaar in de Open-tab, los van welke missie de Decision Engine net als top-prioriteit koos)
+
+Constraints:
+Nooit automatisch toepassen — een fix-voorstel doorloopt exact dezelfde CEO Inbox-approve-flow als elke andere missie
+Nooit de CEO-instructie-slot (reports/runtime/ceo-instruction.json) overschrijven — dat zou een expliciet verzoek van de CEO stil kunnen verdringen; een fix-voorstel krijgt in plaats daarvan een eigen, altijd-zichtbare plek in de Inbox
+Best-effort en non-blocking op elk niveau — een mislukte poging om te herplannen mag de al geslaagde Apply nooit verbergen of terugdraaien
+Idempotent per Apply: een marker-bestand (fix-mission.json in de archived map) voorkomt dat dezelfde mislukking twee keer een fix-voorstel triggert
+FIX-missie-ID's volgen hetzelfde patroon als elke andere missie (FIX-001, FIX-002, ...) zodat MissionResolver's bestaande validatie ze zonder aanpassing accepteert
+
+Success:
+Als een toekomstige Apply de typecheck of testsuite breekt, staat er binnen dezelfde cyclus een echt, gericht fix-voorstel klaar in de CEO Inbox — zichtbaar, reviewbaar, en met de werkelijke foutmelding als onderbouwing — in plaats van alleen een rode waarschuwing zonder vervolg.

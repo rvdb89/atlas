@@ -247,5 +247,19 @@ export function formatTaskExecutionLog<T>(execution: AiTaskExecutionResult<T>): 
   const cacheNote = execution.cacheHit ? " · cache" : "";
   const taskLabel = execution.taskName ?? execution.task;
 
-  return `${member.emoji} ${member.name} · ${taskLabel} via ${modelLabel}${fallbackNote}${cacheNote} · ${execution.durationMs}ms`;
+  // BRAIN-010 · A transport can silently swallow a real failure and substitute a mock
+  // response one layer below this function's view (see createClaudeTransport.ts's
+  // catch-and-fall-back-to-mock) — from here that used to look like an ordinary successful
+  // call, since usedFallback only tracks whether the Orchestrator had to move to a
+  // *different model*, not whether the transport for the *same* model quietly degraded.
+  // Real incident: this masked 17 of 22 real Claude calls failing during CONTENT-007
+  // (technieken) as "successful", each one silently returning mock-shaped placeholder
+  // content instead of a visible error. Surfaced loudly here instead, since this function
+  // is the one shared choke point every AI task's log line passes through.
+  const silentlyFellBackToMock = execution.metadata?.fallbackUsed === true && execution.metadata?.transport === "mock";
+  const silentFallbackNote = silentlyFellBackToMock
+    ? ` ⚠ STILLE FALLBACK — echte aanroep mislukte (${String(execution.metadata?.liveError ?? "onbekende fout")}), placeholder-antwoord gebruikt in plaats van een fout`
+    : "";
+
+  return `${member.emoji} ${member.name} · ${taskLabel} via ${modelLabel}${fallbackNote}${cacheNote} · ${execution.durationMs}ms${silentFallbackNote}`;
 }

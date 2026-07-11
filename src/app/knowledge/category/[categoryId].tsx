@@ -6,6 +6,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { KnowledgeBiteCard } from "@/components/knowledge/KnowledgeCards";
 import Meelwijzer from "@/components/knowledge/Meelwijzer";
 import ScreenLayout from "@/components/ScreenLayout";
+import { BakeryColors } from "@/constants/theme";
 import { getKnowledgeBitesByCategory } from "@/data/knowledgeBites";
 import { getKnowledgeCategory,
   knowledgeCategories,
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
   headerMeta: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#B86B38",
+    color: BakeryColors.orangeAccent,
     textTransform: "uppercase",
     letterSpacing: 0.4,
   },
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 13,
     fontWeight: "800",
-    color: "#7A6652",
+    color: BakeryColors.textSecondary,
     textTransform: "uppercase",
     letterSpacing: 0.5,
     marginBottom: 14,
@@ -102,16 +103,16 @@ const styles = StyleSheet.create({
   },
 
   panel: {
-    backgroundColor: "#FFFDF8",
+    backgroundColor: BakeryColors.warmWhite,
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "rgba(184, 107, 56, 0.08)",
+    borderColor: "rgba(184, 107, 56, 0.12)",
   },
 
   body: {
     fontSize: 16,
     lineHeight: 24,
-    color: "#7A6652",
+    color: BakeryColors.textSecondary,
   },
 });

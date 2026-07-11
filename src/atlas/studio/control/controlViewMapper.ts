@@ -17,6 +17,7 @@ import type {
   InitiativeLane,
   ManagementMember,
   ManagementStatus,
+  MemorySummary,
   NeedsChangeOptionId,
   ProductOverview,
   RoadmapInitiative,
@@ -71,6 +72,10 @@ export function mapCompanyStateToControlView(
     companyState: mapCompanyStateMeta(state, source),
     ceoCommand: mapCeoCommand(state),
     ceoInbox: state.approvals.map(mapApprovalToInbox),
+    // Not part of CompanyState — set from the runtime snapshot by loadControlSnapshot()
+    // right after this call. Defaulted here only so this function's own return type
+    // satisfies ControlSnapshot on its own (e.g. for the mock/no-runtime path).
+    appliedHistory: [],
     businesses: state.businesses.map(mapBusiness),
     products: state.apps.map(mapApp),
     management: state.agents.map(mapAgent),
@@ -81,6 +86,16 @@ export function mapCompanyStateToControlView(
     issues: state.bugs.map(mapBug),
     activity: state.activity.map(mapActivity),
     atlasAdvice: mapAtlasAdvice(state),
+    memory: mapMemory(state),
+  };
+}
+
+function mapMemory(state: CompanyState): MemorySummary {
+  return {
+    health: state.memory.health,
+    statusLabel: state.memory.statusLabel,
+    lastUpdated: state.memory.lastUpdated,
+    recent: state.memory.recent,
   };
 }
 
@@ -100,6 +115,7 @@ function mapApprovalToInbox(approval: CompanyState["approvals"][number]): CeoInb
     confirmationMessage: approval.confirmationMessage,
     selectedChangeOption: approval.selectedChangeOption as NeedsChangeOptionId | undefined,
     changeNote: approval.changeNote,
+    applyWarning: approval.applyWarning,
   };
 }
 
@@ -130,6 +146,7 @@ function mapApp(app: CompanyState["apps"][number]): ProductOverview {
 function mapAgent(agent: CompanyState["agents"][number]): ManagementMember {
   return {
     id: agent.id,
+    name: agent.name,
     title: agent.role,
     department: agent.department as DepartmentId,
     status: agent.status as ManagementStatus,
@@ -208,5 +225,7 @@ function mapAtlasAdvice(state: CompanyState): AtlasAdvice {
     confidence: state.recommendation.confidence,
     relatedInitiative: state.recommendation.relatedInitiativeId,
     decision: state.recommendation.decision as AdviceDecision,
+    packagePath: state.recommendation.packagePath,
+    packageIsNew: state.recommendation.packageIsNew,
   };
 }

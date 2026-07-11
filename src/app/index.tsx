@@ -12,17 +12,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const COLORS = {
-  cream: "#F7F1E8",
-  warmWhite: "#FFFDF8",
-  card: "#F8F0E6",
-  brown: "#2B2118",
-  brownMuted: "#5F4A3B",
-  orange: "#B85F1D",
-  orangeAccent: "#B86B38",
-  peach: "#F3D1A5",
-  navInactive: "#9B928A",
-};
+import { BakeryColors, BakeryFonts } from "@/constants/theme";
+
+const COLORS = BakeryColors;
 
 const PANEL_MARGIN = 24;
 const PANEL_PADDING = 22;
@@ -324,9 +316,10 @@ const styles = StyleSheet.create({
   },
 
   heroTitle: {
-    fontSize: Platform.select({ web: 50, default: 40 }),
-    lineHeight: Platform.select({ web: 56, default: 46 }),
-    fontWeight: "900",
+    fontFamily: BakeryFonts.display,
+    fontSize: Platform.select({ web: 48, default: 38 }),
+    lineHeight: Platform.select({ web: 54, default: 44 }),
+    fontWeight: "700",
     color: COLORS.brown,
     maxWidth: 520,
   },
@@ -353,8 +346,9 @@ const styles = StyleSheet.create({
   },
 
   panelTitle: {
-    fontSize: 26,
-    fontWeight: "900",
+    fontFamily: BakeryFonts.display,
+    fontSize: 25,
+    fontWeight: "700",
     color: COLORS.brown,
     marginBottom: 20,
   },
@@ -388,8 +382,9 @@ const styles = StyleSheet.create({
   },
 
   cardTitle: {
-    fontSize: 20,
-    fontWeight: "900",
+    fontFamily: BakeryFonts.display,
+    fontSize: 19,
+    fontWeight: "700",
     color: COLORS.brown,
     textAlign: "center",
   },
@@ -435,9 +430,10 @@ const styles = StyleSheet.create({
 
   quoteBold: {
     marginTop: 4,
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: "900",
+    fontFamily: BakeryFonts.display,
+    fontSize: 19,
+    lineHeight: 27,
+    fontWeight: "700",
     color: COLORS.brown,
   },
 

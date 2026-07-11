@@ -90,14 +90,28 @@ function buildKnowledgeBiteRegistry(): KnowledgeBiteRegistry {
 
 export const knowledgeBites: KnowledgeBiteRegistry = buildKnowledgeBiteRegistry();
 
-export const knowledgeBiteList: KnowledgeBite[] = Object.values(knowledgeBites);
+/** True once a bite has anything a reader could actually read — either a real intro
+ * summary or at least one real editorial section. Many catalog articles today exist only
+ * as a title (auto-defaulted to an empty summary and zero sections, see
+ * knowledgeBiteContent.ts) — those are genuinely blank pages, not content, and should
+ * never be offered to a reader as if they were finished articles. */
+export function hasRealKnowledgeContent(bite: KnowledgeBite): boolean {
+  return bite.introduction.trim().length > 0 || bite.content.sections.length > 0;
+}
+
+const allKnowledgeBites: KnowledgeBite[] = Object.values(knowledgeBites);
+
+/** Browsing/search list — only bites with real content a reader can open. Lookups by
+ * id/slug (below) intentionally use the full, unfiltered registry instead, so a direct or
+ * related-knowledge link never 404s just because a bite happens to still be a stub. */
+export const knowledgeBiteList: KnowledgeBite[] = allKnowledgeBites.filter(hasRealKnowledgeContent);
 
 export function getKnowledgeBite(id: KnowledgeBiteId): KnowledgeBite | undefined {
   return knowledgeBites[id];
 }
 
 export function getKnowledgeBiteBySlug(slug: string): KnowledgeBite | undefined {
-  return knowledgeBiteList.find((bite) => bite.slug === slug);
+  return allKnowledgeBites.find((bite) => bite.slug === slug);
 }
 
 export function getKnowledgeBitesByCategory(

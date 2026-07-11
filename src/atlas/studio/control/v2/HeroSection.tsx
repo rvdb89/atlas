@@ -15,6 +15,7 @@ type HeroSectionProps = {
 export default function HeroSection({ snapshot, onPrimary, onSecondary }: HeroSectionProps) {
   const cmd = snapshot.ceoCommand;
   const state = snapshot.companyState;
+  const advice = snapshot.atlasAdvice;
   const greeting = timeGreeting();
   const tone = healthTone(state.companyHealth);
 
@@ -43,6 +44,18 @@ export default function HeroSection({ snapshot, onPrimary, onSecondary }: HeroSe
         <Text style={styles.recEyebrow}>Atlas main recommendation</Text>
         <Text style={styles.recTitle}>{cmd.recommendation}</Text>
         <Text style={styles.recReason}>{cmd.reason}</Text>
+
+        {advice.packagePath ? (
+          <View style={styles.packageRow}>
+            <StatusPill
+              label={advice.packageIsNew ? "Package generated" : "Package ready"}
+              tone={advice.packageIsNew ? "success" : "neutral"}
+            />
+            <Text style={styles.packagePath} numberOfLines={1}>
+              {advice.packagePath}
+            </Text>
+          </View>
+        ) : null}
       </View>
 
       {cmd.confirmationMessage ? (
@@ -52,7 +65,15 @@ export default function HeroSection({ snapshot, onPrimary, onSecondary }: HeroSe
       ) : null}
 
       <View style={styles.actions}>
-        <V2Button label={cmd.primaryActionLabel} onPress={onPrimary} />
+        {/* Only offer the Approve action while something is actually still open for this
+            recommendation. Once approved (via this button OR directly from the CEO Inbox —
+            both now share the same underlying state), showing "Approve X" forever was
+            confusing: there is nothing left to approve. */}
+        {advice.decision !== "approved" ? (
+          <V2Button label={cmd.primaryActionLabel} onPress={onPrimary} />
+        ) : (
+          <StatusPill label="Approved — Atlas is executing" tone="success" />
+        )}
         <V2Button label={cmd.secondaryActionLabel} onPress={onSecondary} variant="secondary" />
       </View>
     </View>
@@ -184,6 +205,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     color: V2.textMuted,
+  },
+
+  packageRow: {
+    marginTop: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  packagePath: {
+    flexShrink: 1,
+    fontSize: 12,
+    fontFamily: "monospace",
+    color: V2.textDim,
   },
 
   confirm: {

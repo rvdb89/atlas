@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import ScreenLayout from "@/components/ScreenLayout";
+import { BakeryColors, BakeryFonts } from "@/constants/theme";
 import { getPipelineFlowLabel, STUDIO_MISSION } from "@/studio/aiTeam";
 
 export default function ProfileScreen() {
@@ -37,17 +38,17 @@ const styles = StyleSheet.create({
   lead: {
     fontSize: 16,
     lineHeight: 24,
-    color: "#7A6652",
+    color: BakeryColors.textSecondary,
   },
 
   studioButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFDF8",
+    backgroundColor: BakeryColors.warmWhite,
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "rgba(184, 107, 56, 0.08)",
+    borderColor: "rgba(184, 107, 56, 0.12)",
     gap: 14,
   },
 
@@ -65,27 +66,28 @@ const styles = StyleSheet.create({
   },
 
   studioTitle: {
-    fontSize: 20,
-    fontWeight: "900",
-    color: "#2B2118",
+    fontFamily: BakeryFonts.display,
+    fontSize: 19,
+    fontWeight: "700",
+    color: BakeryColors.brown,
   },
 
   studioSubtitle: {
     fontSize: 14,
     lineHeight: 20,
-    color: "#7A6652",
+    color: BakeryColors.textSecondary,
   },
 
   studioFlow: {
     fontSize: 12,
     lineHeight: 18,
     fontWeight: "700",
-    color: "#B86B38",
+    color: BakeryColors.orangeAccent,
   },
 
   arrow: {
-    fontSize: 28,
-    fontWeight: "900",
-    color: "#B86B38",
+    fontSize: 26,
+    fontWeight: "700",
+    color: BakeryColors.orangeAccent,
   },
 });

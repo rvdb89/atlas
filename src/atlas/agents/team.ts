@@ -108,6 +108,20 @@ export const ATLAS_AI_TEAM: TeamMember[] = [
     ],
     serviceIds: ["domain-validator-v1", "test-kitchen-v1", "test-kitchen"],
   },
+  {
+    id: "branch-director",
+    emoji: "🧭",
+    name: "Helm",
+    role: "Branch Director Reasoning",
+    tagline: "Weegt capability gaps en kiest de volgende missie",
+    responsibilities: [
+      "Missie-selectie",
+      "Capability gap analyse",
+      "North Star afstemming",
+      "Evolution Engine advies",
+    ],
+    serviceIds: ["branch-director-v1", "helm-v1"],
+  },
 ];
 
 export const ATLAS_PIPELINE_ORDER: CoreAgentId[] = [

@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0",
+  "packageType": "engineering",
+  "missionId": "BRAIN-003",
+  "title": "Context Engine",
+  "templateLabel": "Brain Mission",
+  "atlasVersion": "0.26.0",
+  "atlasBuild": "brain-005",
+  "generatedAt": "2026-07-08T07:42:33.385Z",
+  "outputDir": "engineering/packages/BRAIN-003",
+  "entrypoint": "engineering/packages/BRAIN-003/claude-engineering-package.md",
+  "legacyBriefPath": "engineering/briefs/BRAIN-003.md",
+  "inputRequired": "missionIdOnly",
+  "inferencePipeline": [
+    "decision-engine",
+    "organization",
+    "evolution-engine",
+    "decision-framework",
+    "constitution",
+    "north-star",
+    "principles",
+    "capabilities",
+    "systems",
+    "roadmap",
+    "mission-registry",
+    "engineering-standards",
+    "architecture-rules",
+    "mission-dependencies",
+    "definition-of-done",
+    "validation-plan",
+    "engineering-package"
+  ],
+  "constitutionId": "ATLAS-000",
+  "constitutionPath": "engineering/constitution/atlas-constitution.md",
+  "decisionFrameworkId": "ATLAS-001",
+  "decisionEngineId": "BRAIN-004",
+  "evolutionEngineId": "ATLAS-001",
+  "organizationModelId": "ATLAS-002",
+  "branchDirectorIdentityId": "ATLAS-003",
+  "dependencies": [
+    {
+      "missionId": "BRAIN-001",
+      "title": "Planner Engine",
+      "relationship": "requires",
+      "reason": "Prior BRAIN mission in sequence"
+    },
+    {
+      "missionId": "BRAIN-002",
+      "title": "Memory Engine",
+      "relationship": "requires",
+      "reason": "Prior BRAIN mission in sequence"
+    }
+  ],
+  "files": {
+    "manifest": "engineering/packages/BRAIN-003/manifest.json",
+    "claudeEntrypoint": "engineering/packages/BRAIN-003/claude-engineering-package.md",
+    "architectureBrief": "engineering/packages/BRAIN-003/architecture-brief.md",
+    "validationPlan": "engineering/packages/BRAIN-003/validation-plan.md",
+    "auditChecklist": "engineering/packages/BRAIN-003/audit-checklist.md",
+    "releaseNotes": "engineering/packages/BRAIN-003/release-notes.md"
+  }
+}

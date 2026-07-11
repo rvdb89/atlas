@@ -78,6 +78,28 @@ export class MemoryStore {
   clear(): void {
     this.entries.clear();
   }
+
+  /** BRAIN-009 · Actually removes entries from the Map — unlike delete() above, which only
+   * flips status to "deleted" and leaves the entry in place forever (exportAll() still
+   * persists it). This is the real hard-removal used by memory retention, never called from
+   * normal CRUD flows. Returns the number of entries actually removed. */
+  purge(ids: string[]): number {
+    let removed = 0;
+    for (const id of ids) {
+      if (this.entries.delete(id)) removed += 1;
+    }
+    return removed;
+  }
+
+  /** Plain-data snapshot of every entry (including archived/deleted) — for persistence. */
+  exportAll(): AtlasMemoryEntry[] {
+    return [...this.entries.values()];
+  }
+
+  /** Bulk-restores entries from a previous `exportAll()` — replaces the current contents. */
+  importAll(entries: AtlasMemoryEntry[]): void {
+    this.entries = new Map(entries.map((entry) => [entry.id, entry]));
+  }
 }
 
 function clamp(value: number, min: number, max: number): number {

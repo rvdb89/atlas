@@ -19,7 +19,10 @@ export type AtlasTaskType =
   | "quality.score"
   | "writing.improve"
   | "prompt.generate"
-  | "quiz.create";
+  | "quiz.create"
+  | "mission.decide"
+  | "mission.implement"
+  | "tips.write";
 
 /** Public task names — callers request tasks, never models. */
 export type AiTaskName =

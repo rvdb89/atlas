@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
+  type LayoutChangeEvent,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+
+import { APP_URL } from "@/atlas/config/ports";
 
 import { useStudioBootstrap } from "../../hooks/useStudioBootstrap";
+import { openAppTab, openOrLaunchApp } from "../appLauncher";
 import { useControlDashboard } from "../useControlDashboard";
 import ActivityFeedV2 from "./ActivityFeedV2";
 import AiHeart from "./AiHeart";
@@ -25,13 +31,64 @@ import MemorySectionV2 from "./MemorySectionV2";
 import RoadmapV2 from "./RoadmapV2";
 import { V2 } from "./v2Theme";
 
+export type AppLaunchStatus = "idle" | "checking" | "starting" | "timeout" | "bridge-unreachable" | "popup-blocked";
+
 export default function ControlScreenV2() {
   useStudioBootstrap();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
+  const router = useRouter();
   const showSidebar = width >= 900;
   const showCommandRail = width >= 1180;
   const [activeNav, setActiveNav] = useState<CockpitNavId>("control");
+
+  const scrollRef = useRef<ScrollView>(null);
+  const sectionOffsets = useRef<Partial<Record<CockpitNavId, number>>>({});
+  const [appLaunchStatus, setAppLaunchStatus] = useState<AppLaunchStatus>("idle");
+
+  // Bugfix 2026-07-10 · Used to be a bare window.open(APP_URL) — if the app's dev server
+  // wasn't already running as a separate manual process, that landed on a blank
+  // ERR_CONNECTION_REFUSED tab with no explanation and no way to fix it from here. First fix
+  // (checking liveness before opening) introduced a second bug: awaiting anything before
+  // window.open() makes the browser treat it as no longer user-initiated, so the popup
+  // blocker silently ate the call — nothing opened, no error. Fixed by opening the tab
+  // synchronously first (openAppTab, still inside this click handler's own call stack) and
+  // only doing the async liveness/launch/poll work against that already-open window.
+  const openDoughbertApp = useCallback(() => {
+    if (Platform.OS !== "web" || typeof window === "undefined") return;
+    if (appLaunchStatus === "checking" || appLaunchStatus === "starting") return;
+
+    const win = openAppTab();
+    void openOrLaunchApp("doughbert", APP_URL, win, setAppLaunchStatus).then((outcome) => {
+      setAppLaunchStatus(
+        outcome === "opened"
+          ? "idle"
+          : outcome === "starting-timeout"
+            ? "timeout"
+            : outcome === "popup-blocked"
+              ? "popup-blocked"
+              : "bridge-unreachable",
+      );
+    });
+  }, [appLaunchStatus]);
+
+  const handleSectionLayout = (id: CockpitNavId) => (event: LayoutChangeEvent) => {
+    sectionOffsets.current[id] = event.nativeEvent.layout.y;
+  };
+
+  const handleNavSelect = (id: CockpitNavId) => {
+    setActiveNav(id);
+
+    if (id === "settings") {
+      router.push("/studio/settings");
+      return;
+    }
+
+    const y = id === "control" ? 0 : sectionOffsets.current[id];
+    if (y !== undefined) {
+      scrollRef.current?.scrollTo({ y: Math.max(y - 12, 0), animated: true });
+    }
+  };
 
   const {
     snapshot,
@@ -57,8 +114,10 @@ export default function ControlScreenV2() {
         {showSidebar && snapshot ? (
           <CockpitSidebar
             active={activeNav}
-            onSelect={setActiveNav}
+            onSelect={handleNavSelect}
             companyName={snapshot.companyName}
+            onOpenApp={openDoughbertApp}
+            appLaunchStatus={appLaunchStatus}
           />
         ) : null}
 
@@ -76,6 +135,7 @@ export default function ControlScreenV2() {
             </View>
           ) : (
             <ScrollView
+              ref={scrollRef}
               contentContainerStyle={[
                 styles.scrollContent,
                 { paddingBottom: insets.bottom + 40 },
@@ -94,7 +154,7 @@ export default function ControlScreenV2() {
 
                   <AiHeart companyHealth={snapshot.companyState.companyHealth} />
 
-                  <View style={styles.sectionGap}>
+                  <View style={styles.sectionGap} onLayout={handleSectionLayout("inbox")}>
                     <CeoInboxV2
                       snapshot={snapshot}
                       adjustingItemId={adjustingItemId}
@@ -105,23 +165,23 @@ export default function ControlScreenV2() {
                     />
                   </View>
 
-                  <View style={styles.sectionGap}>
+                  <View style={styles.sectionGap} onLayout={handleSectionLayout("agents")}>
                     <ManagementTeamV2 snapshot={snapshot} />
                   </View>
 
-                  <View style={styles.sectionGap}>
+                  <View style={styles.sectionGap} onLayout={handleSectionLayout("companies")}>
                     <CompanyPortfolioV2 snapshot={snapshot} />
                   </View>
 
-                  <View style={styles.sectionGap}>
+                  <View style={styles.sectionGap} onLayout={handleSectionLayout("roadmap")}>
                     <RoadmapV2 snapshot={snapshot} />
                   </View>
 
-                  <View style={styles.sectionGap}>
+                  <View style={styles.sectionGap} onLayout={handleSectionLayout("bugs")}>
                     <BugsSectionV2 snapshot={snapshot} />
                   </View>
 
-                  <View style={styles.sectionGap}>
+                  <View style={styles.sectionGap} onLayout={handleSectionLayout("memory")}>
                     <MemorySectionV2 snapshot={snapshot} />
                   </View>
 

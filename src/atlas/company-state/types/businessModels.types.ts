@@ -46,7 +46,8 @@ export type ActivityEventType =
   | "release_published"
   | "memory_updated"
   | "agent_promoted"
-  | "app_deployed";
+  | "app_deployed"
+  | "atlas_decision";
 
 export type RecommendationDecision = "pending" | "approved" | "deferred";
 
@@ -133,6 +134,14 @@ export type ApprovalModel = {
   confirmationMessage?: string;
   selectedChangeOption?: NeedsChangeOptionId;
   changeNote?: string;
+  /** Set when a "pkg-<missionId>" item is marked approved but the Apply Engine never
+   * actually wrote the files to the working tree (e.g. the local apply-bridge wasn't
+   * reachable at the moment of approval). Recomputed fresh from real disk state
+   * (appliedHistory) on every load — never a flag that can go stale, and it clears itself
+   * automatically once a manual `npm run atlas:apply` (or a later successful auto-apply)
+   * actually lands the files. This is what makes an "approved but not applied" mission
+   * visible instead of silently vanishing from the CEO Inbox. */
+  applyWarning?: string;
 };
 
 export type PlatformModel = {
@@ -149,6 +158,20 @@ export type MemoryModel = {
   health: number;
   statusLabel: string;
   lastUpdated: string;
+  /** BRAIN-002b · Actual recent memory entries, not just a health score — see
+   * RecentMemoryEntry in @/atlas/brain/memory. Declared inline here (not imported) because
+   * this types file stays dependency-free by convention; the shape is kept in sync by hand
+   * with @/atlas/brain/memory/memory.types.ts's RecentMemoryEntry. */
+  recent: Array<{
+    id: string;
+    type: string;
+    title: string;
+    summary: string;
+    tags: string[];
+    importance: number;
+    source: string;
+    updatedAt: string;
+  }>;
 };
 
 export type BugModel = {
@@ -183,6 +206,9 @@ export type RecommendationModel = {
   confidence: number;
   relatedInitiativeId?: string;
   decision: RecommendationDecision;
+  /** BRAIN-001 · path to the real engineering package generated for this recommendation, if any. */
+  packagePath?: string;
+  packageIsNew?: boolean;
 };
 
 export type DecisionFeedbackModel = {

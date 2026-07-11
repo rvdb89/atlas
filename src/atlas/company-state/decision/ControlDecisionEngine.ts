@@ -1,6 +1,36 @@
 import { getCompanyState } from "../CompanyStateEngine";
 import { updateCompanyModels } from "../CompanyStateStore";
-import type { ApprovalModel, CompanyModels, CompanyStateResult, NeedsChangeOptionId } from "../types";
+import type {
+  ApprovalModel,
+  CompanyModels,
+  CompanyStateResult,
+  NeedsChangeOptionId,
+  RecommendationDecision,
+} from "../types";
+
+/** An approval still counts as "something the CEO needs to look at" while it's pending or
+ * sitting in needs_changes — matches the CEO Inbox's own "Open" grouping (ceoInboxView.ts).
+ * "approved" and "deferred" both mean the CEO has already made a call on it. */
+function isApprovalStillOpen(status: ApprovalModel["status"]): boolean {
+  return status === "pending" || status === "needs_changes";
+}
+
+/** Single source of truth for whether the top "Atlas Main Recommendation" card should still
+ * show as actionable. Always computed fresh from the current approvals — never a separately
+ * stored flag that can drift out of sync with what's actually still open in the CEO Inbox.
+ * This is what makes "approve in the Inbox" and "approve on the recommendation card"
+ * immediately reflect each other, from either direction, without needing a page reload. */
+export function computeRecommendationDecision(
+  initiativeId: string | null | undefined,
+  approvals: ApprovalModel[],
+): RecommendationDecision {
+  if (!initiativeId) return "pending";
+  const related = approvals.filter((item) => item.title.includes(initiativeId));
+  if (related.length > 0 && related.every((item) => !isApprovalStillOpen(item.status))) {
+    return "approved";
+  }
+  return "pending";
+}
 
 const ADJUST_LABELS: Record<NeedsChangeOptionId, string> = {
   "fix-bug": "Bug oplossen",
@@ -18,21 +48,32 @@ function appendActivity(message: string) {
   };
 }
 
-/** Decision layer — mutates company models, then returns fresh computed state. */
+/** Decision layer — mutates company models, then returns fresh computed state.
+ *
+ * Every mutation below recomputes `recommendation.decision` from the fresh approvals list in
+ * the same update — never leaves the top recommendation card's status to be reconciled later
+ * on a page reload. That was the source of an earlier bug: approving something in the CEO
+ * Inbox used to leave the top card frozen on "pending" until the next runtime-state merge. */
 export function approveApproval(approvalId: string): CompanyStateResult {
   updateCompanyModels((models: CompanyModels) => {
     const target = models.approvals.find((item) => item.id === approvalId);
     if (!target || target.status !== "pending") return models;
 
+    const approvals = models.approvals.map((item) =>
+      item.id === approvalId
+        ? { ...item, status: "approved" as const, confirmationMessage: "Goedgekeurd. Atlas mag door." }
+        : item,
+    );
+
     return {
       ...models,
       decisionFeedback: {},
-      approvals: models.approvals.map((item) =>
-        item.id === approvalId
-          ? { ...item, status: "approved", confirmationMessage: "Goedgekeurd. Atlas mag door." }
-          : item,
-      ),
+      approvals,
       activity: [appendActivity(`CEO approved — ${target.title}`), ...models.activity],
+      recommendation: {
+        ...models.recommendation,
+        decision: computeRecommendationDecision(models.recommendation.relatedInitiativeId, approvals),
+      },
     };
   });
 
@@ -46,19 +87,25 @@ export function adjustApproval(approvalId: string, option: NeedsChangeOptionId):
     const target = models.approvals.find((item) => item.id === approvalId);
     if (!target || target.status !== "pending") return models;
 
+    const approvals = models.approvals.map((item) =>
+      item.id === approvalId
+        ? {
+            ...item,
+            status: "needs_changes" as const,
+            selectedChangeOption: option,
+            changeNote: `Atlas pauzeert. Jouw keuze: ${label}.`,
+          }
+        : item,
+    );
+
     return {
       ...models,
       decisionFeedback: {},
-      approvals: models.approvals.map((item) =>
-        item.id === approvalId
-          ? {
-              ...item,
-              status: "needs_changes",
-              selectedChangeOption: option,
-              changeNote: `Atlas pauzeert. Jouw keuze: ${label}.`,
-            }
-          : item,
-      ),
+      approvals,
+      recommendation: {
+        ...models.recommendation,
+        decision: computeRecommendationDecision(models.recommendation.relatedInitiativeId, approvals),
+      },
     };
   });
 
@@ -70,13 +117,19 @@ export function deferApproval(approvalId: string): CompanyStateResult {
     const target = models.approvals.find((item) => item.id === approvalId);
     if (!target || target.status !== "pending") return models;
 
+    const approvals = models.approvals.map((item) =>
+      item.id === approvalId
+        ? { ...item, status: "deferred" as const, confirmationMessage: "Uitgesteld. Atlas bewaart dit voor later." }
+        : item,
+    );
+
     return {
       ...models,
-      approvals: models.approvals.map((item) =>
-        item.id === approvalId
-          ? { ...item, status: "deferred", confirmationMessage: "Uitgesteld. Atlas bewaart dit voor later." }
-          : item,
-      ),
+      approvals,
+      recommendation: {
+        ...models.recommendation,
+        decision: computeRecommendationDecision(models.recommendation.relatedInitiativeId, approvals),
+      },
     };
   });
 
@@ -85,17 +138,34 @@ export function deferApproval(approvalId: string): CompanyStateResult {
 
 export function approveRecommendation(): CompanyStateResult {
   updateCompanyModels((models: CompanyModels) => {
-    if (models.recommendation.decision !== "pending") return models;
-
     const initiative = models.recommendation.relatedInitiativeId;
     const matchingApproval = models.approvals.find(
-      (item: ApprovalModel) =>
-        item.status === "pending" && initiative && item.title.includes(initiative),
+      (item: ApprovalModel) => isApprovalStillOpen(item.status) && initiative && item.title.includes(initiative),
     );
 
-    let next = {
+    if (!matchingApproval) {
+      // Nothing left open for this initiative — never claim "approved" without actually
+      // resolving something. Just reflect the true state (which may already be "approved"
+      // if the CEO handled it via the Inbox directly, or "pending" if there's genuinely
+      // nothing here yet), so this button can't silently drift out of sync with the Inbox.
+      return {
+        ...models,
+        recommendation: {
+          ...models.recommendation,
+          decision: computeRecommendationDecision(initiative, models.approvals),
+        },
+      };
+    }
+
+    const approvals = models.approvals.map((item: ApprovalModel) =>
+      item.id === matchingApproval.id
+        ? { ...item, status: "approved" as const, confirmationMessage: "Goedgekeurd. Atlas mag door." }
+        : item,
+    );
+
+    return {
       ...models,
-      recommendation: { ...models.recommendation, decision: "approved" as const },
+      approvals,
       decisionFeedback: {
         ceoCommandConfirmation: `Goedgekeurd. Atlas start ${initiative ?? "de aanbeveling"}.`,
       },
@@ -105,20 +175,11 @@ export function approveRecommendation(): CompanyStateResult {
         ),
         ...models.activity,
       ],
+      recommendation: {
+        ...models.recommendation,
+        decision: computeRecommendationDecision(initiative, approvals),
+      },
     };
-
-    if (matchingApproval) {
-      next = {
-        ...next,
-        approvals: next.approvals.map((item: ApprovalModel) =>
-          item.id === matchingApproval.id
-            ? { ...item, status: "approved", confirmationMessage: "Goedgekeurd. Atlas mag door." }
-            : item,
-        ),
-      };
-    }
-
-    return next;
   });
 
   return getCompanyState();

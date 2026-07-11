@@ -43,7 +43,11 @@ const BASE_ROUTES: TaskRouteConfig[] = [
     promptId: "knowledge.write.v1",
     primaryModelId: "claude-sonnet",
     fallbackModelIds: ["gpt-4o", "gemini-pro", "atlas-stub"],
-    defaultSettings: { temperature: 0.7, maxTokens: 4096 },
+    // 4096 was sized for the old metadata-only prompt (title/subtitle/SEO). Now that this
+    // task also writes the full article body (contentPayload, 5-9 sections), it needs real
+    // room — still far below mission.implement's 16k because this is one article's worth of
+    // plain JSON content, not a whole TypeScript file re-encoded as an escaped string.
+    defaultSettings: { temperature: 0.7, maxTokens: 8000, timeoutMs: 120_000 },
   },
   {
     task: "recipe.write",
@@ -164,6 +168,39 @@ const BASE_ROUTES: TaskRouteConfig[] = [
     promptId: "quiz.create.v1",
     primaryModelId: "gemini-pro",
     fallbackModelIds: ["gpt-4o", "atlas-stub"],
+  },
+  {
+    task: "mission.decide",
+    agentId: "branch-director",
+    label: "Mission decision",
+    promptId: "mission.decide.v1",
+    primaryModelId: "claude-sonnet",
+    fallbackModelIds: ["atlas-mock", "atlas-stub"],
+    // Kept in sync with provider-config.ts's mission.decide entry — see that comment
+    // for why this went from 1200 to 4000 (adaptive thinking ate the whole budget).
+    defaultSettings: { temperature: 0.3, maxTokens: 4000, timeoutMs: 30_000 },
+  },
+  {
+    task: "mission.implement",
+    agentId: "branch-director",
+    label: "Mission implementation",
+    promptId: "mission.implement.v1",
+    primaryModelId: "claude-sonnet",
+    fallbackModelIds: ["atlas-mock", "atlas-stub"],
+    defaultSettings: { temperature: 0.2, maxTokens: 16_000, timeoutMs: 180_000 },
+  },
+  {
+    task: "tips.write",
+    agentId: "copywriter",
+    label: "Tips writing",
+    promptId: "tips.write.v1",
+    primaryModelId: "claude-sonnet",
+    fallbackModelIds: ["gpt-4o", "gemini-pro", "atlas-stub"],
+    // Deliberately small — a tip is one sentence, not an article. This is a single batched
+    // call for N short strings per category, not the full copywriter/fact-checker/link-engine
+    // pipeline knowledge.write uses: a one-liner tip has no sections, sources, or links to
+    // fact-check or build, so routing it through that heavier pipeline would be pure overhead.
+    defaultSettings: { temperature: 0.7, maxTokens: 2000, timeoutMs: 60_000 },
   },
 ];
 

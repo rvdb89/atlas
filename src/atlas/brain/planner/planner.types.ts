@@ -18,7 +18,18 @@ export type ExecutionPlanStepKind =
   | "link-engine"
   | "quality"
   | "review"
-  | "publish";
+  | "publish"
+  // Context/Planner integration (2026-07-11) · The original 10 kinds above were all shaped
+  // for the content-publishing pipeline (see planners/defaultPlanners.ts) — there was no step
+  // kind that could represent what the *majority* of Atlas' real autonomous work actually is:
+  // a self-review/engineering mission drafted by the Execution Engine and applied to the
+  // working tree. These four close that gap:
+  | "context-gather" // Execution Engine's discoverLikelyExistingPaths + real file reads
+  | "implement" // the actual mission.implement Claude call that drafts a code change
+  | "approval-gate" // explicit, visible pause for the human CEO Inbox Approve click — a plan
+  // is never allowed to silently skip past this into "apply"
+  | "apply" // Apply Engine writing proposed-changes/ into the real working tree
+  | "validate"; // post-apply typecheck + test suite (EXEC-002/EXEC-003)
 
 export type ExecutionPlanPriority = "low" | "normal" | "high" | "critical";
 
@@ -42,6 +53,14 @@ export type ExecutionPlan = {
   id: string;
   goal: string;
   plannerId: string;
+  /** Context/Planner integration (2026-07-11) · Missing before: a plan had no durable
+   * handle back to the mission it belongs to, only a free-text goal. That's fine while a
+   * plan is "current", but the approve→apply gap can span multiple runtime cycles (the CEO
+   * might not click Approve for hours) — by then a newer mission's plan has long since
+   * replaced it as `currentPlan`. missionId lets applyEngine.ts find *this exact* plan again
+   * later, out of the execution queue, instead of only ever being able to update whatever
+   * plan happens to be current right now. */
+  missionId?: string;
   steps: ExecutionPlanStep[];
   priority: ExecutionPlanPriority;
   estimatedDurationMs: number;

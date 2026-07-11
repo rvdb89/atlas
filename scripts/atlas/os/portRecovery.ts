@@ -96,14 +96,32 @@ async function freePort(port: number, onStatus: (message: string) => void): Prom
     return { ok: true };
   }
 
-  const conflict = await inspectPortConflict(port);
+  let conflict = await inspectPortConflict(port);
 
   if (!conflict.atlasRelated) {
-    return {
-      ok: false,
-      message: formatPortConflict(conflict),
-      conflict,
-    };
+    // Real, recurring failure mode: `getPortPids()` (lsof) and `getProcessCommands()` (ps)
+    // are two separate shell calls, not one atomic snapshot. If the actual Atlas process
+    // was already dying right as this check ran, its PID can be reused by macOS for a
+    // completely unrelated, short-lived process (observed in the wild: a Chrome helper)
+    // in the sliver of time between the two calls — which then gets misreported as "an
+    // unrelated process is blocking this port" even though the port is really just about
+    // to be free. A short wait + one re-check tells the difference: a genuinely stale dev
+    // process finishes dying almost immediately, a real long-lived process doesn't.
+    await sleep(400);
+
+    if (!isPortInUse(port)) {
+      return { ok: true };
+    }
+
+    conflict = await inspectPortConflict(port);
+
+    if (!conflict.atlasRelated) {
+      return {
+        ok: false,
+        message: formatPortConflict(conflict),
+        conflict,
+      };
+    }
   }
 
   onStatus(`Poort ${port} bezet — oude Atlas Studio instance stoppen…`);

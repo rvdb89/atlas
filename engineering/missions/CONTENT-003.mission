@@ -1,0 +1,23 @@
+Mission:
+CONTENT-003
+
+Title:
+Kennisartikelen Temperaturen vullen
+
+Goal:
+De categorie "temperaturen" in de Kennisbibliotheek bestaat uit 6 artikelen (deegtemperatuur, watertemperatuur-berekenen, oventemperaturen, temperatuur-fermentatie, kamertemperatuur, koelkast-fermentatie-temperatuur) die vandaag alleen een titel hebben — geen samenvatting, geen secties. Na CONTENT-002 (hydratatie) is dit de kleinste resterende categorie. Deze mission wordt uitgevoerd door de echte copywriter/fact-checker/link-engine agent-ploeg (zie scripts/atlas/contentGenerationEngine.ts) — dezelfde specialistische AI-agents die al voor het platform gebouwd zijn — in plaats van de generieke code-schrijver, en schrijft alle 6 artikelen, elk via een eigen AI-call, op hetzelfde kwaliteitsniveau als de al voltooide hydratatie-categorie.
+
+Focus:
+scripts/atlas/contentGenerationEngine.ts (voert deze mission uit — CONTENT_MISSIONS["CONTENT-003"])
+src/modules/doughbert/knowledge/hydratatie/index.ts (kwaliteitsvoorbeeld waar de agent-ploeg naar streeft)
+src/modules/doughbert/knowledge/temperaturen/index.ts (nieuw bestand, wordt aangemaakt)
+src/modules/doughbert/knowledge/collectSources.ts (krijgt automatisch een import + toevoeging aan de raw-array)
+src/modules/doughbert/knowledge/bulk/catalogArticles.ts (de engine verwijdert hier automatisch de oude title-only stub-entries voor exact de artikelen die deze keer echte content kregen)
+
+Constraints:
+Deze mission draait via de content-pipeline (contentGenerationEngine.ts), niet via de generieke mission.implement-flow
+Alleen artikelen die de publicatiedrempel halen (minimaal 3 echte secties + samenvatting) worden meegenomen; een artikel dat te dun blijft wordt overgeslagen en gerapporteerd, nooit als lege of halve pagina gepubliceerd
+TypeScript blijft compileren zonder nieuwe errors
+
+Success:
+Alle 6 artikelen in de temperaturen-categorie tonen echte, leesbare content in de Kennisbibliotheek in plaats van een lege pagina, geschreven door de echte agent-ploeg.

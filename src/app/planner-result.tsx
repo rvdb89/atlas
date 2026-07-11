@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import PageNav from "../components/PageNav";
+import { BakeryColors, BakeryFonts } from "../constants/theme";
 
 export default function PlannerResultScreen() {
   return (
@@ -58,7 +59,7 @@ function Step({ time, title, text }: { time: string; title: string; text: string
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F7F1E8",
+    backgroundColor: BakeryColors.cream,
   },
   content: {
     padding: 24,
@@ -66,33 +67,37 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   kicker: {
-    color: "#B86B38",
+    color: BakeryColors.orangeAccent,
     fontWeight: "700",
     marginBottom: 10,
   },
   title: {
-    fontSize: 34,
-    lineHeight: 40,
+    fontFamily: BakeryFonts.display,
+    fontSize: 32,
+    lineHeight: 38,
     fontWeight: "700",
-    color: "#2B2118",
+    color: BakeryColors.brown,
   },
   subtitle: {
     marginTop: 10,
     marginBottom: 28,
     fontSize: 17,
     lineHeight: 24,
-    color: "#7A6652",
+    color: BakeryColors.textSecondary,
   },
   card: {
-    backgroundColor: "#FFFDF8",
+    backgroundColor: BakeryColors.warmWhite,
     borderRadius: 24,
     padding: 22,
     marginBottom: 18,
+    borderWidth: 1,
+    borderColor: "rgba(184, 107, 56, 0.12)",
   },
   day: {
-    fontSize: 22,
+    fontFamily: BakeryFonts.display,
+    fontSize: 21,
     fontWeight: "700",
-    color: "#2B2118",
+    color: BakeryColors.brown,
     marginBottom: 18,
   },
   step: {
@@ -102,7 +107,7 @@ const styles = StyleSheet.create({
   time: {
     width: 64,
     fontWeight: "700",
-    color: "#B86B38",
+    color: BakeryColors.orangeAccent,
     fontSize: 17,
   },
   stepContent: {
@@ -111,16 +116,16 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#2B2118",
+    color: BakeryColors.brown,
   },
   stepText: {
     marginTop: 4,
-    color: "#7A6652",
+    color: BakeryColors.textSecondary,
     lineHeight: 21,
   },
   button: {
     marginTop: 8,
-    backgroundColor: "#B86B38",
+    backgroundColor: BakeryColors.orangeAccent,
     padding: 18,
     borderRadius: 18,
     alignItems: "center",

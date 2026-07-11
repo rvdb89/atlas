@@ -1,0 +1,23 @@
+Mission:
+CONTENT-002
+
+Title:
+Kennisartikelen Hydratatie vullen
+
+Goal:
+De categorie "hydratatie" in de Kennisbibliotheek bestaat uit 6 artikelen (hydratatie, bakers-percentage, waterabsorptie, hoge-hydratatie, lage-hydratatie, hydratatie-berekenen) die vandaag alleen een titel hebben — geen samenvatting, geen secties. Dit is één van zes lege categorieën (samen 62 artikelen zonder echte inhoud) die de gebruiker letterlijk leeg ziet in de app. Deze mission wordt uitgevoerd door de echte copywriter/fact-checker/link-engine agent-ploeg (zie scripts/atlas/contentGenerationEngine.ts) — dezelfde specialistische AI-agents die al voor het platform gebouwd zijn, elk met hun eigen AI-model — in plaats van de generieke code-schrijver, en schrijft alle 6 artikelen, elk via een eigen AI-call, op hetzelfde kwaliteitsniveau als de al voltooide meel-bloem categorie (zie flour/tarwebloem.ts).
+
+Focus:
+scripts/atlas/contentGenerationEngine.ts (voert deze mission echt uit — per artikel een aparte, echte aanroep van het copywriter/fact-checker/link-engine team, daarna deterministisch samengevoegd tot code; geen enkele AI-call hoeft een heel bestand als tekst te schrijven, dus geen afkap-risico meer)
+src/modules/doughbert/knowledge/flour/tarwebloem.ts (kwaliteitsvoorbeeld waar de agent-ploeg naar streeft)
+src/modules/doughbert/knowledge/collectSources.ts (krijgt automatisch een import + toevoeging aan de raw-array)
+src/modules/doughbert/knowledge/bulk/catalogArticles.ts (de engine verwijdert hier automatisch de oude title-only stub-entries voor exact de artikelen die deze keer echte content kregen — nodig omdat de dedup anders de eerste/lege versie houdt in plaats van de nieuwe; dit werd pas ontdekt ná de eerste hydratatie-run en is sindsdien gefixed in contentGenerationEngine.ts)
+
+Constraints:
+Deze mission draait via de content-pipeline (contentGenerationEngine.ts), niet via de generieke mission.implement-flow — de Focus/Constraints hierboven zijn ter documentatie, de daadwerkelijke aansturing zit in code
+Alleen artikelen die de publicatiedrempel halen (minimaal 3 echte secties + samenvatting) worden meegenomen; een artikel dat te dun blijft wordt overgeslagen en gerapporteerd, nooit als lege of halve pagina gepubliceerd
+Raak de mock AI Studio-knop niet aan — dat is een apart onderdeel; wel is de onderliggende publishing-pipeline nu voor het eerst echt bruikbaar gemaakt
+TypeScript blijft compileren zonder nieuwe errors
+
+Success:
+Alle 6 artikelen in de hydratatie-categorie tonen echte, leesbare content in de Kennisbibliotheek in plaats van een lege pagina, geschreven door de echte agent-ploeg, met een kwaliteitsniveau vergelijkbaar met de meel-bloem categorie.

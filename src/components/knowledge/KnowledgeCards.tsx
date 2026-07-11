@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, Pressable } from "react-native";
 
+import { BakeryColors, BakeryFonts } from "@/constants/theme";
 import { knowledgeCategories } from "@/data/knowledgeCategories";
 import {
   formatDifficultyLabel,
@@ -9,11 +10,11 @@ import {
 import type { KnowledgeBite } from "@/types/knowledgeBite";
 
 const COLORS = {
-  warmWhite: "#FFFDF8",
-  card: "#F8F0E6",
-  brown: "#2B2118",
-  secondary: "#7A6652",
-  orangeAccent: "#B86B38",
+  warmWhite: BakeryColors.warmWhite,
+  card: BakeryColors.card,
+  brown: BakeryColors.brown,
+  secondary: BakeryColors.textSecondary,
+  orangeAccent: BakeryColors.orangeAccent,
 };
 
 export type LibraryCategoryCardData = {
@@ -107,12 +108,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "rgba(184, 107, 56, 0.08)",
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
+    borderColor: "rgba(184, 107, 56, 0.12)",
   },
 
   categoryCardTop: {
@@ -128,14 +124,15 @@ const styles = StyleSheet.create({
   },
 
   categoryArrow: {
-    fontSize: 28,
-    fontWeight: "900",
+    fontSize: 26,
+    fontWeight: "700",
     color: COLORS.orangeAccent,
   },
 
   categoryTitle: {
-    fontSize: 22,
-    fontWeight: "900",
+    fontFamily: BakeryFonts.display,
+    fontSize: 21,
+    fontWeight: "700",
     color: COLORS.brown,
   },
 
@@ -160,12 +157,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "rgba(184, 107, 56, 0.08)",
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
+    borderColor: "rgba(184, 107, 56, 0.12)",
   },
 
   biteCardHeader: {
@@ -190,8 +182,9 @@ const styles = StyleSheet.create({
 
   biteTitle: {
     flex: 1,
-    fontSize: 22,
-    fontWeight: "900",
+    fontFamily: BakeryFonts.display,
+    fontSize: 21,
+    fontWeight: "700",
     color: COLORS.brown,
   },
 

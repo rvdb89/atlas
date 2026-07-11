@@ -28,6 +28,9 @@ export const CLAUDE_LIVE_TASKS: AtlasTaskType[] = [
   "quality.score",
   "writing.improve",
   "research.summarize",
+  "mission.decide",
+  "mission.implement",
+  "tips.write",
 ];
 
 /** Fully configurable task → provider routing table. */
@@ -37,9 +40,16 @@ export const TASK_PROVIDER_CONFIG: Record<AtlasTaskType, TaskProviderConfig> = {
     providerId: "claude",
     modelId: DEFAULT_CLAUDE_MODEL,
     temperature: 0.7,
-    maxTokens: 4096,
+    // This table — not routes.ts's defaultSettings — is what getTaskRouteConfig() actually
+    // applies (resolveEffectiveTaskProviderConfig always wins). Found the hard way: routes.ts
+    // was bumped to 8000/120s for real article generation, but every real run kept coming
+    // back at exactly ~30s with a mock-shaped response ("Atlas topic", tags including
+    // "mock") — this entry's old 4096/30s was silently the one actually in effect, timing
+    // out before a 5-9 section article could finish and falling through to the atlas-stub
+    // fallback. Kept in sync with routes.ts's knowledge.write entry now.
+    maxTokens: 8000,
     retries: 2,
-    timeoutMs: 30_000,
+    timeoutMs: 120_000,
     fallbackModelIds: ["gpt-4o", "atlas-stub"],
   },
   "recipe.write": {
@@ -211,6 +221,45 @@ export const TASK_PROVIDER_CONFIG: Record<AtlasTaskType, TaskProviderConfig> = {
     retries: 2,
     timeoutMs: 20_000,
     fallbackModelIds: ["gpt-4o", "atlas-stub"],
+  },
+  "mission.decide": {
+    task: "mission.decide",
+    providerId: "claude",
+    modelId: DEFAULT_CLAUDE_MODEL,
+    temperature: 0.3,
+    // Was 1200 — too small once adaptive thinking is engaged (current-gen models
+    // draw thinking tokens from the same max_tokens pool, with no separate budget).
+    // Found in production: a real cycle spent its entire 1200-token budget thinking
+    // and hit stop_reason "max_tokens" before writing a single character of the
+    // verdict, leaving content empty. Bumped with headroom for thinking + the actual
+    // JSON verdict text.
+    maxTokens: 4000,
+    retries: 2,
+    timeoutMs: 30_000,
+    fallbackModelIds: ["atlas-mock", "atlas-stub"],
+  },
+  "mission.implement": {
+    task: "mission.implement",
+    providerId: "claude",
+    modelId: DEFAULT_CLAUDE_MODEL,
+    temperature: 0.2,
+    maxTokens: 16_000,
+    retries: 1,
+    timeoutMs: 180_000,
+    fallbackModelIds: ["atlas-mock", "atlas-stub"],
+  },
+  // This table (not routes.ts's defaultSettings) is what resolveEffectiveTaskProviderConfig
+  // actually applies — see the knowledge.write entry's comment above for the real incident
+  // that proved it. Kept in sync with routes.ts's tips.write entry.
+  "tips.write": {
+    task: "tips.write",
+    providerId: "claude",
+    modelId: DEFAULT_CLAUDE_MODEL,
+    temperature: 0.7,
+    maxTokens: 2000,
+    retries: 2,
+    timeoutMs: 60_000,
+    fallbackModelIds: ["gpt-4o", "gemini-pro", "atlas-stub"],
   },
 };
 

@@ -50,7 +50,8 @@ export type ActivityEventType =
   | "release_published"
   | "memory_updated"
   | "agent_promoted"
-  | "app_deployed";
+  | "app_deployed"
+  | "atlas_decision";
 
 export type NeedsChangeOptionId =
   | "fix-bug"
@@ -82,6 +83,46 @@ export type CeoInboxItem = {
   confirmationMessage?: string;
   selectedChangeOption?: NeedsChangeOptionId;
   changeNote?: string;
+  /** Set when this was approved but never actually reached the working tree — see
+   * ApprovalModel.applyWarning for the full story. Keeps this item visible under "Needs
+   * attention" instead of silently disappearing once approved. */
+  applyWarning?: string;
+};
+
+/** Section 2b — Geschiedenis: every mission Atlas has actually applied so far, read
+ * straight from disk (engineering/packages/<ID>/applied-<timestamp>/). Read-only —
+ * unlike CeoInboxItem, nothing here is pending a decision. */
+export type AppliedMissionFile = {
+  path: string;
+  action: "create" | "modify";
+  reason: string;
+};
+
+/** EXEC-002 · Automatic post-apply typecheck + commit-prep result — null for older
+ * applied-* entries recorded before this existed, or if the validation step itself failed
+ * (best-effort, never blocks an apply). */
+export type AppliedMissionValidation = {
+  typecheckOk: boolean;
+  typecheckSummary: string;
+  /** EXEC-003 · real node:test suite result (tsx --test), null for applied-* entries
+   * recorded before EXEC-003 existed. */
+  testsOk?: boolean;
+  testSummary?: string;
+  suggestedCommitMessage: string;
+  staged: boolean;
+  stageNote: string;
+};
+
+export type AppliedMissionRecord = {
+  missionId: string;
+  title: string;
+  appliedAt: string;
+  summary: string;
+  files: AppliedMissionFile[];
+  fileCount: number;
+  risks: string[];
+  followUp: string;
+  validation: AppliedMissionValidation | null;
 };
 
 /** Section 3 — Company Overview (businesses) */
@@ -109,6 +150,7 @@ export type ProductOverview = {
 /** Section 4 — Management Team (executives, not agents) */
 export type ManagementMember = {
   id: string;
+  name: string;
   title: string;
   department: DepartmentId;
   status: ManagementStatus;
@@ -178,6 +220,28 @@ export type CompanyActivityEvent = {
   occurredAt: string;
 };
 
+/** BRAIN-002b · A real, recent memory entry — not just a health score. Dashboard-safe
+ * subset (no full `content` body) of AtlasMemoryEntry, mirrored from RecentMemoryEntry in
+ * @/atlas/brain/memory/memory.types.ts. */
+export type RecentMemorySummaryEntry = {
+  id: string;
+  type: string;
+  title: string;
+  summary: string;
+  tags: string[];
+  importance: number;
+  source: string;
+  updatedAt: string;
+};
+
+/** Section 9b — Memory (BRAIN-002) */
+export type MemorySummary = {
+  health: number;
+  statusLabel: string;
+  lastUpdated: string;
+  recent: RecentMemorySummaryEntry[];
+};
+
 /** Section 10 — Atlas Advice */
 export type AtlasAdvice = {
   headline: string;
@@ -186,6 +250,9 @@ export type AtlasAdvice = {
   confidence: number;
   relatedInitiative?: string;
   decision: AdviceDecision;
+  /** BRAIN-001 · path to the real engineering package generated for this recommendation, if any. */
+  packagePath?: string;
+  packageIsNew?: boolean;
 };
 
 /** Metadata proving Atlas Control reads from the Company State Engine. */
@@ -222,6 +289,7 @@ export type ControlSnapshot = {
   companyState: CompanyStateMeta;
   ceoCommand: CeoCommand;
   ceoInbox: CeoInboxItem[];
+  appliedHistory: AppliedMissionRecord[];
   businesses: BusinessOverview[];
   products: ProductOverview[];
   management: ManagementMember[];
@@ -232,6 +300,7 @@ export type ControlSnapshot = {
   issues: CompanyIssue[];
   activity: CompanyActivityEvent[];
   atlasAdvice: AtlasAdvice;
+  memory: MemorySummary;
 };
 
 export type ControlDataSource = "mock" | "live";
@@ -306,6 +375,7 @@ export const ACTIVITY_TYPE_LABELS: Record<ActivityEventType, string> = {
   memory_updated: "Memory updated",
   agent_promoted: "Management promoted",
   app_deployed: "App deployed",
+  atlas_decision: "Autonomous decision",
 };
 
 export const KPI_TREND_SYMBOL: Record<KpiTrend, string> = {

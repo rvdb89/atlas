@@ -4,11 +4,12 @@ import { spawn, type ChildProcess } from "node:child_process";
 
 import chalk from "chalk";
 
-import { APP_PORT, APP_URL, ROOT_DIR, waitForUrl } from "./atlas/shared";
+import { APP_PORT, APP_URL, ROOT_DIR, openBrowser, waitForUrl } from "./atlas/shared";
 import { formatAppRecoveryFailure, recoverAppPort } from "./atlas/os/appPortRecovery";
 
 const CLEAR_CACHE = process.argv.includes("--clear");
 const SKIP_RECOVERY = process.argv.includes("--no-recovery");
+const SKIP_BROWSER = process.argv.includes("--no-open");
 
 function failLaunch(message: string, detail?: string): never {
   console.log("");
@@ -73,6 +74,17 @@ async function reportWhenReady(child: ChildProcess): Promise<void> {
   if (ready) {
     console.log("");
     console.log(chalk.green("✔"), `Atlas App ready at ${APP_URL}`);
+
+    if (!SKIP_BROWSER) {
+      console.log(chalk.green("✔"), "Opening browser");
+      const result = openBrowser(APP_URL);
+      if (!result.ok) {
+        console.log(chalk.yellow("⚠ Browser kon niet automatisch geopend worden."));
+        console.log(chalk.dim(`   Open handmatig: ${APP_URL}`));
+        console.log(chalk.dim(`   Reden: ${result.reason}`));
+      }
+    }
+
     console.log(chalk.dim("Press Ctrl+C to stop the app."));
     console.log(chalk.dim("Atlas Studio blijft apart beschikbaar via npm run atlas."));
     console.log("");

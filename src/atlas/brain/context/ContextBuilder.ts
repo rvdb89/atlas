@@ -2,6 +2,7 @@ import { listProviders } from "@/atlas/ai/providers/registry";
 import { memoryEngine } from "@/atlas/brain/memory";
 import { getEntityById, listEntities } from "@/atlas/entity/registry/entityStore";
 import { tryGetActiveModule } from "@/atlas/publishing/plugin/registry";
+import type { ArticleCatalogEntry } from "@/atlas/publishing/types";
 import { listWorkflows } from "@/atlas/workflows/registry";
 
 import { runContextProviders } from "./ContextRegistry";
@@ -44,21 +45,39 @@ function createEmptyBundle(input: ContextBuildInput): Partial<ContextBundle> {
 }
 
 function collectMemoryContext(input: ContextBuildInput): Partial<ContextBundle> {
+  const queryText = input.topic ?? input.goal;
+
   const search = memoryEngine.searchMemory({
-    text: input.topic ?? input.goal,
+    text: queryText,
     limit: 12,
     status: "active",
   });
 
-  const memories =
-    search.ok && search.data
-      ? search.data.map((result) => ({
-          id: result.entry.id,
-          title: result.entry.title,
-          type: result.entry.type,
-          score: result.score,
-        }))
-      : [];
+  // BRAIN-008 · MemoryEngine.semanticSearchMemory() (BRAIN-002, term-vector cosine
+  // similarity — provider-neutral, no external embedding API/cost) has existed since
+  // BRAIN-002 but was never actually called from anywhere real: ContextBuilder only ever
+  // ran the plain exact-substring search above, so a memory phrased differently than the
+  // current goal (same topic, different wording) never surfaced. Merged in here — keyword
+  // hits and semantic hits are deduped by entry id, keeping the higher of the two scores,
+  // so an exact match still wins but a conceptually related memory with no literal overlap
+  // is no longer invisible to the Decision Engine.
+  const semantic = memoryEngine.semanticSearchMemory(queryText, { limit: 12 });
+
+  const byId = new Map<string, { id: string; title: string; type: string; score: number }>();
+  for (const result of [...(search.ok ? search.data ?? [] : []), ...(semantic.ok ? semantic.data ?? [] : [])]) {
+    const existing = byId.get(result.entry.id);
+    const candidate = {
+      id: result.entry.id,
+      title: result.entry.title,
+      type: result.entry.type,
+      score: result.score,
+    };
+    if (!existing || candidate.score > existing.score) {
+      byId.set(result.entry.id, candidate);
+    }
+  }
+
+  const memories = [...byId.values()].sort((left, right) => right.score - left.score).slice(0, 12);
 
   return {
     memories,
@@ -106,6 +125,18 @@ function collectEntityContext(input: ContextBuildInput): Partial<ContextBundle> 
   };
 }
 
+/** True once a catalog entry has an actual body (summary or at least one section) — same
+ * doctrine as hasRealKnowledgeContent() in src/modules/doughbert/knowledge/knowledgeBites.ts:
+ * a title-only stub is not real knowledge and should never be handed to the Decision Engine
+ * as if it were. */
+function hasRealArticleContent(entry: ArticleCatalogEntry): boolean {
+  const content = entry.content as { summary?: unknown; sections?: unknown } | undefined;
+  if (!content || typeof content !== "object") return false;
+  const summary = typeof content.summary === "string" ? content.summary.trim() : "";
+  const sections = Array.isArray(content.sections) ? content.sections : [];
+  return summary.length > 0 || sections.length > 0;
+}
+
 function collectKnowledgeContext(input: ContextBuildInput): Partial<ContextBundle> {
   const knowledgeSearch = memoryEngine.searchMemory({
     type: "knowledge",
@@ -124,11 +155,29 @@ function collectKnowledgeContext(input: ContextBuildInput): Partial<ContextBundl
         }))
       : [];
 
-  const defaults = ["entity-catalog", "intelligence-insights", "publishing-templates"].map((id) => ({
-    id,
-    label: id,
-    source: "atlas.core",
-    score: 3,
+  // BRAIN-007 · Used to be 3 hardcoded fake placeholder ids ("entity-catalog",
+  // "intelligence-insights", "publishing-templates") with label === id — not real knowledge,
+  // just three fixed strings injected into every single snapshot regardless of topic, which
+  // is exactly why snapshots kept scoring "partial" health. Replaced with the active
+  // module's real, published article catalog (getArticleCatalog(), the same module
+  // abstraction studioService.ts already uses — deliberately not a direct import of
+  // doughbert-specific files here, so this stays module-agnostic), filtered down to entries
+  // that actually have content (never a title-only stub) and ranked by topic relevance the
+  // same way collectEntityContext() above already does.
+  const topic = normalizeTopic(input.topic ?? input.goal);
+  const catalog = tryGetActiveModule()?.getArticleCatalog() ?? [];
+  const realArticles = catalog.filter(hasRealArticleContent);
+  const topicMatched = realArticles.filter((entry) => {
+    const tags = Array.isArray(entry.tags) ? entry.tags.join(" ") : "";
+    const haystack = `${entry.title} ${entry.slug} ${tags}`.toLowerCase();
+    return topic.length > 0 && haystack.includes(topic);
+  });
+  const ranked = topicMatched.length > 0 ? topicMatched : realArticles;
+  const defaults = ranked.slice(0, 6).map((entry) => ({
+    id: entry.slug,
+    label: entry.title,
+    source: "atlas.knowledge-catalog",
+    score: topicMatched.length > 0 ? 6 : 3,
   }));
 
   const merged = new Map<string, (typeof fromMemory)[number]>();
@@ -138,7 +187,7 @@ function collectKnowledgeContext(input: ContextBuildInput): Partial<ContextBundl
 
   return {
     knowledge: [...merged.values()],
-    sources: ["memory"] as ContextSourceId[],
+    sources: (defaults.length > 0 ? ["memory", "module"] : ["memory"]) as ContextSourceId[],
   };
 }
 

@@ -1,12 +1,12 @@
 {
-  "lastMission": "ATLAS-002",
-  "lastGeneratedBrief": "engineering/briefs/ATLAS-002.md",
+  "lastMission": "CONTENT-009",
+  "lastGeneratedBrief": "engineering/briefs/CONTENT-009.md",
   "templateUsed": "Engineering Mission",
   "status": "generated",
-  "generatedAt": "2026-07-06T20:33:58.547Z",
-  "title": "Organizational Model",
-  "packageDir": "engineering/packages/ATLAS-002",
-  "claudePackagePath": "engineering/packages/ATLAS-002/claude-engineering-package.md",
-  "releaseNotesPath": "engineering/packages/ATLAS-002/release-notes.md",
+  "generatedAt": "2026-07-10T21:29:43.086Z",
+  "title": "Overgeslagen artikel Zure starter alsnog schrijven",
+  "packageDir": "engineering/packages/CONTENT-009",
+  "claudePackagePath": "engineering/packages/CONTENT-009/claude-engineering-package.md",
+  "releaseNotesPath": "engineering/packages/CONTENT-009/release-notes.md",
   "latestPackagePath": "engineering/packages/latest-package.json"
 }

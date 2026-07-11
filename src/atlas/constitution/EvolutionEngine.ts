@@ -35,6 +35,8 @@ const INTENT_CAPABILITY_PATTERNS: Array<{ pattern: RegExp; capabilityId: string 
   { pattern: /\bengineering\b|\bpackage(s)?\b/i, capabilityId: "engineering" },
   { pattern: /\bstudio\b|\bcommand center\b/i, capabilityId: "studio" },
   { pattern: /\bautonom(y|ous)\b/i, capabilityId: "reasoning" },
+  { pattern: /\bexecut(e|ion|ing)\b|\bimplement(ation)?\b|\bwrite code\b|\bbuild (it|the app)\b/i, capabilityId: "execution" },
+  { pattern: /\bcontent\b|\brecept(en)?\b|\bkennisartikel(en)?\b|\bvul.*(aan|content)\b|\bwijzig.*(recept|artikel|content)\b|\btip(s)?\b/i, capabilityId: "content" },
 ];
 
 const NORTH_STAR_CAPABILITY_WEIGHT: Record<string, number> = {
@@ -46,6 +48,8 @@ const NORTH_STAR_CAPABILITY_WEIGHT: Record<string, number> = {
   audit: 1.0,
   engineering: 0.9,
   studio: 0.8,
+  execution: 1.4,
+  content: 1.1,
 };
 
 function matchIntentCapabilities(intent: string): string[] {

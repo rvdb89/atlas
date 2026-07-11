@@ -50,17 +50,32 @@ function main(): void {
 
   console.log("TypeScript");
   try {
-    execSync("npx tsc --noEmit && npx tsc --noEmit -p scripts/tsconfig.json", {
-      cwd: ROOT_DIR,
-      stdio: "pipe",
-      encoding: "utf8",
-    });
+    execSync(
+      "npx tsc --noEmit && npx tsc --noEmit -p scripts/tsconfig.json && npx tsc --noEmit -p tsconfig.test.json",
+      {
+        cwd: ROOT_DIR,
+        stdio: "pipe",
+        encoding: "utf8",
+      },
+    );
     printStatus("ok", "TypeScript", "clean");
   } catch (error) {
     hasErrors = true;
     printStatus("error", "TypeScript", "failed");
     const message = error instanceof Error ? error.message : String(error);
     console.log(message.split("\n").slice(0, 12).join("\n"));
+  }
+
+  console.log("");
+  console.log("Tests");
+  try {
+    execSync("npx tsx --test", { cwd: ROOT_DIR, stdio: "pipe", encoding: "utf8" });
+    printStatus("ok", "Tests", "passed");
+  } catch (error) {
+    hasErrors = true;
+    printStatus("error", "Tests", "failed");
+    const stdout = (error as { stdout?: string }).stdout ?? "";
+    console.log(stdout.split("\n").slice(-20).join("\n"));
   }
 
   console.log("");

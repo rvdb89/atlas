@@ -1,0 +1,11 @@
+{
+  "missionId": "BRAIN-007",
+  "title": "Kennis-catalogus in Context Engine verbreden",
+  "generatedAt": "2026-07-10T21:25:32.291Z",
+  "summary": "De missie is al volledig opgeleverd: ContextBuilder.ts's collectKnowledgeContext() haalt al de echte catalogus op via tryGetActiveModule().getArticleCatalog(), filtert stub-only artikelen met hasRealArticleContent() en rangschikt op onderwerp-relevantie, precies zoals gevraagd. Ook registry.ts (tryGetActiveModule), plugin.ts (getArticleCatalog) en ContextSnapshot.ts (deriveContextHealth, met bijbehorende regressietest) zijn al conform de brief.",
+  "files": [],
+  "risks": [
+    "Geen nieuwe code toegevoegd terwijl de missie mogelijk nog als 'open' geregistreerd staat in de mission registry, wat verwarring kan geven over de status."
+  ],
+  "followUp": "Controleer of de mission registry (engineering/missions/BRAIN-007.mission) nog als open/pending staat en markeer deze als voltooid, aangezien de implementatie in ContextBuilder.ts, registry.ts, plugin.ts en ContextSnapshot.ts al aanwezig en consistent met de brief is; draai ter bevestiging npx tsc --noEmit en npm run atlas:audit -- --strict om te verifiëren dat er geen regressie is."
+}

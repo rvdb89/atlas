@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.0",
+  "packageType": "engineering",
+  "missionId": "ENG-006B",
+  "title": "Engineering Package Structure",
+  "templateLabel": "Engineering Mission",
+  "atlasVersion": "0.26.0",
+  "atlasBuild": "brain-005",
+  "generatedAt": "2026-07-10T21:19:17.724Z",
+  "outputDir": "engineering/packages/ENG-006B",
+  "entrypoint": "engineering/packages/ENG-006B/claude-engineering-package.md",
+  "legacyBriefPath": "engineering/briefs/ENG-006B.md",
+  "inputRequired": "missionIdOnly",
+  "inferencePipeline": [
+    "decision-engine",
+    "organization",
+    "evolution-engine",
+    "decision-framework",
+    "constitution",
+    "north-star",
+    "principles",
+    "capabilities",
+    "systems",
+    "roadmap",
+    "mission-registry",
+    "engineering-standards",
+    "architecture-rules",
+    "mission-dependencies",
+    "definition-of-done",
+    "validation-plan",
+    "engineering-package"
+  ],
+  "constitutionId": "ATLAS-000",
+  "constitutionPath": "engineering/constitution/atlas-constitution.md",
+  "decisionFrameworkId": "ATLAS-001",
+  "decisionEngineId": "BRAIN-004",
+  "evolutionEngineId": "ATLAS-001",
+  "organizationModelId": "ATLAS-002",
+  "branchDirectorIdentityId": "ATLAS-003",
+  "dependencies": [
+    {
+      "missionId": "ATLAS-000",
+      "title": "Atlas Constitution",
+      "relationship": "requires",
+      "reason": "Packages derive from Constitution"
+    },
+    {
+      "missionId": "ENG-002",
+      "title": "Mission Brief Generator",
+      "relationship": "related",
+      "reason": "Brief generator remains backward compatible"
+    },
+    {
+      "missionId": "ENG-006",
+      "title": "Mission Orchestrator",
+      "relationship": "extends",
+      "reason": "Extends mission orchestrator with package structure"
+    }
+  ],
+  "files": {
+    "manifest": "engineering/packages/ENG-006B/manifest.json",
+    "claudeEntrypoint": "engineering/packages/ENG-006B/claude-engineering-package.md",
+    "architectureBrief": "engineering/packages/ENG-006B/architecture-brief.md",
+    "validationPlan": "engineering/packages/ENG-006B/validation-plan.md",
+    "auditChecklist": "engineering/packages/ENG-006B/audit-checklist.md",
+    "releaseNotes": "engineering/packages/ENG-006B/release-notes.md"
+  }
+}

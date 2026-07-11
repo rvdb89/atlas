@@ -12,6 +12,7 @@ const CLAUDE_LIVE_TASKS = [
   "knowledge.review",
   "recipe.write",
   "seo.optimize",
+  "tips.write",
 ] as const;
 
 export class ClaudeProvider extends LiveProviderBase {
@@ -29,21 +30,21 @@ export class ClaudeProvider extends LiveProviderBase {
         models: [
           {
             id: DEFAULT_CLAUDE_MODEL,
-            label: "Claude 3.5 Sonnet",
-            contextWindow: 200_000,
+            label: "Claude Sonnet 5",
+            contextWindow: 1_000_000,
             supportedOutputs: ["text", "markdown", "json"],
             default: true,
           },
           {
-            id: "claude-3-5-haiku-latest",
-            label: "Claude 3.5 Haiku",
+            id: "claude-haiku-4-5",
+            label: "Claude Haiku 4.5",
             contextWindow: 200_000,
             supportedOutputs: ["text", "markdown", "json"],
           },
           {
             id: "claude-sonnet",
             label: "Claude Sonnet (alias)",
-            contextWindow: 200_000,
+            contextWindow: 1_000_000,
             supportedOutputs: ["text", "markdown", "json"],
           },
         ],

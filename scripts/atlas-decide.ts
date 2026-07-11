@@ -1,9 +1,11 @@
+import "dotenv/config";
+
 import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import chalk from "chalk";
 
-import { runDecision } from "@/atlas/brain/decision";
+import { runAutonomousDecision } from "@/atlas/brain/decision";
 import { getBranchDirectorTerminology } from "@/atlas/constitution";
 import {
   ENGINEERING_PACKAGE_FILENAMES,
@@ -90,7 +92,7 @@ function statusColor(status: string): (text: string) => string {
   return chalk.red;
 }
 
-function main(): void {
+async function main(): Promise<void> {
   const args = process.argv.slice(2).filter((arg) => arg !== "--");
   const intent = args.join(" ").trim();
 
@@ -109,10 +111,11 @@ function main(): void {
   }
 
   const terms = getBranchDirectorTerminology();
-  const decision = runDecision({
+  const autonomous = await runAutonomousDecision({
     intent,
     missionRegistered: (id) => missionRegistry.has(id),
   });
+  const decision = autonomous.ruleBased;
 
   console.log(`Intent · ${chalk.cyan(decision.intent)}`);
   console.log("");
@@ -133,6 +136,25 @@ function main(): void {
   console.log("");
   console.log(chalk.bold("Why this decision"));
   console.log(`  ${decision.why}`);
+  console.log("");
+
+  console.log(chalk.bold("Atlas Autonomous Verdict (Claude)"));
+  if (autonomous.source === "ai" && autonomous.ai) {
+    const ai = autonomous.ai;
+    console.log(
+      `  Missie · ${ai.selectedMissionId ?? "geen"} · confidence ${(ai.confidence * 100).toFixed(0)}%`,
+    );
+    console.log(
+      ai.agreesWithRuleBased
+        ? chalk.green("  Eens met de rule-based aanbeveling")
+        : chalk.yellow("  Wijkt af van de rule-based aanbeveling"),
+    );
+    console.log(chalk.dim(`  ${ai.reasoning}`));
+  } else if (autonomous.aiError) {
+    console.log(chalk.yellow(`  Claude-call mislukt, terugval op rule-based: ${autonomous.aiError}`));
+  } else {
+    console.log(chalk.dim("  ANTHROPIC_API_KEY niet geconfigureerd — alleen rule-based beslissing actief."));
+  }
   console.log("");
 
   if (!decision.executionPackageRequired) {
@@ -178,4 +200,7 @@ function main(): void {
   console.log("");
 }
 
-main();
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

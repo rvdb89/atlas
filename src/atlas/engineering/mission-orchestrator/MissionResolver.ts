@@ -1,7 +1,11 @@
 import { missionRegistry, createRegistryEntry } from "./MissionRegistry";
 import type { MissionRegistryEntry, MissionResolveResult } from "./mission.types";
 
-const MISSION_ID_PATTERN = /^[A-Z]{2,12}-\d{3,4}$/;
+// Optional trailing letter suffix (e.g. ENG-006B) — the roadmap generates these
+// for closely-related sub-initiatives. Found blocking real execution: a valid,
+// registered mission (ENG-006B.mission existed) was rejected here before it ever
+// reached the registry lookup below.
+const MISSION_ID_PATTERN = /^[A-Z]{2,12}-\d{3,4}[A-Z]?$/;
 
 export function normalizeMissionId(id: string): string {
   return id.trim().toUpperCase();

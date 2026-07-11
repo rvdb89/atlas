@@ -40,6 +40,11 @@ yarn-error.*
 # Atlas OS local session state
 .atlas/
 
+# Atlas Runtime — generated, ever-changing local state (not source)
+public/atlas-runtime-state.json
+reports/runtime/
+reports/memory/
+
 example
 
 # generated native folders

@@ -1,0 +1,22 @@
+Mission:
+BRAIN-003
+
+Title:
+Context Engine
+
+Goal:
+Give every Atlas decision a scored snapshot of what Atlas already knows (entities, knowledge, workflows) instead of reasoning from capability-gap numbers alone.
+
+Focus:
+Already implemented at src/atlas/brain/context/ — ContextEngine.ts, ContextBuilder.ts, ContextRegistry.ts, ContextResolver.ts, ContextSnapshot.ts, bootstrap.ts, context.types.ts, index.ts (real code — read these before proposing anything new here, do not recreate this module under a different path)
+Decision Engine (src/atlas/brain/decision/AutonomousDecision.ts) already calls gatherContext() and feeds the resulting snapshot into every self-review verdict
+Real sources wired in: entity registry (src/atlas/entity/registry/entityStore.ts), Memory Engine search, workflow registry, AI provider registry
+Remaining real gap: the knowledge catalog in ContextBuilder.ts still leans on a small hardcoded default list instead of a real knowledge base — that is the one legitimate next increment, not a new Context Engine
+
+Constraints:
+Provider-independent Brain module
+Context building must never block a decision (best-effort, same as memory)
+No fabricated entities or knowledge — only what the real registries actually contain
+
+Success:
+The Decision Engine's reasoning references context health (empty/partial/healthy) and relevant known entities or knowledge when deciding what to prioritize next.

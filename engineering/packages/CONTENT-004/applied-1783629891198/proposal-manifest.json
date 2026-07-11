@@ -1,0 +1,25 @@
+{
+  "missionId": "CONTENT-004",
+  "title": "Content: fermentatie",
+  "generatedAt": "2026-07-09T20:40:45.667Z",
+  "summary": "7 van de 7 fermentatie-artikelen geschreven door het echte copywriter-team (real AI, geen mock), fact-checked en gelinkt — niet door de generieke code-schrijver.",
+  "files": [
+    {
+      "path": "src/modules/doughbert/knowledge/fermentatie/index.ts",
+      "action": "create",
+      "reason": "7/7 artikelen in de fermentatie-categorie, echt geschreven door het copywriter/fact-checker/link-engine team."
+    },
+    {
+      "path": "src/modules/doughbert/knowledge/collectSources.ts",
+      "action": "modify",
+      "reason": "Registreert fermentatieArticles in de centrale artikel-collectie."
+    },
+    {
+      "path": "src/modules/doughbert/knowledge/bulk/catalogArticles.ts",
+      "action": "modify",
+      "reason": "Verwijdert 7 title-only stub(s) die nu vervangen zijn door echte content — voorkomt dat de oude lege placeholder de nieuwe content in de dedup verdringt."
+    }
+  ],
+  "risks": [],
+  "followUp": "Alle artikelen gehaald — controleer de content op toon en feitelijke juistheid voor het toepassen."
+}

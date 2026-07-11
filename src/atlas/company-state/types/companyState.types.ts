@@ -30,6 +30,8 @@ export type CompanyRecommendation = {
   confidence: number;
   relatedInitiativeId?: string;
   decision: RecommendationDecision;
+  packagePath?: string;
+  packageIsNew?: boolean;
 };
 
 export type CompanyBusinessState = {
@@ -113,6 +115,7 @@ export type CompanyApprovalState = {
   confirmationMessage?: string;
   selectedChangeOption?: NeedsChangeOptionId;
   changeNote?: string;
+  applyWarning?: string;
 };
 
 export type CompanyPlatformState = {
@@ -130,6 +133,18 @@ export type CompanyMemoryState = {
   health: number;
   statusLabel: string;
   lastUpdated: string;
+  /** BRAIN-002b · Mirrors MemoryModel.recent — see businessModels.types.ts for why the
+   * shape is hand-duplicated instead of imported. */
+  recent: Array<{
+    id: string;
+    type: string;
+    title: string;
+    summary: string;
+    tags: string[];
+    importance: number;
+    source: string;
+    updatedAt: string;
+  }>;
 };
 
 export type CompanyBugState = {

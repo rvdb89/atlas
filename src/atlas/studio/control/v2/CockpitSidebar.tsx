@@ -23,13 +23,33 @@ const NAV_ITEMS: Array<{ id: CockpitNavId; label: string; icon: string }> = [
   { id: "settings", label: "Settings", icon: "⚙" },
 ];
 
+export type AppLaunchStatus = "idle" | "checking" | "starting" | "timeout" | "bridge-unreachable" | "popup-blocked";
+
+const APP_LAUNCH_LABEL: Partial<Record<AppLaunchStatus, string>> = {
+  checking: "Checken…",
+  starting: "Wordt gestart…",
+  timeout: "Duurt te lang — check Terminal",
+  "bridge-unreachable": "Runtime niet bereikbaar — start npm run atlas:runtime",
+  "popup-blocked": "Pop-up geblokkeerd — sta pop-ups toe voor localhost",
+};
+
 type CockpitSidebarProps = {
   active: CockpitNavId;
   onSelect: (id: CockpitNavId) => void;
   companyName: string;
+  onOpenApp: () => void;
+  appLaunchStatus?: AppLaunchStatus;
 };
 
-export default function CockpitSidebar({ active, onSelect, companyName }: CockpitSidebarProps) {
+export default function CockpitSidebar({
+  active,
+  onSelect,
+  companyName,
+  onOpenApp,
+  appLaunchStatus = "idle",
+}: CockpitSidebarProps) {
+  const appStatusLabel = APP_LAUNCH_LABEL[appLaunchStatus];
+  const appLaunchBusy = appLaunchStatus === "checking" || appLaunchStatus === "starting";
   return (
     <View style={styles.shell}>
       <View style={styles.brand}>
@@ -54,6 +74,15 @@ export default function CockpitSidebar({ active, onSelect, companyName }: Cockpi
             </Pressable>
           );
         })}
+
+        <Pressable onPress={onOpenApp} style={styles.navItem} disabled={appLaunchBusy}>
+          <Text style={styles.navIcon}>🍞</Text>
+          <View style={styles.navAppLabelStack}>
+            <Text style={styles.navLabel}>Doughbert app</Text>
+            {appStatusLabel ? <Text style={styles.navAppStatus}>{appStatusLabel}</Text> : null}
+          </View>
+          <Text style={styles.navExternal}>{appLaunchBusy ? "⋯" : "↗"}</Text>
+        </Pressable>
       </View>
 
       <View style={styles.footer}>
@@ -144,6 +173,7 @@ const styles = StyleSheet.create({
   },
 
   navLabel: {
+    flex: 1,
     fontSize: 13,
     fontWeight: "600",
     color: V2.textMuted,
@@ -152,6 +182,21 @@ const styles = StyleSheet.create({
   navLabelActive: {
     color: V2.text,
     fontWeight: "700",
+  },
+
+  navExternal: {
+    fontSize: 12,
+    color: V2.textDim,
+  },
+
+  navAppLabelStack: {
+    flex: 1,
+  },
+
+  navAppStatus: {
+    marginTop: 1,
+    fontSize: 10,
+    color: V2.accent,
   },
 
   footer: {

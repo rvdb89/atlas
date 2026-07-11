@@ -92,6 +92,7 @@ export function urgencyTone(urgency: string): V2Tone {
 
 export function timeGreeting(): string {
   const hour = new Date().getHours();
+  if (hour < 5) return "Good night Robbert";
   if (hour < 12) return "Good morning Robbert";
   if (hour < 18) return "Good afternoon Robbert";
   return "Good evening Robbert";

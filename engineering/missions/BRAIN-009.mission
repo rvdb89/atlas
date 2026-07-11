@@ -1,0 +1,22 @@
+Mission:
+BRAIN-009
+
+Title:
+Opruimregel voor besluit-geheugen
+
+Goal:
+Atlas' geheugen groeide ongecontroleerd: 379 "decision"-herinneringen in minder dan 2 dagen, zonder enig opruimmechanisme. archive()/delete() bleken alleen een status-vlag om te zetten — de herinnering blijft voor altijd in het bestand staan. Deze mission voegt een echte, begrensde opruimregel toe.
+
+Focus:
+src/atlas/brain/memory/MemoryStore.ts (nieuwe purge() methode — verwijdert écht uit de Map, in tegenstelling tot delete())
+src/atlas/brain/memory/MemoryRetention.ts (nieuw bestand — pruneOldDecisionMemories(), houdt de 200 meest recente decision-herinneringen, verwijdert de rest)
+scripts/atlas-runtime.ts (persistMemoryToDisk() roept de opruimregel aan vlak vóór elke schrijfactie naar schijf)
+
+Constraints:
+Alleen "decision"-type herinneringen worden opgeruimd — alle andere types (workflow/preference/knowledge/project/task/conversation/user) blijven onaangeroerd
+Best-effort: een falende opruimactie mag nooit een cyclus of een save blokkeren
+Nooit stilzwijgend — als er daadwerkelijk iets wordt opgeruimd, verschijnt dat in de terminal-log
+TypeScript blijft compileren zonder nieuwe errors
+
+Success:
+reports/memory/store.json blijft begrensd in grootte ongeacht hoe lang de runtime doorloopt, zonder dat de Decision Engine iets van zijn eigen functionaliteit verliest (recallRecentDecisions() heeft nooit meer dan de laatste 3 nodig).

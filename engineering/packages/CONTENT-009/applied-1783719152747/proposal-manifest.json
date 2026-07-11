@@ -1,0 +1,25 @@
+{
+  "missionId": "CONTENT-009",
+  "title": "Content: starter",
+  "generatedAt": "2026-07-10T21:31:11.584Z",
+  "summary": "1 van de 1 starter-artikelen geschreven door het echte copywriter-team (real AI, geen mock), fact-checked en gelinkt — niet door de generieke code-schrijver.",
+  "files": [
+    {
+      "path": "src/modules/doughbert/knowledge/starter-zure-starter/index.ts",
+      "action": "create",
+      "reason": "1/1 artikelen in de starter-categorie, echt geschreven door het copywriter/fact-checker/link-engine team."
+    },
+    {
+      "path": "src/modules/doughbert/knowledge/collectSources.ts",
+      "action": "modify",
+      "reason": "Registreert zureStarterArticles in de centrale artikel-collectie."
+    },
+    {
+      "path": "src/modules/doughbert/knowledge/bulk/catalogArticles.ts",
+      "action": "modify",
+      "reason": "Verwijdert 1 title-only stub(s) die nu vervangen zijn door echte content — voorkomt dat de oude lege placeholder de nieuwe content in de dedup verdringt."
+    }
+  ],
+  "risks": [],
+  "followUp": "Alle artikelen gehaald — controleer de content op toon en feitelijke juistheid voor het toepassen."
+}

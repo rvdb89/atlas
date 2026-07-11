@@ -1,29 +1,20 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import chalk from "chalk";
 
 import {
-  ENGINEERING_PACKAGE_FILENAMES,
   missionRegistry,
   orchestrateMission,
   registerMissionFromSource,
-  serializePackageManifest,
   setLastEngineeringPackage,
   summarizeEngineeringPackage,
-  type EngineeringPackage,
+  ENGINEERING_PACKAGE_FILENAMES,
 } from "@/atlas/engineering/mission-orchestrator";
 import { getBranchDirectorTerminology } from "@/atlas/constitution";
 
-import { ROOT_DIR } from "./atlas/shared";
-
-function readAtlasVersion(): { version: string; build: string } {
-  const source = readFileSync(join(ROOT_DIR, "src/atlas/version.ts"), "utf8");
-  return {
-    version: source.match(/ATLAS_VERSION = "([^"]+)"/)?.[1] ?? "unknown",
-    build: source.match(/ATLAS_BUILD = "([^"]+)"/)?.[1] ?? "unknown",
-  };
-}
+import { ROOT_DIR, readAtlasVersion } from "./atlas/shared";
+import { writePackageArtifacts } from "./atlas/missionPackage";
 
 function loadMissionFilesFromDisk(): void {
   const missionsDir = join(ROOT_DIR, "engineering/missions");
@@ -37,78 +28,6 @@ function loadMissionFilesFromDisk(): void {
     const source = readFileSync(join(ROOT_DIR, sourcePath), "utf8");
     registerMissionFromSource(missionId, sourcePath, source);
   }
-}
-
-function removeStalePackageFiles(packageRoot: string): void {
-  if (!existsSync(packageRoot)) return;
-
-  const allowed = new Set<string>(ENGINEERING_PACKAGE_FILENAMES);
-  for (const filename of readdirSync(packageRoot)) {
-    if (allowed.has(filename)) continue;
-    unlinkSync(join(packageRoot, filename));
-  }
-}
-
-function writePackageArtifacts(pkg: EngineeringPackage): void {
-  const packageRoot = join(ROOT_DIR, pkg.outputDir);
-  mkdirSync(packageRoot, { recursive: true });
-  removeStalePackageFiles(packageRoot);
-
-  for (const artifact of pkg.artifacts) {
-    const target = join(ROOT_DIR, artifact.relativePath);
-    writeFileSync(target, artifact.markdown, "utf8");
-  }
-
-  writeFileSync(join(packageRoot, "manifest.json"), serializePackageManifest(pkg.manifest), "utf8");
-
-  const briefPath = join(ROOT_DIR, pkg.legacyBriefPath);
-  mkdirSync(join(briefPath, ".."), { recursive: true });
-  writeFileSync(briefPath, pkg.brief.markdown, "utf8");
-
-  const latestPackage = {
-    schemaVersion: pkg.manifest.schemaVersion,
-    inputRequired: pkg.manifest.inputRequired,
-    inferencePipeline: pkg.manifest.inferencePipeline,
-    missionId: pkg.missionId,
-    title: pkg.title,
-    templateLabel: pkg.templateLabel,
-    atlasVersion: pkg.manifest.atlasVersion,
-    atlasBuild: pkg.manifest.atlasBuild,
-    generatedAt: pkg.generatedAt,
-    outputDir: pkg.outputDir,
-    entrypoint: pkg.claudePackagePath,
-    legacyBriefPath: pkg.legacyBriefPath,
-    releaseNotesPath: pkg.releaseNotesPath,
-    dependencies: pkg.manifest.dependencies,
-    files: pkg.manifest.files,
-  };
-
-  writeFileSync(
-    join(ROOT_DIR, "engineering/packages/latest-package.json"),
-    JSON.stringify(latestPackage, null, 2),
-    "utf8",
-  );
-
-  writeFileSync(
-    join(ROOT_DIR, "engineering/briefs/latest-brief.json"),
-    JSON.stringify(
-      {
-        lastMission: pkg.missionId,
-        lastGeneratedBrief: pkg.legacyBriefPath,
-        templateUsed: pkg.templateLabel,
-        status: "generated",
-        generatedAt: pkg.generatedAt,
-        title: pkg.title,
-        packageDir: pkg.outputDir,
-        claudePackagePath: pkg.claudePackagePath,
-        releaseNotesPath: pkg.releaseNotesPath,
-        latestPackagePath: "engineering/packages/latest-package.json",
-      },
-      null,
-      2,
-    ),
-    "utf8",
-  );
 }
 
 function printUsage(): void {

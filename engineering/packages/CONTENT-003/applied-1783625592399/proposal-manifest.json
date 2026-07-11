@@ -1,0 +1,27 @@
+{
+  "missionId": "CONTENT-003",
+  "title": "Content: temperaturen",
+  "generatedAt": "2026-07-09T19:23:57.714Z",
+  "summary": "5 van de 6 temperaturen-artikelen geschreven door het echte copywriter-team (real AI, geen mock), fact-checked en gelinkt — niet door de generieke code-schrijver.",
+  "files": [
+    {
+      "path": "src/modules/doughbert/knowledge/temperaturen/index.ts",
+      "action": "create",
+      "reason": "5/6 artikelen in de temperaturen-categorie, echt geschreven door het copywriter/fact-checker/link-engine team."
+    },
+    {
+      "path": "src/modules/doughbert/knowledge/collectSources.ts",
+      "action": "modify",
+      "reason": "Registreert temperaturenArticles in de centrale artikel-collectie."
+    },
+    {
+      "path": "src/modules/doughbert/knowledge/bulk/catalogArticles.ts",
+      "action": "modify",
+      "reason": "Verwijdert 5 title-only stub(s) die nu vervangen zijn door echte content — voorkomt dat de oude lege placeholder de nieuwe content in de dedup verdringt."
+    }
+  ],
+  "risks": [
+    "Kamertemperatuur (kamertemperatuur) overgeslagen: Geen contentPayload ontvangen van de copywriter."
+  ],
+  "followUp": "1 artikel(en) overgeslagen (zie risico's) — draai deze missie opnieuw om ze alsnog te proberen, of vul ze later handmatig aan."
+}

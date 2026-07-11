@@ -1,0 +1,23 @@
+Mission:
+BRAIN-006
+
+Title:
+Geheugen delen tussen backend en dashboard
+
+Goal:
+BRAIN-002 loste persistence op, maar liet één gat bewust open: het CEO-dashboard zag alleen een synthetische health-score (bijv. "82% health, 14 memories"), nooit een echte memory-entry. Deze mission sluit precies dat gat — niets anders.
+
+Focus:
+src/atlas/brain/memory/memory.types.ts (nieuw type RecentMemoryEntry — lean, dashboard-veilige subset van AtlasMemoryEntry, geen imports, dus veilig te delen tussen Node-scripts en de RN-app)
+scripts/atlas-runtime.ts (buildMemorySummary() schrijft nu ook de top-N recente memory-entries mee in het bestaande public/atlas-runtime-state.json — geen nieuwe server of poort, zelfde patroon als roadmap/departments/bugs/appliedHistory)
+src/atlas/company-state/types/businessModels.types.ts + companyState.types.ts (MemoryModel / CompanyMemoryState krijgen een recent-veld)
+src/atlas/studio/control/controlDataService.ts + controlViewMapper.ts + types.ts (recent-veld doorgezet t/m ControlSnapshot)
+src/atlas/studio/control/v2/MemorySectionV2.tsx (toont nu een lijst met echte recente memories: titel, samenvatting, type, bron, tijdstip)
+
+Constraints:
+Geen full-text `content`-veld naar het dashboard sturen — alleen titel/samenvatting/tags/importance/source/updatedAt, om het state-bestand klein te houden
+Geen nieuwe server of poort — hergebruikt het bestaande poll-a-static-JSON patroon
+Semantisch/vector-zoeken blijft een apart, nog niet aangepakt gat (zie BRAIN-002) — deze mission lost alleen het zichtbaarheids-gat op, niet het zoek-gat
+
+Success:
+Het Memory-onderdeel van Atlas Control toont een lijst met echte, actuele memory-entries naast de bestaande health-score, in plaats van alleen een getal.

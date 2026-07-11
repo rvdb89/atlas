@@ -16,10 +16,27 @@ type AnthropicMessageResponse = {
   stop_reason?: string;
 };
 
+/** Strips a markdown code fence wrapping the whole response — anchored at the start and
+ * end of the string, not a mid-string search. A non-anchored search would misfire when
+ * the JSON payload itself contains file content with its own ``` sequences (e.g. a
+ * generated markdown file, or a code sample in a comment), chopping the real JSON apart
+ * at the wrong backticks. */
+function stripOuterCodeFence(trimmed: string): string {
+  if (!trimmed.startsWith("```")) return trimmed;
+
+  const firstNewline = trimmed.indexOf("\n");
+  if (firstNewline === -1) return trimmed;
+
+  const withoutOpening = trimmed.slice(firstNewline + 1);
+  const closingIndex = withoutOpening.lastIndexOf("```");
+  if (closingIndex === -1) return withoutOpening;
+
+  return withoutOpening.slice(0, closingIndex).trim();
+}
+
 function parseJsonBlock(raw: string): unknown {
   const trimmed = raw.trim();
-  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  const candidate = fenced?.[1]?.trim() ?? trimmed;
+  const candidate = stripOuterCodeFence(trimmed);
   return JSON.parse(candidate);
 }
 
@@ -65,10 +82,10 @@ async function callAnthropicMessages(request: AiRequest, structured: boolean): P
         "x-api-key": apiKey,
         "anthropic-version": ANTHROPIC_VERSION,
       },
+      // Note: `temperature` is deprecated on current-gen models (adaptive thinking replaces it) — omitted deliberately.
       body: JSON.stringify({
         model,
         max_tokens: request.maxTokens ?? 1024,
-        temperature: request.temperature ?? 0.7,
         system: request.systemPrompt,
         messages: [{ role: "user", content: userPrompt }],
       }),
@@ -79,14 +96,31 @@ async function callAnthropicMessages(request: AiRequest, structured: boolean): P
   const durationMs = Date.now() - started;
 
   if (!response.ok) {
+    let detail = "";
+    try {
+      const bodyText = await response.text();
+      try {
+        const errorBody = JSON.parse(bodyText) as { error?: { type?: string; message?: string } };
+        detail = errorBody.error?.message ?? bodyText.slice(0, 300);
+      } catch {
+        detail = bodyText.slice(0, 300);
+      }
+    } catch {
+      detail = "";
+    }
+
+    const message = detail
+      ? `Claude API returned HTTP ${response.status}: ${detail}`
+      : `Claude API returned HTTP ${response.status}`;
+
     updateClaudeRuntimeState({
       configured: true,
       mode: "live",
       health: "error",
       latencyMs: durationMs,
-      lastError: `HTTP ${response.status}`,
+      lastError: message,
     });
-    throw new ClaudeApiError("HTTP_ERROR", `Claude API returned HTTP ${response.status}`, response.status);
+    throw new ClaudeApiError("HTTP_ERROR", message, response.status);
   }
 
   let payload: AnthropicMessageResponse;
@@ -98,7 +132,15 @@ async function callAnthropicMessages(request: AiRequest, structured: boolean): P
 
   const raw = payload.content?.map((block) => block.text ?? "").join("\n").trim() ?? "";
   if (!raw) {
-    throw new ClaudeApiError("INVALID_RESPONSE", "Claude API returned empty content");
+    const blockTypes = payload.content?.map((block) => block.type).join(", ") || "none";
+    const outputTokens = payload.usage?.output_tokens ?? 0;
+    throw new ClaudeApiError(
+      "INVALID_RESPONSE",
+      `Claude API returned empty content (stop_reason: ${payload.stop_reason ?? "unknown"}, block types: ${blockTypes}, output_tokens: ${outputTokens}). ` +
+        (payload.stop_reason === "max_tokens"
+          ? "The model likely ran out of its token budget before writing any text — increase maxTokens for this task."
+          : "See stop_reason above for why the model produced no usable text."),
+    );
   }
 
   const usage = {
@@ -129,8 +171,19 @@ async function callAnthropicMessages(request: AiRequest, structured: boolean): P
     let output: unknown;
     try {
       output = parseJsonBlock(raw);
-    } catch {
-      throw new ClaudeApiError("INVALID_RESPONSE", "Claude structured response was not valid JSON");
+    } catch (parseError) {
+      const maxTokens = request.maxTokens ?? 1024;
+      const outputTokens = usage.outputTokens;
+      const likelyTruncated = outputTokens > 0 && outputTokens >= maxTokens - 5;
+      const tail = raw.slice(-200);
+      const detail = parseError instanceof Error ? parseError.message : String(parseError);
+
+      throw new ClaudeApiError(
+        "INVALID_RESPONSE",
+        `Claude structured response was not valid JSON (${detail}). ` +
+          `output_tokens: ${outputTokens}/${maxTokens}${likelyTruncated ? " — response very likely got cut off mid-JSON by max_tokens, increase maxTokens for this task" : ""}. ` +
+          `Last 200 chars of raw response: ${JSON.stringify(tail)}`,
+      );
     }
 
     return {
@@ -194,15 +247,15 @@ export function createAnthropicTransport(): AiTransport {
         return {
           models: [
             {
-              id: "claude-3-5-sonnet-latest",
-              label: "Claude 3.5 Sonnet",
-              contextWindow: 200_000,
+              id: "claude-sonnet-5",
+              label: "Claude Sonnet 5",
+              contextWindow: 1_000_000,
               supportedOutputs: ["text", "markdown", "json"],
               default: true,
             },
             {
-              id: "claude-3-5-haiku-latest",
-              label: "Claude 3.5 Haiku",
+              id: "claude-haiku-4-5",
+              label: "Claude Haiku 4.5",
               contextWindow: 200_000,
               supportedOutputs: ["text", "markdown", "json"],
             },

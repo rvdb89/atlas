@@ -1,18 +1,9 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import type { ControlSnapshot, ManagementMember, ManagementStatus } from "../types";
+import type { ControlSnapshot, ManagementStatus } from "../types";
 import GlassCard from "./GlassCard";
 import StatusPill from "./StatusPill";
 import { V2 } from "./v2Theme";
-
-const EXECUTIVE_TITLES = [
-  "Branch Director",
-  "Engineering Director",
-  "Quality Director",
-  "Memory Director",
-  "Research Director",
-  "Marketing Director",
-] as const;
 
 const STATUS_TONE: Record<ManagementStatus, "success" | "neutral" | "danger" | "warning"> = {
   active: "success",
@@ -21,29 +12,12 @@ const STATUS_TONE: Record<ManagementStatus, "success" | "neutral" | "danger" | "
   waiting: "warning",
 };
 
-function pickExecutives(management: ManagementMember[]): ManagementMember[] {
-  return EXECUTIVE_TITLES.map((title) => {
-    const found = management.find((m) => m.title === title);
-    if (found) return found;
-    return {
-      id: title.toLowerCase().replace(/\s+/g, "-"),
-      title,
-      department: "intelligence",
-      status: "idle" as const,
-      currentResponsibility: "Standing by",
-      currentInitiative: "—",
-      healthScore: 0,
-      workload: "light" as const,
-    };
-  });
-}
-
 type ManagementTeamV2Props = {
   snapshot: ControlSnapshot;
 };
 
 export default function ManagementTeamV2({ snapshot }: ManagementTeamV2Props) {
-  const executives = pickExecutives(snapshot.management);
+  const executives = snapshot.management;
 
   return (
     <GlassCard title="Management Team" subtitle="AI executives running the company" badge="Live">
@@ -52,7 +26,7 @@ export default function ManagementTeamV2({ snapshot }: ManagementTeamV2Props) {
           <View key={member.id} style={styles.card}>
             <View style={styles.cardTop}>
               <Text style={styles.name} numberOfLines={1}>
-                {member.title}
+                {member.name} · {member.title}
               </Text>
               <StatusPill label={member.status} tone={STATUS_TONE[member.status]} />
             </View>

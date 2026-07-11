@@ -10,14 +10,15 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import PageNav from "@/components/PageNav";
+import { BakeryColors, BakeryFonts } from "@/constants/theme";
 
 const COLORS = {
-  cream: "#F7F1E8",
-  warmWhite: "#FFFDF8",
-  brown: "#2B2118",
-  secondary: "#7A6652",
-  orangeAccent: "#B86B38",
-  navInactive: "#9B928A",
+  cream: BakeryColors.cream,
+  warmWhite: BakeryColors.warmWhite,
+  brown: BakeryColors.brown,
+  secondary: BakeryColors.textSecondary,
+  orangeAccent: BakeryColors.orangeAccent,
+  navInactive: BakeryColors.navInactive,
 };
 
 const HORIZONTAL_PADDING = 24;
@@ -190,8 +191,9 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 36,
-    fontWeight: "900",
+    fontFamily: BakeryFonts.display,
+    fontSize: 34,
+    fontWeight: "700",
     color: COLORS.brown,
   },
 

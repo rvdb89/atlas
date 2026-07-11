@@ -1,3 +1,5 @@
+import type { ImageSourcePropType } from "react-native";
+
 import type { RecipeKnowledge } from "@/types/knowledge";
 import type { KnowledgeBiteId } from "@/types/knowledgeBite";
 
@@ -84,6 +86,13 @@ export interface Recipe {
   route: string;
 
   meta: RecipeMeta;
+
+  /**
+   * Optional recipe photo, shown on cards and the detail page once real photography
+   * exists (`require("../../../assets/images/recipes/<id>.jpg")`). Falls back to an
+   * icon badge everywhere this is undefined — never a fabricated placeholder image.
+   */
+  image?: ImageSourcePropType;
 
   /** Baker's percentage hydration. */
   hydration: number;

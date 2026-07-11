@@ -1,0 +1,24 @@
+Mission:
+CONTENT-009
+
+Title:
+Overgeslagen artikel Zure starter alsnog schrijven
+
+Goal:
+Bij CONTENT-005 (starter) haalden 8 van de 9 artikelen de publicatiedrempel, maar "zure starter" bleef te dun en werd overgeslagen — CONTENT-005 zelf staat al als "toegepast" geregistreerd, dus dit ene artikel wordt niet vanzelf opnieuw geprobeerd. Deze mission is een gerichte retry van precies dat ene artikel, via dezelfde echte copywriter/fact-checker/link-engine agent-ploeg als de rest van de content-missies.
+
+Focus:
+scripts/atlas/contentGenerationEngine.ts (voert deze mission uit — CONTENT_MISSIONS["CONTENT-009"])
+src/modules/doughbert/knowledge/starter/index.ts (bevat al de 8 andere starter-artikelen — blijft ongewijzigd)
+src/modules/doughbert/knowledge/starter-zure-starter/index.ts (nieuw bestand, wordt aangemaakt — bewust apart van starter/index.ts zodat de al toegepaste 8 artikelen niet worden overschreven)
+src/modules/doughbert/knowledge/collectSources.ts (krijgt automatisch een import + toevoeging aan de raw-array)
+src/modules/doughbert/knowledge/bulk/catalogArticles.ts (de engine verwijdert hier automatisch de oude title-only stub voor zure-starter)
+
+Constraints:
+Deze mission draait via de content-pipeline (contentGenerationEngine.ts), niet via de generieke mission.implement-flow
+Alleen als het artikel de publicatiedrempel haalt (minimaal 3 echte secties + samenvatting) wordt het meegenomen; blijft het te dun, dan wordt dat gerapporteerd en blijft de bestaande stub gewoon staan
+De 8 al toegepaste starter-artikelen worden niet opnieuw gegenereerd en niet overschreven
+TypeScript blijft compileren zonder nieuwe errors
+
+Success:
+Het zure-starter-artikel toont echte, leesbare content in de Kennisbibliotheek (categorie starter) in plaats van een lege pagina, geschreven door de echte agent-ploeg.

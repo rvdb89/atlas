@@ -87,6 +87,25 @@ export type MemorySnapshot = {
   health: string;
 };
 
+/** BRAIN-002b · Lean, dashboard-safe subset of AtlasMemoryEntry — deliberately drops the
+ * full `content` field (can be long-form text) and internal bookkeeping (confidence,
+ * status, createdAt) that the CEO dashboard doesn't need for a quick glance. Shared as-is
+ * between the Node runtime (scripts/atlas-runtime.ts, which writes it into
+ * public/atlas-runtime-state.json) and the RN app's dashboard types, so both sides describe
+ * exactly the same shape instead of two independently-hand-typed mirrors going stale. This
+ * file has no imports of its own, so importing it from either side never pulls in Node-only
+ * (fs/path) or RN-only dependencies. */
+export type RecentMemoryEntry = {
+  id: string;
+  type: MemoryType;
+  title: string;
+  summary: string;
+  tags: string[];
+  importance: number;
+  source: string;
+  updatedAt: string;
+};
+
 export type MemoryOperationResult<T> = {
   ok: boolean;
   data?: T;

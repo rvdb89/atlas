@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import PageNav from "../components/PageNav";
+import { BakeryColors, BakeryFonts } from "../constants/theme";
 
 const temperatures = ["18", "18.5", "19", "19.5", "20", "20.5", "21", "21.5", "22", "22.5", "23", "23.5", "24", "24.5", "25", "25.5", "26"];
 
@@ -28,11 +29,24 @@ export default function PlannerTemperatureScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#F7F1E8", padding: 24, paddingTop: 64 },
-  step: { color: "#B86B38", fontWeight: "700", marginBottom: 12 },
-  title: { fontSize: 34, lineHeight: 40, fontWeight: "700", color: "#2B2118", marginBottom: 12 },
-  subtitle: { fontSize: 17, lineHeight: 24, color: "#7A6652", marginBottom: 28 },
+  screen: { flex: 1, backgroundColor: BakeryColors.cream, padding: 24, paddingTop: 64 },
+  step: { color: BakeryColors.orangeAccent, fontWeight: "700", marginBottom: 12 },
+  title: {
+    fontFamily: BakeryFonts.display,
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: "700",
+    color: BakeryColors.brown,
+    marginBottom: 12,
+  },
+  subtitle: { fontSize: 17, lineHeight: 24, color: BakeryColors.textSecondary, marginBottom: 28 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  option: { backgroundColor: "#FFFDF8", borderRadius: 16, paddingVertical: 16, width: "30%", alignItems: "center" },
-  optionText: { color: "#2B2118", fontSize: 17, fontWeight: "700" },
+  option: {
+    backgroundColor: BakeryColors.warmWhite,
+    borderRadius: 16,
+    paddingVertical: 16,
+    width: "30%",
+    alignItems: "center",
+  },
+  optionText: { color: BakeryColors.brown, fontSize: 17, fontWeight: "700" },
 });

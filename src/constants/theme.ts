@@ -26,6 +26,33 @@ export const Colors = {
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
+/**
+ * Bakery brand palette — the warm cream/brown/orange direction already used on the home
+ * screen (`src/app/index.tsx`). Lifted here so every recipe/category screen shares one
+ * source of truth instead of each file re-declaring its own local COLORS constant.
+ */
+export const BakeryColors = {
+  cream: '#F7F1E8',
+  warmWhite: '#FFFDF8',
+  card: '#F8F0E6',
+  brown: '#2B2118',
+  brownMuted: '#5F4A3B',
+  textSecondary: '#7A6652',
+  orange: '#B85F1D',
+  orangeAccent: '#B86B38',
+  peach: '#F3D1A5',
+  navInactive: '#9B928A',
+} as const;
+
+export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced';
+
+/** Per-difficulty accent used for the small chip on recipe cards. */
+export const DifficultyColors: Record<DifficultyLevel, { bg: string; text: string }> = {
+  beginner: { bg: '#DDEBD2', text: '#3F6B2A' },
+  intermediate: { bg: BakeryColors.peach, text: '#8A4A1E' },
+  advanced: { bg: '#F0CFC4', text: '#93381E' },
+};
+
 export const Fonts = Platform.select({
   ios: {
     /** iOS `UIFontDescriptorSystemDesignDefault` */
@@ -50,6 +77,17 @@ export const Fonts = Platform.select({
     mono: 'var(--font-mono)',
   },
 });
+
+/**
+ * Bakery typography roles. Reuses the platform-native serif/sans families already
+ * declared in `Fonts` above (no new font packages, no risk to native builds) — display
+ * copy (recipe titles, screen headings) reads as an editorial serif instead of the
+ * default system sans used everywhere before this.
+ */
+export const BakeryFonts = {
+  display: Fonts.serif,
+  body: Fonts.sans,
+} as const;
 
 export const Spacing = {
   half: 2,

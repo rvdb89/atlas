@@ -1,0 +1,21 @@
+Mission:
+EXEC-004
+
+Title:
+Discovery-heuristiek uitbreiden: bestandsnamen en inhoud, niet alleen mapnamen
+
+Goal:
+Kleinste openstaande gat op de lijst, maar wel een echte: discoverLikelyExistingPaths (EXEC-001, BRAIN-003) matchte alleen mapnamen tegen missie-titel-keywords. Bij het echt naspeuren bleek dat de meeste Atlas-modules helemaal geen eigen map hebben — postApplyValidation.ts, replanOnFailure.ts, tipsGenerationEngine.ts en vele anderen liggen als los bestand direct in scripts/atlas/ of src/atlas/**/. Voor al die modules vond de oude heuristiek helemaal niets, met precies het EXEC-001/BRAIN-003-risico als gevolg: Claude zou zo'n module opnieuw kunnen voorstellen omdat niets erop wees dat hij al bestond.
+
+Focus:
+scripts/atlas/executionEngine.ts (discoverLikelyExistingPaths uitgebreid met bestandsnaam-matching en, als laatste redmiddel, een korte inhoud-header-check)
+
+Constraints:
+Nooit een onbegrensde scan — bestandsnaam-matching blijft gebonden aan dezelfde mapstructuur-wandeling als voorheen (DISCOVERY_ROOTS, MAX_DISCOVERY_DEPTH), en de nieuwe inhoud-fallback heeft een eigen, aparte cap (MAX_CONTENT_SCAN_FILES) zodat een grotere codebase dit nooit traag of onvoorspelbaar kan maken
+Inhoud-fallback draait alleen als naam-matching niets opleverde — het is het zwakste signaal, dus het mag nooit een sterker signaal overschrijven of vertragen
+Bestaande directory-matching (Context Engine-achtige gevallen) moet exact blijven werken zoals voorheen — geverifieerd, niet aangenomen
+
+Success:
+Geverifieerd (buiten een live AI-call om, met de echte bestandsboom): een missietitel als "Post-Apply Validatie en Commit-voorbereiding" vindt nu correct scripts/atlas/postApplyValidation.ts, wat de oude heuristiek volledig miste. Directory-gevallen als "Context Engine" blijven exact zo werken als voorheen.
+
+Eerlijk restpunt, gevonden tijdens het verifiëren, niet opgelost in deze pas: mission-titels zijn vaak Nederlands, code-identifiers en docstrings zijn Engels — "Automatisch herplannen bij mislukte validatie" (BRAIN-011) matcht niets, terwijl scripts/atlas/replanOnFailure.ts wel degelijk bestaat. Zowel de oude als de nieuwe heuristiek hebben dit probleem al; dit verandert dat niet. Een echte oplossing zou een vertaalstap of een tweetalige synoniemenlijst nodig hebben — bewust niet in deze pas gebouwd.

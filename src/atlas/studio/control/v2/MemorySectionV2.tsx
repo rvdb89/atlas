@@ -9,9 +9,21 @@ type MemorySectionV2Props = {
   snapshot: ControlSnapshot;
 };
 
+function formatMemoryUpdatedAt(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return date.toLocaleString(undefined, {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function MemorySectionV2({ snapshot }: MemorySectionV2Props) {
   const memoryDept = snapshot.operations.find((op) => op.department === "memory");
-  const memoryDirector = snapshot.management.find((m) => m.title === "Memory Director");
+  const memory = snapshot.memory;
+  const lastUpdatedLabel = memory.lastUpdated ? new Date(memory.lastUpdated).toLocaleString() : "No entries yet";
 
   return (
     <GlassCard title="Memory" subtitle="Company knowledge and recall systems" badge="Live">
@@ -22,11 +34,39 @@ export default function MemorySectionV2({ snapshot }: MemorySectionV2Props) {
           <Text style={styles.focus}>{memoryDept?.currentFocus ?? "Memory upgrade proposal"}</Text>
         </View>
         <View style={styles.block}>
-          <Text style={styles.label}>Memory Director</Text>
-          <Text style={styles.director}>{memoryDirector?.currentResponsibility ?? "MEMORY-001 upgrade"}</Text>
-          <Text style={styles.health}>{memoryDirector?.healthScore ?? 68}% health</Text>
+          <Text style={styles.label}>BRAIN-002 Memory Engine</Text>
+          <Text style={styles.director}>{memory.statusLabel}</Text>
+          <Text style={styles.focus}>Last updated: {lastUpdatedLabel}</Text>
+          <Text style={styles.health}>{memory.health}% health</Text>
         </View>
       </View>
+
+      {/* BRAIN-002b · Real recent memories, not just the health score above — same live
+          data the Node runtime actually recalls when it reasons, finally visible here too. */}
+      {memory.recent.length > 0 ? (
+        <View style={styles.recentSection}>
+          <Text style={styles.label}>Recent memories</Text>
+          <View style={styles.recentList}>
+            {memory.recent.map((entry) => (
+              <View key={entry.id} style={styles.recentCard}>
+                <View style={styles.recentHeader}>
+                  <Text style={styles.recentTitle} numberOfLines={1}>
+                    {entry.title}
+                  </Text>
+                  <Text style={styles.recentType}>{entry.type}</Text>
+                </View>
+                <Text style={styles.recentSummary} numberOfLines={2}>
+                  {entry.summary}
+                </Text>
+                <View style={styles.recentFooter}>
+                  <Text style={styles.recentMeta}>{entry.source}</Text>
+                  <Text style={styles.recentMeta}>{formatMemoryUpdatedAt(entry.updatedAt)}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+      ) : null}
     </GlassCard>
   );
 }
@@ -77,5 +117,62 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "800",
     color: V2.purple,
+  },
+
+  recentSection: {
+    marginTop: 16,
+  },
+
+  recentList: {
+    marginTop: 8,
+    gap: 8,
+  },
+
+  recentCard: {
+    padding: 12,
+    borderRadius: V2.radiusSm,
+    backgroundColor: V2.bgElevated,
+    borderWidth: 1,
+    borderColor: V2.border,
+  },
+
+  recentHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  recentTitle: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "700",
+    color: V2.text,
+  },
+
+  recentType: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: V2.purple,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
+
+  recentSummary: {
+    marginTop: 6,
+    fontSize: 12,
+    lineHeight: 17,
+    color: V2.textMuted,
+  },
+
+  recentFooter: {
+    marginTop: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
+  recentMeta: {
+    fontSize: 10,
+    color: V2.textDim,
   },
 });

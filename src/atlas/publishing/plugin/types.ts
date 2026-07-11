@@ -17,7 +17,8 @@ export type CoreAgentId =
   | "fact-checker"
   | "link-engine"
   | "translator"
-  | "domain-validator";
+  | "domain-validator"
+  | "branch-director";
 
 export type TeamMember = {
   id: CoreAgentId;

@@ -1,0 +1,25 @@
+{
+  "missionId": "CONTENT-006",
+  "title": "Content: bakwetenschap",
+  "generatedAt": "2026-07-09T22:16:52.420Z",
+  "summary": "12 van de 12 bakwetenschap-artikelen geschreven door het echte copywriter-team (real AI, geen mock), fact-checked en gelinkt — niet door de generieke code-schrijver.",
+  "files": [
+    {
+      "path": "src/modules/doughbert/knowledge/science/index.ts",
+      "action": "create",
+      "reason": "12/12 artikelen in de bakwetenschap-categorie, echt geschreven door het copywriter/fact-checker/link-engine team."
+    },
+    {
+      "path": "src/modules/doughbert/knowledge/collectSources.ts",
+      "action": "modify",
+      "reason": "Registreert bakwetenschapArticles in de centrale artikel-collectie."
+    },
+    {
+      "path": "src/modules/doughbert/knowledge/bulk/catalogArticles.ts",
+      "action": "modify",
+      "reason": "Verwijdert 12 title-only stub(s) die nu vervangen zijn door echte content — voorkomt dat de oude lege placeholder de nieuwe content in de dedup verdringt."
+    }
+  ],
+  "risks": [],
+  "followUp": "Alle artikelen gehaald — controleer de content op toon en feitelijke juistheid voor het toepassen."
+}

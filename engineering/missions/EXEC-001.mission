@@ -1,0 +1,33 @@
+Mission:
+EXEC-001
+
+Title:
+Execution Engine
+
+Goal:
+Close the loop from "Atlas generated an engineering package" to "there is real code" — the missing link toward Atlas autonomously building a new app on command.
+
+Focus:
+ExecutionEngine module (scripts/atlas/executionEngine.ts) and mission.implement AI task
+Claude drafts a small, focused code proposal from a mission's real architecture brief and validation plan
+Real repository context gathering: scans mission text for file paths and reads them from disk (up to 20k chars each) so Claude grounds proposals in real code instead of guessing
+Proposed files are written to a review-only proposed-changes/ folder — never the working tree directly
+A machine-readable proposal-manifest.json alongside CHANGES.md so the Apply Engine knows exactly what to apply
+Path safety allowlist/denylist so proposals can never touch package.json, .env, node_modules, or escape the repo
+Manual CLI trigger (npm run atlas:execute, entrypoint scripts/atlas-execute.ts) so a human always decides when code gets drafted
+Apply Engine (scripts/atlas/applyEngine.ts) writes a reviewed proposal into the real working tree and archives proposed-changes/ to applied-<timestamp>/
+Manual apply CLI (npm run atlas:apply, entrypoint scripts/atlas-apply.ts) and an automatic local-only apply-bridge (127.0.0.1:8791/apply, started by atlas-runtime.ts) that Atlas Control's CEO Inbox "Approve" button calls for package-review items
+ensureExecutionProposal (scripts/atlas-runtime.ts) automatically drafts a code proposal for the runtime's current top-priority mission once it has a real engineering package — no manual npm run atlas:execute required — with a failure-backoff marker (engineering/packages/<ID>/execution-attempt.json) so a persistent problem never spams the Claude API every cycle
+CEO Inbox now distinguishes "package ready to review" from "code proposal ready to review" (buildCandidateApprovals in scripts/atlas/realCompanyData.ts) so the CEO only ever needs to see a notification and click Approve — never a CLI step, for either drafting or applying
+Test execution and git automation — see EXEC-002: automatic post-apply typecheck + commit-message drafting + staging, while the actual `git commit` still always requires a human
+
+Constraints:
+No automatic writes to the working tree, ever, without an explicit CEO approval click (or explicit `npm run atlas:apply` CLI command) — never from the background decision loop on its own
+Drafting a code proposal (writing only to the review-only proposed-changes/ folder, never the working tree) may now happen automatically from the background loop — reviewing and applying it never does
+No mock code generation — requires a real ANTHROPIC_API_KEY, fails honestly otherwise
+Every proposed file path validated against an allowlist before it touches disk, and re-validated independently again before being applied
+The apply-bridge server binds to 127.0.0.1 only — never reachable from outside the local machine
+Provider-independent through the existing AI Orchestrator — no Claude-specific coupling in the engine itself
+
+Success:
+Once Atlas picks a mission as its top priority, the runtime automatically generates its engineering package and then its code proposal — no CLI required. The CEO only ever sees a CEO Inbox notification ("Review code proposal · <MISSION-ID>") and clicks Approve, which writes the reviewed files into the real working tree and archives the proposal, ready for git diff review. `npm run atlas:execute` / `npm run atlas:apply` remain available as manual fallbacks for testing or if the runtime isn't running.

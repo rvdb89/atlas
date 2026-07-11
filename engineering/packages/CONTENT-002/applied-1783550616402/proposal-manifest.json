@@ -1,0 +1,20 @@
+{
+  "missionId": "CONTENT-002",
+  "title": "Content: hydratatie",
+  "generatedAt": "2026-07-08T22:42:13.110Z",
+  "summary": "6 van de 6 hydratatie-artikelen geschreven door het echte copywriter-team (real AI, geen mock), fact-checked en gelinkt — niet door de generieke code-schrijver.",
+  "files": [
+    {
+      "path": "src/modules/doughbert/knowledge/hydratatie/index.ts",
+      "action": "create",
+      "reason": "6/6 artikelen in de hydratatie-categorie, echt geschreven door het copywriter/fact-checker/link-engine team."
+    },
+    {
+      "path": "src/modules/doughbert/knowledge/collectSources.ts",
+      "action": "modify",
+      "reason": "Registreert hydratatieArticles in de centrale artikel-collectie."
+    }
+  ],
+  "risks": [],
+  "followUp": "Alle artikelen gehaald — controleer de content op toon en feitelijke juistheid voor het toepassen."
+}

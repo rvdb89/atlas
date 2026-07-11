@@ -1,6 +1,6 @@
 import { recipeList } from "@/data/recipes";
 import type { KnowledgeArticleInput } from "@/types/knowledgeArticleInput";
-import type { KnowledgeBiteCategoryId } from "@/types/knowledgeBite";
+import type { KnowledgeBiteBody, KnowledgeBiteCategoryId } from "@/types/knowledgeBite";
 import type { FlourKey, Recipe, RecipeId } from "@/types/recipe";
 
 const FLOUR_KNOWLEDGE_SLUGS: Partial<Record<FlourKey, string>> = {
@@ -56,6 +56,27 @@ function recipeRelationTags(recipe: Recipe): string[] {
   ];
 }
 
+/**
+ * Derives Knowledge Bite content overrides from material the recipe itself already has.
+ * No new facts are written here — only recipe.introduction is reused.
+ *
+ * recipe.tips is deliberately NOT mapped into doughbertAdvice: that field expects
+ * structured { goal, choice } rows (KnowledgeBiteAdviceRow), while recipe.tips is a plain
+ * list of freeform sentences — forcing them into that shape would mean inventing a "goal"
+ * for each tip that doesn't exist in the source data. Wiring tips in as a real section
+ * (via createStandardSection) is exactly the kind of follow-up this mission's CHANGES.md
+ * already flags as the next real step, once the section schema is read too.
+ */
+function recipeContentOverrides(recipe: Recipe): Partial<KnowledgeBiteBody> {
+  const overrides: Partial<KnowledgeBiteBody> = {};
+
+  if (recipe.introduction) {
+    overrides.summary = recipe.introduction;
+  }
+
+  return overrides;
+}
+
 /** Auto-generates recipe-linked Knowledge articles from the recipe registry. */
 export function buildRecipeArticles(): KnowledgeArticleInput[] {
   const articles: KnowledgeArticleInput[] = [];
@@ -72,6 +93,8 @@ export function buildRecipeArticles(): KnowledgeArticleInput[] {
       libraryOrder: RECIPE_LIBRARY_ORDER[recipe.id] ?? articles.length + 1,
       kind: "recipe",
       recipeId: recipe.id,
+      // Status stays "draft" until the article also has real sections, not just a
+      // summary/advice — see mission CONTENT-001 follow-up for the remaining gap.
       status: "draft",
       metadata: {
         subtitle: recipe.tagline,
@@ -81,6 +104,7 @@ export function buildRecipeArticles(): KnowledgeArticleInput[] {
         relatedTips: [],
       },
       relationTags: recipeRelationTags(recipe),
+      content: recipeContentOverrides(recipe),
     });
   }
 

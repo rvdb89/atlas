@@ -61,6 +61,7 @@ export function createExecutionPlan(input: {
   steps: ExecutionPlanStep[];
   priority?: ExecutionPlanPriority;
   status?: ExecutionPlanStatus;
+  missionId?: string;
 }): ExecutionPlan {
   const now = new Date().toISOString();
 
@@ -68,6 +69,7 @@ export function createExecutionPlan(input: {
     id: createExecutionPlanId(),
     goal: input.goal,
     plannerId: input.plannerId,
+    missionId: input.missionId,
     steps: input.steps,
     priority: input.priority ?? "normal",
     status: input.status ?? "ready",

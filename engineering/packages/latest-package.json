@@ -1,8 +1,91 @@
 {
-  "missionId": "STUDIO-002",
-  "title": "Branch Director Debrief Flow",
-  "outputDir": "engineering/packages/STUDIO-002",
-  "entrypoint": "engineering/packages/STUDIO-002/claude-engineering-package.md",
-  "decisionEngineId": "BRAIN-004",
-  "generatedAt": "2026-07-07T17:53:17.902Z"
+  "schemaVersion": "1.0",
+  "inputRequired": "missionIdOnly",
+  "inferencePipeline": [
+    "decision-engine",
+    "organization",
+    "evolution-engine",
+    "decision-framework",
+    "constitution",
+    "north-star",
+    "principles",
+    "capabilities",
+    "systems",
+    "roadmap",
+    "mission-registry",
+    "engineering-standards",
+    "architecture-rules",
+    "mission-dependencies",
+    "definition-of-done",
+    "validation-plan",
+    "engineering-package"
+  ],
+  "missionId": "CONTENT-009",
+  "title": "Overgeslagen artikel Zure starter alsnog schrijven",
+  "templateLabel": "Engineering Mission",
+  "atlasVersion": "0.26.0",
+  "atlasBuild": "brain-005",
+  "generatedAt": "2026-07-10T21:29:43.086Z",
+  "outputDir": "engineering/packages/CONTENT-009",
+  "entrypoint": "engineering/packages/CONTENT-009/claude-engineering-package.md",
+  "legacyBriefPath": "engineering/briefs/CONTENT-009.md",
+  "releaseNotesPath": "engineering/packages/CONTENT-009/release-notes.md",
+  "dependencies": [
+    {
+      "missionId": "CONTENT-001",
+      "title": "Recipe Knowledge Content Wiring",
+      "relationship": "requires",
+      "reason": "Prior CONTENT mission in sequence"
+    },
+    {
+      "missionId": "CONTENT-002",
+      "title": "Kennisartikelen Hydratatie vullen",
+      "relationship": "requires",
+      "reason": "Prior CONTENT mission in sequence"
+    },
+    {
+      "missionId": "CONTENT-003",
+      "title": "Kennisartikelen Temperaturen vullen",
+      "relationship": "requires",
+      "reason": "Prior CONTENT mission in sequence"
+    },
+    {
+      "missionId": "CONTENT-004",
+      "title": "Kennisartikelen Fermentatie vullen",
+      "relationship": "requires",
+      "reason": "Prior CONTENT mission in sequence"
+    },
+    {
+      "missionId": "CONTENT-005",
+      "title": "Kennisartikelen Starter vullen",
+      "relationship": "requires",
+      "reason": "Prior CONTENT mission in sequence"
+    },
+    {
+      "missionId": "CONTENT-006",
+      "title": "Kennisartikelen Bakwetenschap vullen",
+      "relationship": "requires",
+      "reason": "Prior CONTENT mission in sequence"
+    },
+    {
+      "missionId": "CONTENT-007",
+      "title": "Kennisartikelen Technieken vullen",
+      "relationship": "requires",
+      "reason": "Prior CONTENT mission in sequence"
+    },
+    {
+      "missionId": "CONTENT-008",
+      "title": "Overgeslagen artikel Kamertemperatuur alsnog schrijven",
+      "relationship": "requires",
+      "reason": "Prior CONTENT mission in sequence"
+    }
+  ],
+  "files": {
+    "manifest": "engineering/packages/CONTENT-009/manifest.json",
+    "claudeEntrypoint": "engineering/packages/CONTENT-009/claude-engineering-package.md",
+    "architectureBrief": "engineering/packages/CONTENT-009/architecture-brief.md",
+    "validationPlan": "engineering/packages/CONTENT-009/validation-plan.md",
+    "auditChecklist": "engineering/packages/CONTENT-009/audit-checklist.md",
+    "releaseNotes": "engineering/packages/CONTENT-009/release-notes.md"
+  }
 }
