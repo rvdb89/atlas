@@ -181,6 +181,13 @@ export type RoadmapInitiative = {
   progress: number;
 };
 
+/** Sprint lifecycle — mirrors company-state's SprintLifecycle (see labels.ts:
+ * sprintLifecycleLabel/sprintLifecycleStatus). Kept as its own parallel type here rather than
+ * importing the internal company-state type directly, matching how ControlStatus already
+ * parallels EntityStatus elsewhere in this file — the view layer stays decoupled from the
+ * engine's internal types. */
+export type SprintLifecycle = "running" | "completed" | "blocked" | "waiting_approval";
+
 /** Active sprints across the company */
 export type ActiveSprint = {
   id: string;
@@ -189,6 +196,11 @@ export type ActiveSprint = {
   progress: number;
   status: ControlStatus;
   statusLabel: string;
+  /** CEO decision 2026-07-12 · Command Panel's "Current initiative" needs the real lifecycle
+   * (not just the mapped ControlStatus/statusLabel pair) to tell "Waiting approval" apart from
+   * "Blocked" apart from "Running" — see CommandPanel.tsx's describeCurrentInitiative /
+   * describeEmptyPlanStatus. */
+  lifecycle: SprintLifecycle;
 };
 
 /** Section 7 — Company Operations (departments) */

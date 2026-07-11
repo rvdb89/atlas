@@ -197,6 +197,7 @@ function mapSprint(sprint: CompanyState["sprints"][number]): ActiveSprint {
     progress: sprint.progress,
     status: sprint.status as ControlStatus,
     statusLabel: sprint.statusLabel,
+    lifecycle: sprint.lifecycle as ActiveSprint["lifecycle"],
   };
 }
 

@@ -25,7 +25,6 @@ import CockpitOpening from "./CockpitOpening";
 import CockpitSidebar, { type CockpitNavId } from "./CockpitSidebar";
 import CommandPanel from "./CommandPanel";
 import CompanyPortfolioV2 from "./CompanyPortfolioV2";
-import KpiStrip from "./KpiStrip";
 import LivePlanSectionV2 from "./LivePlanSectionV2";
 import ManagementTeamV2 from "./ManagementTeamV2";
 import MemorySectionV2 from "./MemorySectionV2";
@@ -100,11 +99,7 @@ export default function ControlScreenV2() {
     approveInbox,
     adjustInbox,
     deferInbox,
-    primaryCommandAction,
-    secondaryCommandAction,
   } = useControlDashboard();
-
-  const topPending = snapshot?.ceoInbox.find((item) => item.status === "pending");
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
@@ -152,7 +147,11 @@ export default function ControlScreenV2() {
                     onViewActivity={() => handleNavSelect("activity")}
                   />
 
-                  <KpiStrip snapshot={snapshot} />
+                  {/* CEO decision 2026-07-12 — KPI Strip removed from the primary Cockpit (not
+                      deleted, see KpiStrip.tsx itself: kept as an unused component pending a
+                      later, deliberate decision on Momentum/Risk/Capacity — see CEO_COCKPIT.md
+                      Amendementen v1.0.2). The underlying counts remain available in the
+                      existing detail sections further down this page. */}
 
                   <AiHeart companyHealth={snapshot.companyState.companyHealth} />
 
@@ -197,24 +196,14 @@ export default function ControlScreenV2() {
 
                   {!showCommandRail ? (
                     <View style={styles.sectionGap}>
-                      <CommandPanel
-                        snapshot={snapshot}
-                        onPrimary={primaryCommandAction}
-                        onSecondary={secondaryCommandAction}
-                        onApproveTop={topPending ? () => approveInbox(topPending.id) : undefined}
-                      />
+                      <CommandPanel snapshot={snapshot} />
                     </View>
                   ) : null}
                 </View>
 
                 {showCommandRail ? (
                   <View style={styles.commandColumn}>
-                    <CommandPanel
-                      snapshot={snapshot}
-                      onPrimary={primaryCommandAction}
-                      onSecondary={secondaryCommandAction}
-                      onApproveTop={topPending ? () => approveInbox(topPending.id) : undefined}
-                    />
+                    <CommandPanel snapshot={snapshot} />
                   </View>
                 ) : null}
               </View>

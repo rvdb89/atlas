@@ -38,16 +38,22 @@ export type OpeningVerdict = {
  * of scope to change this phase). All "needs attention" language stays gated on `hasEscalation`
  * (true only when `selectMostImportantInboxItem` actually found something) so the note can never
  * contradict "Needs You". When something is off internally but nothing has been escalated, that
- * is Atlas managing it on its own — the verdict stays calm instead of manufacturing urgency. */
+ * is Atlas managing it on its own — the verdict stays calm instead of manufacturing urgency.
+ *
+ * Bugfix 2026-07-12 (CEO-reported): this used to interpolate `companyName` (resolves to the
+ * literal string "Robbert AI", see mockCompanyModels.ts) as the grammatical subject — rendering
+ * "Robbert AI worked while you were away." CEO_COCKPIT.md never uses "Robbert AI" anywhere and
+ * chapter 5 itself frames the health judgment as being about "Atlas, as a whole" — so the CEO
+ * decision is that Atlas, not the company name, is always the narrating subject in the Cockpit's
+ * spoken text. `companyName` is no longer read here at all. */
 export function composeOpeningVerdict(
-  companyName: string,
   state: CompanyStateMeta,
   recent: RecentWorkSummary,
   hasEscalation: boolean,
 ): OpeningVerdict {
   const verdict = recent.hasActivity
-    ? `${companyName} worked while you were away.`
-    : `Everything at ${companyName} stayed steady while you were away.`;
+    ? "Atlas worked while you were away."
+    : "Atlas kept everything steady while you were away.";
 
   if (state.overallStatus === "blocked") {
     return {

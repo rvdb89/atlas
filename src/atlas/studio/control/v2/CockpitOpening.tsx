@@ -36,7 +36,7 @@ export default function CockpitOpening({ snapshot, onApprove, onViewInbox, onVie
   const topDecision = selectMostImportantInboxItem(snapshot.ceoInbox);
   const hasEscalation = topDecision !== undefined;
   const recent = summarizeRecentWork(snapshot.appliedHistory, snapshot.activity);
-  const opening = composeOpeningVerdict(snapshot.companyName, state, recent, hasEscalation);
+  const opening = composeOpeningVerdict(state, recent, hasEscalation);
   const headerStatus = describeHeaderStatus(state, hasEscalation);
   const tone = healthTone(state.companyHealth);
   const briefing = composeBriefing(snapshot.atlasAdvice, state);
@@ -54,7 +54,7 @@ export default function CockpitOpening({ snapshot, onApprove, onViewInbox, onVie
           Needs You says nothing needs the CEO — see bugfix note in cockpitOpeningHelpers.ts. */}
       <View style={styles.topRow}>
         <View style={styles.copy}>
-          <Text style={styles.eyebrow}>Robbert AI · CEO Cockpit</Text>
+          <Text style={styles.eyebrow}>Atlas · CEO Cockpit</Text>
           <Text style={styles.greeting}>{greeting}</Text>
           <Text style={styles.healthSentence}>{opening.verdict}</Text>
           {opening.note ? <Text style={styles.healthNote}>{opening.note}</Text> : null}
