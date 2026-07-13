@@ -21,6 +21,7 @@ export const ATLAS_STUDIO_NAV: StudioRouteItem[] = [
 
 /** Secondary routes — still available, not primary daily flow. */
 export const ATLAS_STUDIO_SECONDARY_NAV: StudioRouteItem[] = [
+  { id: "room", emoji: "◈", title: "The Room", route: "/room", description: "Prototype 1 · spatial Atlas" },
   { id: "ceo", emoji: "★", title: "CEO Workflow", route: "/studio/ceo-workflow", description: "Secondary · legacy release flow" },
   { id: "mission", emoji: "◉", title: "Mission Control", route: "/studio", description: "Secondary · OS widgets" },
   { id: "command", emoji: "⌘", title: "Command Center", route: "/studio/command-center", description: "Secondary · diagnostics cockpit" },
