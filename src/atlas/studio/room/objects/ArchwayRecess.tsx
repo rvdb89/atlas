@@ -1,5 +1,6 @@
-import { Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
+import RoomTouchable from "../RoomTouchable";
 import { ROOM_COLORS } from "../theme";
 
 /**
@@ -8,6 +9,10 @@ import { ROOM_COLORS } from "../theme";
  * wall plane; warm light visible deep inside when the company is active,
  * cool darkness when quiet. Fixed structure, one judgment-driven property
  * (the depth glow's intensity) — never a button, never a portal effect.
+ *
+ * Touch feedback is delegated entirely to `RoomTouchable` (Sprint 15) — the
+ * same reaction for the quiet doorway and the active one. `active` only
+ * ever changes the depth glow, never the touch response.
  */
 export default function ArchwayRecess({
   active,
@@ -17,14 +22,10 @@ export default function ArchwayRecess({
   onPress: () => void;
 }) {
   return (
-    <Pressable
+    <RoomTouchable
       onPress={onPress}
-      style={({ hovered, pressed }) => [
-        styles.hitArea,
-        (hovered || pressed) && styles.hitAreaActive,
-      ]}
-      accessibilityRole="button"
       accessibilityLabel="Company Doorway — Archway Recess"
+      hitStyle={styles.hitArea}
     >
       <View pointerEvents="none" style={styles.frame}>
         <View style={styles.depth}>
@@ -36,7 +37,7 @@ export default function ArchwayRecess({
           />
         </View>
       </View>
-    </Pressable>
+    </RoomTouchable>
   );
 }
 
@@ -44,10 +45,6 @@ const styles = StyleSheet.create({
   hitArea: {
     padding: 6,
     borderRadius: 14,
-  },
-
-  hitAreaActive: {
-    backgroundColor: "rgba(255, 255, 255, 0.04)",
   },
 
   frame: {

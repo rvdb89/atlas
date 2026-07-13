@@ -23,6 +23,12 @@ const PLACEHOLDER_MESSAGE: Record<RoomObjectId, string> = {
  * the first time. No new architecture, objects, behaviors or materialization
  * — every object here is the already-ratified object, now clickable. Every
  * click leads to a placeholder, never a finished destination, per the brief.
+ *
+ * Sprint 15 ("Living Room") added exactly two things on top, both purely
+ * about craftsmanship, never about meaning: `PlaceholderOverlay` is now
+ * always mounted and driven by `visible` so opening/closing is a Soft
+ * State Transition, and every clickable object now shares the same
+ * `RoomTouchable` reaction (see `motion.ts`, `RoomTouchable.tsx`).
  */
 export default function RoomScreen() {
   const insets = useSafeAreaInsets();
@@ -52,9 +58,11 @@ export default function RoomScreen() {
         <Text style={styles.exitLabel}>← Verlaat The Room</Text>
       </Pressable>
 
-      {placeholderMessage ? (
-        <PlaceholderOverlay message={placeholderMessage} onClose={handleClose} />
-      ) : null}
+      <PlaceholderOverlay
+        visible={activeObject !== null}
+        message={placeholderMessage}
+        onClose={handleClose}
+      />
     </View>
   );
 }

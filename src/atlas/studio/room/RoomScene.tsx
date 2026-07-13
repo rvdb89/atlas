@@ -1,10 +1,12 @@
-import { StyleSheet, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Animated, StyleSheet, View } from "react-native";
 
 import ArchwayRecess from "./objects/ArchwayRecess";
 import DepartmentWall from "./objects/DepartmentWall";
 import Heart from "./objects/Heart";
 import SmallHollow from "./objects/SmallHollow";
 import ThresholdStone from "./objects/ThresholdStone";
+import { ROOM_MOTION } from "./motion";
 import { ROOM_COLORS, ROOM_RADIUS } from "./theme";
 import type { RoomObjectId } from "./types";
 
@@ -14,15 +16,43 @@ import type { RoomObjectId } from "./types";
  * Roadmap Floor, Threshold Stone, Small Hollow, two Archway Recess,
  * Ambient Company Health. No redesign — this is the ratified composition,
  * translated into a real, navigable screen for the first time.
+ *
+ * Sprint 15 adds exactly one Soft State Transition here: the first
+ * entrance. The void (background) is present instantly; only the Room
+ * itself settles into place, using the one shared `ROOM_MOTION.TRANSITION`
+ * timing every other transition in The Room also uses.
  */
 export default function RoomScene({
   onSelect,
 }: {
   onSelect: (object: RoomObjectId) => void;
 }) {
+  const entrance = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(entrance, {
+      toValue: 1,
+      duration: ROOM_MOTION.TRANSITION.duration,
+      easing: ROOM_MOTION.TRANSITION.easing,
+      useNativeDriver: true,
+    }).start();
+  }, [entrance]);
+
+  const entranceStyle = {
+    opacity: entrance,
+    transform: [
+      {
+        scale: entrance.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.98, 1],
+        }),
+      },
+    ],
+  };
+
   return (
     <View style={styles.void}>
-      <View style={styles.stage}>
+      <Animated.View style={[styles.stage, entranceStyle]}>
         {/* Ambient Company Health — a property of the room's light, never
             an object with its own edge. */}
         <View pointerEvents="none" style={styles.ambientCore} />
@@ -44,7 +74,7 @@ export default function RoomScene({
             <SmallHollow onPress={() => onSelect("tools")} />
           </View>
         </View>
-      </View>
+      </Animated.View>
     </View>
   );
 }

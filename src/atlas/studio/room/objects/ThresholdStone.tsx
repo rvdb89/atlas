@@ -1,5 +1,6 @@
-import { Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
+import RoomTouchable from "../RoomTouchable";
 import { ROOM_COLORS } from "../theme";
 
 /**
@@ -8,22 +9,20 @@ import { ROOM_COLORS } from "../theme";
  * changes) plus one warmth intensity (the only expression of "something is
  * waiting"). Prototype 1 renders the resting state — dof, per Sprint 14's
  * composition — since there is no real inbox signal wired up yet.
+ *
+ * Touch feedback is delegated entirely to `RoomTouchable` (Sprint 15).
  */
 export default function ThresholdStone({ onPress }: { onPress: () => void }) {
   return (
-    <Pressable
+    <RoomTouchable
       onPress={onPress}
-      style={({ hovered, pressed }) => [
-        styles.hitArea,
-        (hovered || pressed) && styles.hitAreaActive,
-      ]}
-      accessibilityRole="button"
       accessibilityLabel="CEO Inbox — Threshold Stone"
+      hitStyle={styles.hitArea}
     >
       <View pointerEvents="none" style={styles.stone}>
         <View style={styles.seam} />
       </View>
-    </Pressable>
+    </RoomTouchable>
   );
 }
 
@@ -31,10 +30,6 @@ const styles = StyleSheet.create({
   hitArea: {
     padding: 8,
     borderRadius: 16,
-  },
-
-  hitAreaActive: {
-    backgroundColor: "rgba(0, 0, 0, 0.04)",
   },
 
   stone: {

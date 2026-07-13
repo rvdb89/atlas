@@ -2,7 +2,7 @@
 
 Dit document is de operationele waarheid van Atlas. Wanneer dit document afwijkt van een chatgesprek, is dit document leidend.
 
-**Laatst bijgewerkt:** 2026-07-13 (Atlas Build — Prototype 1, "The Room Becomes Software," completed and manually accepted door de CEO via `http://localhost:8081/room`)
+**Laatst bijgewerkt:** 2026-07-13 (Atlas Build — Sprint 15 "Living Room" officieel afgerond, completed and manually accepted door de CEO)
 
 ---
 
@@ -49,6 +49,15 @@ Atlas Build heeft wel een eigen mijlpaal opgeleverd: **Prototype 1 — "The Room
 
 **Prototype 1: completed and manually accepted.** Handmatig geopend en gecontroleerd door de CEO via `http://localhost:8081/room` — de route werkt en The Room is zichtbaar.
 
+**Sprint 15 — "Living Room": completed and manually accepted. Officieel afgerond.** Zelfde uitgangspunten als Prototype 1: geen ontwerp-sprint, geen nieuwe review tegen de foundation-documenten nodig. Doel was uitsluitend vakmanschap — The Room voor het eerst laten aanvoelen als afgewerkte software, zonder nieuwe objecten, architectuur, behaviors, betekeniskanalen of foundation-wijzigingen. Twee onderdelen, bewust als één geheel gebouwd:
+
+- **Soft State Transitions** zijn geïmplementeerd: de eerste binnenkomst in The Room en het openen/sluiten van elke placeholder gebruiken nu dezelfde zachte overgang in plaats van een instant snap.
+- **Living Room succesvol geïmplementeerd** — Alle bestaande interactieve objecten (Heart, Threshold Stone, Small Hollow, beide Archway Recesses) **gebruiken één uniforme interactietaal via `RoomTouchable.tsx`** — dezelfde reactie, dezelfde sterkte, voor elk object, via één gedeelde component in plaats van vijf losse implementaties.
+- **Centrale motion-architectuur (`motion.ts`) actief** — één plek voor de transitie-timing en één plek voor de touch-timing, geen los afgestelde waarden per component.
+- **Geen wijzigingen aan foundation, architectuur, objecten of behaviors.** De Rendering Law is expliciet nagelopen: de touch-reactie (schaal) en judgment (warmte) blijven twee volledig gescheiden kanalen die nooit met elkaar concurreren.
+
+Handmatig getest en goedgekeurd door de CEO. Sprint 16 start met een schone lei.
+
 ## Huidige ontwikkelfase
 
 Na Sprint 14 (Atlas Lab) is de kernobjecttaal en compositie van The Room volledig geratificeerd als Version 1. Atlas Build heeft daarop **Prototype 1** gebouwd: een werkende Expo Router/React Native-implementatie van exact die Room — geen redesign, geen nieuwe architectuur, objecten, behaviors of materialisatie. Alle vijf kernobjecten zijn zichtbaar. Klikbaar zijn: **Heart, Threshold Stone (CEO Inbox), Small Hollow (AI Tools) en beide Archway Recesses (Company Doorways)** — elk leidt naar een placeholder. Departments zijn zichtbaar maar bewust niet individueel navigeerbaar gemaakt — de brief vroeg daar niet om, dus is dat niet geïmproviseerd.
@@ -57,7 +66,7 @@ Na Sprint 14 (Atlas Lab) is de kernobjecttaal en compositie van The Room volledi
 
 **Nadrukkelijk een technisch prototype, geen high-fidelity eindontwerp.** Productiedata, definitieve interacties en visuele afwerking vallen buiten Prototype 1 — placeholders bevestigen uitsluitend dat de architectuur navigeerbaar is, niet wat er inhoudelijk achter elk object hoort te zitten.
 
-**Code:** `src/atlas/studio/room/` (`RoomScreen.tsx`, `RoomScene.tsx`, objectcomponenten onder `objects/`, `theme.ts` voor de vertaling van Polished Limestone/Ember naar concrete kleurwaarden). Route: `src/app/room.tsx`. Draait volledig lokaal binnen de bestaande Expo-app; geen nieuwe dependencies toegevoegd.
+**Code:** `src/atlas/studio/room/` (`RoomScreen.tsx`, `RoomScene.tsx`, objectcomponenten onder `objects/`, `theme.ts` voor de vertaling van Polished Limestone/Ember naar concrete kleurwaarden, plus sinds Sprint 15 `motion.ts` en `RoomTouchable.tsx`). Route: `src/app/room.tsx`. Draait volledig lokaal binnen de bestaande Expo-app; geen nieuwe dependencies toegevoegd.
 
 **Wat bewust dev-only is, geen Rendering Law-uitdrukking:** een subtiele hover-state op elk klikbaar object (expliciet toegestaan door de brief, alleen om interactie technisch aan te tonen) en een minimale "Verlaat The Room"-link linksboven (praktische uitgang uit het scherm, geen objecttaal).
 
@@ -83,4 +92,4 @@ Stone & Ember-richting, verfijnd tot **Polished Limestone** als officiële mater
 
 ## Eerstvolgende concrete bouwstap
 
-De eerstvolgende fase is **visuele en interactieve verfijning van The Room** — Prototype 1 bewijst dat de architectuur navigeerbaar is; wat er inhoudelijk achter elke placeholder komt (Heart-gesprek, echte CEO Inbox-inhoud, een echte Company-scene, AI Tools-routing) blijft daarbij nog buiten scope totdat de CEO die volgorde bepaalt.
+Sprint 15 is afgerond en geaccepteerd. De volgende sprint wordt gezamenlijk door het managementteam bepaald — nog niet ingevuld. Openstaande richtingen die al eerder zijn genoteerd: wat er inhoudelijk achter elke placeholder komt (Heart-gesprek, echte CEO Inbox-inhoud, een echte Company-scene, AI Tools-routing), en verdere verfijning van de nu bestaande motion-taal.

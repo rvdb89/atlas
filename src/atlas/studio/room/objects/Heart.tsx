@@ -1,5 +1,6 @@
-import { Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
+import RoomTouchable from "../RoomTouchable";
 import { ROOM_COLORS } from "../theme";
 
 /**
@@ -8,28 +9,23 @@ import { ROOM_COLORS } from "../theme";
  * flat-opacity circles of increasing size and decreasing intensity, never a
  * single hard-edged shape — there is no border to isolate it as an icon.
  *
- * The hover state below is a dev-only affordance (see `ATLAS_BACKLOG.md`
- * convention: not part of the Rendering Law, purely to make interaction
- * technically discoverable in Prototype 1).
+ * Touch feedback is delegated entirely to `RoomTouchable` (Sprint 15) —
+ * the same reaction every other object in The Room uses, never a Heart-
+ * specific one.
  */
 export default function Heart({ onPress }: { onPress: () => void }) {
   return (
-    <Pressable
+    <RoomTouchable
       onPress={onPress}
-      style={({ hovered, pressed }) => [
-        styles.hitArea,
-        // Dev-only hover/press affordance — not a Rendering Law expression.
-        (hovered || pressed) && styles.hitAreaActive,
-      ]}
-      accessibilityRole="button"
       accessibilityLabel="Heart — Atlas"
+      hitStyle={styles.hitArea}
     >
       <View pointerEvents="none" style={styles.wrap}>
         <View style={[styles.ring, styles.ringOuter]} />
         <View style={[styles.ring, styles.ringMid]} />
         <View style={[styles.ring, styles.ringCore]} />
       </View>
-    </Pressable>
+    </RoomTouchable>
   );
 }
 
@@ -41,14 +37,7 @@ const styles = StyleSheet.create({
   hitArea: {
     width: OUTER + 24,
     height: OUTER + 24,
-    alignItems: "center",
-    justifyContent: "center",
     borderRadius: 999,
-  },
-
-  hitAreaActive: {
-    // Subtle, purely functional — proves the object is reachable.
-    backgroundColor: "rgba(244, 182, 122, 0.06)",
   },
 
   wrap: {

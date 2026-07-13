@@ -1,5 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Pressable, StyleSheet, Text } from "react-native";
 
+import { ROOM_MOTION } from "./motion";
 import { ROOM_COLORS } from "./theme";
 
 /**
@@ -7,24 +9,69 @@ import { ROOM_COLORS } from "./theme";
  * this proves the architecture is navigable without inventing what any of
  * those destinations actually contain (`ATLAS BUILD — Prototype 1` brief,
  * §4–7). "Niet definitief."
+ *
+ * Sprint 15 ("Living Room"): this is now always mounted and controlled by
+ * `visible`, so opening and closing a placeholder is a Soft State
+ * Transition — the same shared `ROOM_MOTION.TRANSITION` timing as the
+ * Room's first entrance — instead of an instant mount/unmount. The last
+ * message stays on screen while it fades out so the exit animation never
+ * shows blank content.
  */
 export default function PlaceholderOverlay({
+  visible,
   message,
   onClose,
 }: {
-  message: string;
+  visible: boolean;
+  message: string | null;
   onClose: () => void;
 }) {
+  const progress = useRef(new Animated.Value(0)).current;
+  const [displayMessage, setDisplayMessage] = useState<string | null>(message);
+
+  useEffect(() => {
+    if (message) {
+      setDisplayMessage(message);
+    }
+  }, [message]);
+
+  useEffect(() => {
+    Animated.timing(progress, {
+      toValue: visible ? 1 : 0,
+      duration: ROOM_MOTION.TRANSITION.duration,
+      easing: ROOM_MOTION.TRANSITION.easing,
+      useNativeDriver: true,
+    }).start();
+  }, [visible, progress]);
+
   return (
-    <View style={styles.backdrop}>
+    <Animated.View
+      pointerEvents={visible ? "auto" : "none"}
+      style={[styles.backdrop, { opacity: progress }]}
+    >
       <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-      <View style={styles.card}>
-        <Text style={styles.message}>{message}</Text>
+      <Animated.View
+        style={[
+          styles.card,
+          {
+            opacity: progress,
+            transform: [
+              {
+                translateY: progress.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [12, 0],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
+        <Text style={styles.message}>{displayMessage}</Text>
         <Pressable style={styles.closeButton} onPress={onClose}>
           <Text style={styles.closeLabel}>Terug naar The Room</Text>
         </Pressable>
-      </View>
-    </View>
+      </Animated.View>
+    </Animated.View>
   );
 }
 

@@ -1,5 +1,6 @@
-import { Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
+import RoomTouchable from "../RoomTouchable";
 import { ROOM_COLORS } from "../theme";
 
 /**
@@ -7,22 +8,20 @@ import { ROOM_COLORS } from "../theme";
  * closed stone volume with exactly one small, dark aperture; warmth is only
  * visible when capacity is actually being used — never which tool.
  * Prototype 1 renders the resting state (dark aperture, no warmth).
+ *
+ * Touch feedback is delegated entirely to `RoomTouchable` (Sprint 15).
  */
 export default function SmallHollow({ onPress }: { onPress: () => void }) {
   return (
-    <Pressable
+    <RoomTouchable
       onPress={onPress}
-      style={({ hovered, pressed }) => [
-        styles.hitArea,
-        (hovered || pressed) && styles.hitAreaActive,
-      ]}
-      accessibilityRole="button"
       accessibilityLabel="AI Tools — Small Hollow"
+      hitStyle={styles.hitArea}
     >
       <View pointerEvents="none" style={styles.volume}>
         <View style={styles.aperture} />
       </View>
-    </Pressable>
+    </RoomTouchable>
   );
 }
 
@@ -30,10 +29,6 @@ const styles = StyleSheet.create({
   hitArea: {
     padding: 8,
     borderRadius: 16,
-  },
-
-  hitAreaActive: {
-    backgroundColor: "rgba(0, 0, 0, 0.04)",
   },
 
   volume: {
