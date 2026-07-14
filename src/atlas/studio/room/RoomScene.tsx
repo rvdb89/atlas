@@ -8,6 +8,7 @@ import SmallHollow from "./objects/SmallHollow";
 import ThresholdStone from "./objects/ThresholdStone";
 import { ROOM_MOTION } from "./motion";
 import { ROOM_COLORS, ROOM_RADIUS } from "./theme";
+import { useRoomTransition } from "./useRoomTransition";
 import type { RoomObjectId } from "./types";
 
 /**
@@ -21,10 +22,28 @@ import type { RoomObjectId } from "./types";
  * entrance. The void (background) is present instantly; only the Room
  * itself settles into place, using the one shared `ROOM_MOTION.TRANSITION`
  * timing every other transition in The Room also uses.
+ *
+ * Sprint 18 ("The Awakening") makes `approached` visible as one uniform
+ * state change, not an overlay: a subtle whole-stage scale, a mild
+ * recession of everything that isn't the Heart, and three bounded glow
+ * circles around the Heart (`presenceLight`) — no color change on the
+ * Heart itself, no new objects, no text. This is the v2 correction: the
+ * first version's edge-to-edge vignette produced visible rectangular
+ * bands (a flat-rectangle-with-no-falloff artifact); replaced here with
+ * the same layered-circle technique already proven safe by the Heart's
+ * own rendering.
+ *
+ * Sprint 19 ("Spatial Presence") and Sprint 20 ("The Room Receives
+ * Light") each explored a different mechanism for this same moment.
+ * Manual review found this v2 result more legible than either — neither
+ * was ratified, and both have been reverted. This file is deliberately
+ * back to the version that worked.
  */
 export default function RoomScene({
+  approached,
   onSelect,
 }: {
+  approached: boolean;
   onSelect: (object: RoomObjectId) => void;
 }) {
   const entrance = useRef(new Animated.Value(0)).current;
@@ -38,42 +57,82 @@ export default function RoomScene({
     }).start();
   }, [entrance]);
 
-  const entranceStyle = {
+  const approachProgress = useRoomTransition(approached);
+
+  // One combined scale factor — the first-entrance settle and the
+  // approach-state scale are two different causes, but the Heart's own
+  // frame only has one `transform`, so they're multiplied into a single
+  // animated value rather than one silently overwriting the other.
+  const stageStyle = {
     opacity: entrance,
     transform: [
       {
-        scale: entrance.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0.98, 1],
-        }),
+        scale: Animated.multiply(
+          entrance.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0.98, 1],
+          }),
+          approachProgress.interpolate({
+            inputRange: [0, 1],
+            outputRange: [1, ROOM_MOTION.APPROACH.scale],
+          }),
+        ),
       },
     ],
   };
 
+  // Everything that isn't the Heart recedes slightly — never disappears,
+  // never darkens to black, just a mild give of attention.
+  const peripheryStyle = {
+    opacity: approachProgress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [1, ROOM_MOTION.APPROACH.peripheryOpacity],
+    }),
+  };
+
+  // Three bounded glow circles fading in around the Heart — bounded
+  // meaning finite, faded shapes, never an edge-to-edge wash or vignette.
+  const presenceLightStyle = {
+    opacity: approachProgress,
+  };
+
   return (
     <View style={styles.void}>
-      <Animated.View style={[styles.stage, entranceStyle]}>
+      <Animated.View style={[styles.stage, stageStyle]}>
         {/* Ambient Company Health — a property of the room's light, never
-            an object with its own edge. */}
+            an object with its own edge, never touched by approach-state. */}
         <View pointerEvents="none" style={styles.ambientCore} />
         <View pointerEvents="none" style={styles.ambientWarm} />
 
-        <View style={styles.wallLevel}>
+        <Animated.View style={[styles.wallLevel, peripheryStyle]}>
           <ArchwayRecess active={false} onPress={() => onSelect("doorway-left")} />
           <DepartmentWall />
           <ArchwayRecess active onPress={() => onSelect("doorway-right")} />
-        </View>
+        </Animated.View>
+
+        {/* The Awakening (Sprint 18 v2) — three bounded, layered glow
+            circles centered on the Heart, fading in with approach-state.
+            Same flat-opacity-circle technique the Heart itself uses; never
+            a gradient, never a hard-edged rectangle. */}
+        <Animated.View
+          pointerEvents="none"
+          style={[styles.presenceLight, presenceLightStyle]}
+        >
+          <View style={[styles.glowRing, styles.glowOuter]} />
+          <View style={[styles.glowRing, styles.glowMid]} />
+          <View style={[styles.glowRing, styles.glowInner]} />
+        </Animated.View>
 
         <View style={styles.heartLevel} pointerEvents="box-none">
           <Heart onPress={() => onSelect("heart")} />
         </View>
 
-        <View style={styles.floorLevel}>
+        <Animated.View style={[styles.floorLevel, peripheryStyle]}>
           <View style={styles.floor}>
             <ThresholdStone onPress={() => onSelect("inbox")} />
             <SmallHollow onPress={() => onSelect("tools")} />
           </View>
-        </View>
+        </Animated.View>
       </Animated.View>
     </View>
   );
@@ -110,6 +169,39 @@ const styles = StyleSheet.create({
     height: "55%",
     borderRadius: 999,
     backgroundColor: ROOM_COLORS.ambientWarm,
+  },
+
+  presenceLight: {
+    position: "absolute",
+    top: "30%",
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  glowRing: {
+    position: "absolute",
+    borderRadius: 999,
+    backgroundColor: ROOM_COLORS.emberWarm,
+  },
+
+  glowOuter: {
+    width: 260,
+    height: 260,
+    opacity: ROOM_MOTION.APPROACH.glow.outer,
+  },
+
+  glowMid: {
+    width: 180,
+    height: 180,
+    opacity: ROOM_MOTION.APPROACH.glow.mid,
+  },
+
+  glowInner: {
+    width: 120,
+    height: 120,
+    opacity: ROOM_MOTION.APPROACH.glow.inner,
   },
 
   wallLevel: {

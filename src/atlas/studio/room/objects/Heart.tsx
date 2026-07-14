@@ -19,6 +19,7 @@ export default function Heart({ onPress }: { onPress: () => void }) {
       onPress={onPress}
       accessibilityLabel="Heart — Atlas"
       hitStyle={styles.hitArea}
+      focusRadius={999}
     >
       <View pointerEvents="none" style={styles.wrap}>
         <View style={[styles.ring, styles.ringOuter]} />

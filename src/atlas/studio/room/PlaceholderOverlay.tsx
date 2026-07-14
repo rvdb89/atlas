@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text } from "react-native";
 
-import { ROOM_MOTION } from "./motion";
 import { ROOM_COLORS } from "./theme";
+import { useRoomTransition } from "./useRoomTransition";
 
 /**
  * Prototype 1 navigation placeholder. Every object leads somewhere real —
@@ -10,12 +10,14 @@ import { ROOM_COLORS } from "./theme";
  * those destinations actually contain (`ATLAS BUILD — Prototype 1` brief,
  * §4–7). "Niet definitief."
  *
- * Sprint 15 ("Living Room"): this is now always mounted and controlled by
- * `visible`, so opening and closing a placeholder is a Soft State
- * Transition — the same shared `ROOM_MOTION.TRANSITION` timing as the
- * Room's first entrance — instead of an instant mount/unmount. The last
- * message stays on screen while it fades out so the exit animation never
- * shows blank content.
+ * Sprint 15 ("Living Room"): always mounted and controlled by `visible`,
+ * so opening and closing is a Soft State Transition instead of an instant
+ * mount/unmount. The last message stays on screen while it fades out so
+ * the exit animation never shows blank content.
+ *
+ * Sprint 17: still used for CEO Inbox, AI Tools and both Company Doorways
+ * — the Heart now opens `ConversationSpace` instead, which is purpose-built
+ * rather than a generic message card.
  */
 export default function PlaceholderOverlay({
   visible,
@@ -26,7 +28,7 @@ export default function PlaceholderOverlay({
   message: string | null;
   onClose: () => void;
 }) {
-  const progress = useRef(new Animated.Value(0)).current;
+  const progress = useRoomTransition(visible);
   const [displayMessage, setDisplayMessage] = useState<string | null>(message);
 
   useEffect(() => {
@@ -34,15 +36,6 @@ export default function PlaceholderOverlay({
       setDisplayMessage(message);
     }
   }, [message]);
-
-  useEffect(() => {
-    Animated.timing(progress, {
-      toValue: visible ? 1 : 0,
-      duration: ROOM_MOTION.TRANSITION.duration,
-      easing: ROOM_MOTION.TRANSITION.easing,
-      useNativeDriver: true,
-    }).start();
-  }, [visible, progress]);
 
   return (
     <Animated.View
@@ -78,7 +71,7 @@ export default function PlaceholderOverlay({
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: "rgba(33, 29, 24, 0.72)",
+    backgroundColor: ROOM_COLORS.backdrop,
     alignItems: "center",
     justifyContent: "center",
     padding: 24,

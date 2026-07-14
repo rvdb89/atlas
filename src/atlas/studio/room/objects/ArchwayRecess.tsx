@@ -26,6 +26,7 @@ export default function ArchwayRecess({
       onPress={onPress}
       accessibilityLabel="Company Doorway — Archway Recess"
       hitStyle={styles.hitArea}
+      focusRadius={14}
     >
       <View pointerEvents="none" style={styles.frame}>
         <View style={styles.depth}>

@@ -87,3 +87,23 @@ Onderzoeken of, en hoe, het moment waarop de CEO Atlas aanspreekt ooit ruimtelij
 Sprint 10 ("The First Attention") onderzocht dit binnen de bestaande, bevroren Room en vond geen bestaand kanaal waarvan de vastgelegde bron "CEO-aandacht" is: hart, departments, Company Health, CEO Inbox, AI Tools en Company Doorways hebben elk al een andere, eigen bron. Eén studie (een marginaal diepere framing/vignettering, niet gekoppeld aan enig object) raakte daarnaast een onopgeloste vraag: valt een renderconditie die uitsluitend de aandacht van de CEO zelf uitdrukt — niet Atlas' oordeel — binnen de jurisdictie van de Rendering Law, of daarbuiten? Dat is een fundamentele vraag, geen implementatiedetail, en is hier bewust niet beantwoord.
 
 Dit verandert de huidige ontwerpbeslissingen niet. De Room blijft ongewijzigd zoals vastgelegd in Sprint 7–9.
+
+### The Earned First Word
+
+**Categorie:** Atlas Lab / Relationship
+
+Tijdens Sprint 16 ontstond een nieuwe fundamentele ontwerpvraag. Atlas vraagt nooit om vertrouwen. Vertrouwen wordt verdiend. Daaruit volgt mogelijk een nieuw principe: "Het eerste woord van Atlas moet óók verdiend worden."
+
+**Onderzoeksvraag:** Wanneer verdient Atlas het recht om als eerste tegen een CEO te spreken?
+
+Dit gaat nadrukkelijk niet over de eerste ontmoeting. Het gaat over de ontwikkeling van de relatie tussen CEO en Atlas over langere tijd.
+
+Mogelijke onderzoeksvragen:
+- Welke signalen tonen aan dat vertrouwen is opgebouwd?
+- Wanneer verandert stilte in een eerlijke begroeting?
+- Wie bepaalt dat?
+- Mag Atlas dat zelf concluderen?
+- Kan dat recht ook weer verloren gaan?
+- Hoe verhoudt dit zich tot de Constitution en het Relationship Model?
+
+**Status:** Geparkeerd voor Atlas Lab. Niet openen tijdens Atlas Build tenzij Robbert daar expliciet om vraagt.

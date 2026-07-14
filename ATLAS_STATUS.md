@@ -2,7 +2,7 @@
 
 Dit document is de operationele waarheid van Atlas. Wanneer dit document afwijkt van een chatgesprek, is dit document leidend.
 
-**Laatst bijgewerkt:** 2026-07-13 (Atlas Build — Sprint 15 "Living Room" officieel afgerond, completed and manually accepted door de CEO)
+**Laatst bijgewerkt:** 2026-07-14 (Atlas Build — Sprint 18 "The Awakening" accepted and manually verified door de CEO)
 
 ---
 
@@ -58,6 +58,20 @@ Atlas Build heeft wel een eigen mijlpaal opgeleverd: **Prototype 1 — "The Room
 
 Handmatig getest en goedgekeurd door de CEO. Sprint 16 start met een schone lei.
 
+**Sprint 18 — "The Awakening": accepted and manually verified.** Activeren van het Heart verandert nu een toestand van The Room zelf (`approached`) in plaats van een overlay te openen — géén "Atlas wordt wakker/luistert nu"-taal, het Heart zelf verandert niet. Huidige, geaccepteerde implementatie:
+
+- **Subtiele stage-schaal** — de hele scène schaalt licht op bij approach (`ROOM_MOTION.APPROACH.scale`, gecombineerd met de bestaande entrance-schaal in één transform-kanaal).
+- **Mild terugtreden van de periferie** — Department Wall/Archway Recesses en de vloer (Threshold Stone, Small Hollow) verliezen bij approach een klein deel van hun opaciteit (`peripheryOpacity`), nooit naar zwart.
+- **Drie begrensde presence-light-cirkels** rond het Heart (`presenceLight`) — dezelfde gelaagde flat-opacity-techniek als het Heart zelf gebruikt, geen gradient, geen vignette-balken.
+
+Twee eerdere pogingen zijn onderweg beproefd en niet behouden: **Sprint 19 ("Spatial Presence")**, dat het Heart zelf liet schalen/verschuiven, en **Sprint 20 ("The Room Receives Light")**, dat één uniforme room-wide lichtlaag introduceerde. Handmatige review vond de herstelde Sprint 18 v2-uitvoering leesbaarder dan beide alternatieven; geen van beide is geratificeerd, beide zijn volledig teruggedraaid uit de code.
+
+Tijdens het herstel werd een echte layoutregressie gevonden en gefixt: `wallLevel` was genest in een extra, hoogteloze `Animated.View`, waardoor de `height: "46%"` niet meer resolveerde en de vloerlaag het Heart deels overschilderde. Minimale fix toegepast (`peripheryStyle` direct samengevoegd op `styles.wallLevel`, consistent met hoe `floorLevel` al werkte).
+
+**Nieuwe managementregel (vanaf nu geldig binnen Atlas Build):** maximaal twee gerichte iteraties op één visueel detail; daarna wordt geaccepteerd of teruggedraaid. Geen derde parameter-tuning zonder expliciet CEO-besluit. Vooruitgang weegt zwaarder dan theoretische perfectie.
+
+Volgende sprint: nog te bepalen.
+
 ## Huidige ontwikkelfase
 
 Na Sprint 14 (Atlas Lab) is de kernobjecttaal en compositie van The Room volledig geratificeerd als Version 1. Atlas Build heeft daarop **Prototype 1** gebouwd: een werkende Expo Router/React Native-implementatie van exact die Room — geen redesign, geen nieuwe architectuur, objecten, behaviors of materialisatie. Alle vijf kernobjecten zijn zichtbaar. Klikbaar zijn: **Heart, Threshold Stone (CEO Inbox), Small Hollow (AI Tools) en beide Archway Recesses (Company Doorways)** — elk leidt naar een placeholder. Departments zijn zichtbaar maar bewust niet individueel navigeerbaar gemaakt — de brief vroeg daar niet om, dus is dat niet geïmproviseerd.
@@ -92,4 +106,4 @@ Stone & Ember-richting, verfijnd tot **Polished Limestone** als officiële mater
 
 ## Eerstvolgende concrete bouwstap
 
-Sprint 15 is afgerond en geaccepteerd. De volgende sprint wordt gezamenlijk door het managementteam bepaald — nog niet ingevuld. Openstaande richtingen die al eerder zijn genoteerd: wat er inhoudelijk achter elke placeholder komt (Heart-gesprek, echte CEO Inbox-inhoud, een echte Company-scene, AI Tools-routing), en verdere verfijning van de nu bestaande motion-taal.
+Sprint 15 en Sprint 18 ("The Awakening") zijn afgerond en geaccepteerd. De volgende sprint wordt gezamenlijk door het managementteam bepaald — nog niet ingevuld. Openstaande richtingen die al eerder zijn genoteerd: wat er inhoudelijk achter elke placeholder komt (Heart-gesprek, echte CEO Inbox-inhoud, een echte Company-scene, AI Tools-routing), en verdere verfijning van de nu bestaande motion-taal. Vanaf nu geldt daarbij de managementregel: maximaal twee gerichte iteraties per visueel detail, daarna acceptatie of rollback.

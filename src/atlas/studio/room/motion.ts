@@ -22,6 +22,25 @@ import { Easing } from "react-native";
  * warmth, or any judgment value — that is what keeps both firmly outside
  * the Rendering Law's jurisdiction (see the Sprint 15 verification note in
  * `ATLAS_SPRINT_LOG.md`).
+ *
+ * - `APPROACH` governs the state change when the CEO approaches the
+ *   Heart (Sprint 18, "The Awakening"). This is the v2 correction values:
+ *   a subtle whole-stage scale (`scale`), a mild recession of everything
+ *   that isn't the Heart (`peripheryOpacity`), and three bounded glow
+ *   circles around the Heart (`glow`), reusing the Heart's own proven
+ *   layered-circle technique at room scale rather than a gradient or a
+ *   flat-rectangle vignette (the v1 attempt, which produced visible
+ *   rectangular bands — see the Sprint 18 v2 note in `ATLAS_SPRINT_LOG.md`).
+ *   `approached` uses the same `useRoomTransition`/`ROOM_MOTION.TRANSITION`
+ *   timing every other state change in The Room uses — deliberately not a
+ *   separate stopwatch.
+ *
+ *   Sprint 19 ("Spatial Presence") and Sprint 20 ("The Room Receives
+ *   Light") each tried a different mechanism here — depth-parallax on the
+ *   Heart itself, then a uniform room-wide light wash. Manual review found
+ *   both less legible than this v2 result. Neither was ratified; both have
+ *   been reverted. This is the version review confirmed clearly worked,
+ *   restored deliberately in place of further parameter tuning.
  */
 export const ROOM_MOTION = {
   TRANSITION: {
@@ -32,5 +51,14 @@ export const ROOM_MOTION = {
     duration: 140,
     easing: Easing.out(Easing.quad),
     scale: 1.015,
+  },
+  APPROACH: {
+    scale: 1.02,
+    peripheryOpacity: 0.82,
+    glow: {
+      outer: 0.05,
+      mid: 0.08,
+      inner: 0.12,
+    },
   },
 } as const;

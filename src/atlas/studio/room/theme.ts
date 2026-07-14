@@ -39,6 +39,12 @@ export const ROOM_COLORS = {
   // Company Health — same ember light, read as ambient field.
   ambientWarm: "rgba(234, 140, 70, 0.14)",
   ambientCore: "rgba(244, 182, 122, 0.10)",
+
+  // Shared overlay backdrop — one value, reused by every overlay in The
+  // Room (generic placeholder, Conversation Space) so darkening the room
+  // behind an open object never drifts into a second, slightly different
+  // shade per component.
+  backdrop: "rgba(33, 29, 24, 0.72)",
 } as const;
 
 export const ROOM_RADIUS = {
