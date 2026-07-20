@@ -70,7 +70,9 @@ export type CompanyAgentState = {
   workload: WorkloadLevel;
   currentInitiative: string;
   currentResponsibility: string;
-  department: DepartmentId;
+  /** Sprint 2.2a · null for an agent with no ratified department (currently only
+   * branch-director). Mirrors AgentModel.department — see its comment for why. */
+  department: DepartmentId | null;
 };
 
 export type CompanyDepartmentState = {

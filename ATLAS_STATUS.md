@@ -2,7 +2,7 @@
 
 Dit document is de operationele waarheid van Atlas. Wanneer dit document afwijkt van een chatgesprek, is dit document leidend.
 
-**Laatst bijgewerkt:** 2026-07-14 (Atlas Build — Sprint 18 "The Awakening" accepted and manually verified door de CEO)
+**Laatst bijgewerkt:** 2026-07-15 (Atlas Lab-onderzoek "Eerste principe" afgesloten; Atlas Build focust opnieuw op één bedrijf)
 
 ---
 
@@ -106,4 +106,6 @@ Stone & Ember-richting, verfijnd tot **Polished Limestone** als officiële mater
 
 ## Eerstvolgende concrete bouwstap
 
-Sprint 15 en Sprint 18 ("The Awakening") zijn afgerond en geaccepteerd. De volgende sprint wordt gezamenlijk door het managementteam bepaald — nog niet ingevuld. Openstaande richtingen die al eerder zijn genoteerd: wat er inhoudelijk achter elke placeholder komt (Heart-gesprek, echte CEO Inbox-inhoud, een echte Company-scene, AI Tools-routing), en verdere verfijning van de nu bestaande motion-taal. Vanaf nu geldt daarbij de managementregel: maximaal twee gerichte iteraties per visueel detail, daarna acceptatie of rollback.
+Sprint 15 en Sprint 18 ("The Awakening") zijn afgerond en geaccepteerd. Sprint 21/22 (meerdere Companies, Company Identity) zijn niet geaccepteerd en niet doorgezet naar Build; het bijbehorende Atlas Lab-onderzoek liep door tot en met de notitie "Eerste principe" (`ATLAS_SPRINT_LOG.md`) en is daar afgesloten, zonder foundation-wijziging of nieuw Build-besluit.
+
+Atlas Build focust daarom opnieuw op één bedrijf, niet op meerdere Companies tegelijk. De volgende open bouwbeslissing luidt: **"Welke echte of gesimuleerde bedrijfsstaat laten we als eerste zichtbaar doorwerken in The Room?"** — nog niet ingevuld. De eerder genoteerde managementregel blijft van kracht: maximaal twee gerichte iteraties per visueel detail, daarna acceptatie of rollback.

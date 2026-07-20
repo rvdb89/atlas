@@ -190,3 +190,59 @@ export type AgentResult<T> = {
   output: T;
   warnings: string[];
 };
+
+/**
+ * Sprint 1.2 — Anna & Yara. The six existing pipeline capabilities that the Publishing Pipeline
+ * can report lifecycle events for. Deliberately a plain, local union (not imported from
+ * plugin/types.ts's CoreAgentId) to avoid a circular import between this file and plugin/
+ * types.ts, and because this list is intentionally narrower — it excludes "branch-director",
+ * which the pipeline never calls as a capability. Mirrors the same precedent already set by
+ * TeamIdentityResolver.ts's EXISTING_ID_TO_TEAM_IDENTITY table (Sprint 1.1), which also stays
+ * decoupled from CoreAgentId on purpose.
+ */
+export type PublishingCapabilityId =
+  | "copywriter"
+  | "visual-designer"
+  | "fact-checker"
+  | "link-engine"
+  | "translator"
+  | "domain-validator";
+
+/** Shared fields on every capability lifecycle event the Publishing Pipeline reports. */
+export type CapabilityLifecycleEvent = {
+  capabilityId: PublishingCapabilityId;
+  /** Caller-supplied reference to the work item this event is about — e.g. a mission+article
+   * key. Optional: callers that don't need attribution (e.g. the studio/demo path, which does
+   * not pass an attributionReporter in this sprint) never need to construct one. */
+  workItemRef?: string;
+  occurredAt: string;
+};
+
+export type CapabilityConfirmedEvent = CapabilityLifecycleEvent & {
+  description: string;
+};
+
+export type CapabilityFailedEvent = CapabilityLifecycleEvent & {
+  reason: string;
+};
+
+/**
+ * Sprint 1.2 — Anna & Yara. The Publishing Pipeline's only knowledge of "attribution": a small,
+ * generic callback contract with no knowledge of Executive Memory or TeamAttribution. Every
+ * method is optional; a caller that doesn't pass a reporter (or a reporter that omits a method)
+ * gets a silent no-op. The pipeline calls these three methods and nothing else — what happens
+ * next (if anything) is entirely the implementer's decision. See
+ * src/atlas/team/PublishingAttributionReporter.ts for the concrete implementation that bridges
+ * this contract to TeamAttribution + Executive Memory.
+ */
+export interface TeamAttributionReporter {
+  /** Called right before a capability's underlying AI call is dispatched. Note: TeamAttribution
+   * (Sprint 1.1) only ever persists "confirmed"/"failed" — there is deliberately no "started"
+   * status in Executive Memory, so implementers are not expected to persist this event. */
+  onCapabilityStarted?(event: CapabilityLifecycleEvent): void | Promise<void>;
+  /** Called after a capability's underlying AI call returns normally (no thrown error). */
+  onCapabilityConfirmed?(event: CapabilityConfirmedEvent): void | Promise<void>;
+  /** Called when a capability's underlying AI call throws. Never suppresses or replaces the
+   * original error — the pipeline always rethrows it unchanged after reporting. */
+  onCapabilityFailed?(event: CapabilityFailedEvent): void | Promise<void>;
+}

@@ -5,12 +5,17 @@ import { mapPublishingTask, resolveWriteTask } from "@/atlas/ai/tasks/publishing
 import type { CopywriterOutput } from "../agents/coreAgents";
 import type {
   BulkGenerationRequest,
+  CapabilityConfirmedEvent,
+  CapabilityFailedEvent,
+  CapabilityLifecycleEvent,
   GenerationBrief,
   LinkGraph,
   PipelineStage,
   PublicationDraft,
+  PublishingCapabilityId,
   QualityReport,
   ReviewStatus,
+  TeamAttributionReporter,
   TranslationBundle,
   VisualAssetBrief,
 } from "../types";
@@ -31,7 +36,63 @@ export type PublishingPipelineOptions = {
   skipLinking?: boolean;
   skipDomainValidation?: boolean;
   skipQualityScoring?: boolean;
+  // Sprint 1.2 — Anna & Yara. Purely observational: the pipeline never imports Executive Memory
+  // or TeamAttribution (see src/atlas/publishing/types.ts's TeamAttributionReporter doc comment).
+  // Omitting these two fields reproduces today's exact behavior — no reporting, no side effects.
+  attributionReporter?: TeamAttributionReporter;
+  /** Caller-supplied reference to the work item this pipeline run is about (e.g. a mission +
+   * article key) — passed through unchanged on every reported event's workItemRef field. */
+  workItemRef?: string;
 };
+
+/**
+ * Sprint 1.2 — Anna & Yara. Wraps a single capability's real AI-call work (`run`) with
+ * onCapabilityStarted/onCapabilityConfirmed/onCapabilityFailed reporting, entirely via the
+ * generic TeamAttributionReporter contract. Never changes control flow: `run()`'s return value
+ * is passed through unchanged on success, and any thrown error is reported then rethrown
+ * unchanged — from the caller's perspective this is indistinguishable from calling `run()`
+ * directly, except that (if a reporter is present) three extra, side-effecting notifications
+ * fire around it.
+ */
+async function withCapabilityAttribution<T>(
+  capabilityId: PublishingCapabilityId,
+  reporter: TeamAttributionReporter | undefined,
+  workItemRef: string | undefined,
+  description: string,
+  run: () => Promise<T>,
+): Promise<T> {
+  if (!reporter) {
+    return run();
+  }
+
+  const startedEvent: CapabilityLifecycleEvent = {
+    capabilityId,
+    workItemRef,
+    occurredAt: new Date().toISOString(),
+  };
+  await reporter.onCapabilityStarted?.(startedEvent);
+
+  try {
+    const result = await run();
+    const confirmedEvent: CapabilityConfirmedEvent = {
+      capabilityId,
+      workItemRef,
+      occurredAt: new Date().toISOString(),
+      description,
+    };
+    await reporter.onCapabilityConfirmed?.(confirmedEvent);
+    return result;
+  } catch (error) {
+    const failedEvent: CapabilityFailedEvent = {
+      capabilityId,
+      workItemRef,
+      occurredAt: new Date().toISOString(),
+      reason: error instanceof Error ? error.message : String(error),
+    };
+    await reporter.onCapabilityFailed?.(failedEvent);
+    throw error;
+  }
+}
 
 function createDraftId(): string {
   return `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -101,19 +162,26 @@ export async function runPublishingPipeline(
   }
 
   draft = withStage(draft, "copywriting", options);
-  const copyExecution = await executeTask<CopywriterOutput>({
-    task: resolveWriteTask(brief.contentType),
-    payload: { brief },
-    agentId: "copywriter",
-    moduleId,
-    skipCache: true,
-    // The strict top-level-field check (title/subtitle/slug/seoTitle/seoDescription/
-    // contentPayload) has repeatedly rejected real responses outright, throwing before this
-    // function ever sees what the model actually returned — impossible to diagnose blind.
-    // Skip that gate here and degrade gracefully instead (generic brief-derived fallbacks
-    // below): a partial draft callers can inspect and reject beats an opaque thrown error.
-    skipValidation: true,
-  });
+  const copyExecution = await withCapabilityAttribution(
+    "copywriter",
+    options?.attributionReporter,
+    options?.workItemRef,
+    "copywriting",
+    () =>
+      executeTask<CopywriterOutput>({
+        task: resolveWriteTask(brief.contentType),
+        payload: { brief },
+        agentId: "copywriter",
+        moduleId,
+        skipCache: true,
+        // The strict top-level-field check (title/subtitle/slug/seoTitle/seoDescription/
+        // contentPayload) has repeatedly rejected real responses outright, throwing before this
+        // function ever sees what the model actually returned — impossible to diagnose blind.
+        // Skip that gate here and degrade gracefully instead (generic brief-derived fallbacks
+        // below): a partial draft callers can inspect and reject beats an opaque thrown error.
+        skipValidation: true,
+      }),
+  );
   const copyOutput = copyExecution.output ?? ({} as Partial<CopywriterOutput>);
   const fallbackSlug = (brief.slugHint ?? brief.topic)
     .toLowerCase()
@@ -155,19 +223,26 @@ export async function runPublishingPipeline(
 
   if (!options?.skipVisuals) {
     draft = withStage(draft, "visual_design", options);
-    const visualExecution = await executeTask<VisualAssetBrief[]>({
-      task: mapPublishingTask("visual_design"),
-      payload: {
-        brief,
-        title: draft.title,
-        slug: draft.slug,
-        contentType: brief.contentType,
-      },
-      agentId: "visual-designer",
-      moduleId,
-      skipCache: true,
-      skipValidation: true,
-    });
+    const visualExecution = await withCapabilityAttribution(
+      "visual-designer",
+      options?.attributionReporter,
+      options?.workItemRef,
+      "visual_design",
+      () =>
+        executeTask<VisualAssetBrief[]>({
+          task: mapPublishingTask("visual_design"),
+          payload: {
+            brief,
+            title: draft.title,
+            slug: draft.slug,
+            contentType: brief.contentType,
+          },
+          agentId: "visual-designer",
+          moduleId,
+          skipCache: true,
+          skipValidation: true,
+        }),
+    );
     const visuals = Array.isArray(visualExecution.output) ? visualExecution.output : [];
     draft = { ...draft, visuals };
     draft = appendLog(draft, `${formatTaskExecutionLog(visualExecution)} · ${visuals.length} visuals`);
@@ -175,56 +250,71 @@ export async function runPublishingPipeline(
 
   if (!options?.skipFactCheck) {
     draft = withStage(draft, "fact_checking", options);
-    const proofExecution = await executeTask<QualityReport>({
-      task: mapPublishingTask("fact_checking"),
-      payload: { draft },
-      agentId: "fact-checker",
-      moduleId,
-      skipCache: true,
-      skipValidation: true,
-    });
-    if (proofExecution.output) {
-      draft = { ...draft, qualityReport: proofExecution.output };
-      draft = appendLog(
-        draft,
-        `${formatTaskExecutionLog(proofExecution)} · score ${proofExecution.output.score}/100`,
-      );
-    }
+    await withCapabilityAttribution(
+      "fact-checker",
+      options?.attributionReporter,
+      options?.workItemRef,
+      "fact_checking",
+      async () => {
+        const proofExecution = await executeTask<QualityReport>({
+          task: mapPublishingTask("fact_checking"),
+          payload: { draft },
+          agentId: "fact-checker",
+          moduleId,
+          skipCache: true,
+          skipValidation: true,
+        });
+        if (proofExecution.output) {
+          draft = { ...draft, qualityReport: proofExecution.output };
+          draft = appendLog(
+            draft,
+            `${formatTaskExecutionLog(proofExecution)} · score ${proofExecution.output.score}/100`,
+          );
+        }
 
-    await executeTask({
-      task: mapPublishingTask("scientific_validation"),
-      payload: { draft },
-      agentId: "fact-checker",
-      moduleId,
-      skipCache: true,
-      skipValidation: true,
-    });
+        await executeTask({
+          task: mapPublishingTask("scientific_validation"),
+          payload: { draft },
+          agentId: "fact-checker",
+          moduleId,
+          skipCache: true,
+          skipValidation: true,
+        });
 
-    await executeTask({
-      task: mapPublishingTask("seo"),
-      payload: { draft },
-      agentId: "fact-checker",
-      moduleId,
-      skipCache: true,
-      skipValidation: true,
-    });
+        await executeTask({
+          task: mapPublishingTask("seo"),
+          payload: { draft },
+          agentId: "fact-checker",
+          moduleId,
+          skipCache: true,
+          skipValidation: true,
+        });
+      },
+    );
   }
 
   if (!options?.skipLinking) {
     draft = withStage(draft, "linking", options);
-    const linkExecution = await executeTask<LinkGraph>({
-      task: mapPublishingTask("internal_linking"),
-      payload: {
-        slug: draft.slug,
-        title: draft.title,
-        tags: draft.seo.tags,
-        categoryId: brief.categoryId,
-      },
-      agentId: "link-engine",
-      moduleId,
-      skipCache: true,
-      skipValidation: true,
-    });
+    const linkExecution = await withCapabilityAttribution(
+      "link-engine",
+      options?.attributionReporter,
+      options?.workItemRef,
+      "linking",
+      () =>
+        executeTask<LinkGraph>({
+          task: mapPublishingTask("internal_linking"),
+          payload: {
+            slug: draft.slug,
+            title: draft.title,
+            tags: draft.seo.tags,
+            categoryId: brief.categoryId,
+          },
+          agentId: "link-engine",
+          moduleId,
+          skipCache: true,
+          skipValidation: true,
+        }),
+    );
     const nodes = Array.isArray(linkExecution.output?.nodes) ? linkExecution.output.nodes : [];
     draft = { ...draft, linkGraph: { nodes, generatedAt: new Date().toISOString() } };
 
@@ -236,29 +326,45 @@ export async function runPublishingPipeline(
   }
 
   if (!options?.skipTranslations) {
-    const lingoExecution = await executeTask<TranslationBundle>({
-      task: mapPublishingTask("translation"),
-      payload: {
-        draft,
-        targetLocales: defaultTranslationTargets(),
-      },
-      agentId: "translator",
-      moduleId,
-    });
+    // Note: unlike the other stages, translation does not call withStage() — a pre-existing gap
+    // (no "translation" pipelineStage exists in PipelineStage), left untouched in this sprint.
+    const lingoExecution = await withCapabilityAttribution(
+      "translator",
+      options?.attributionReporter,
+      options?.workItemRef,
+      "translation",
+      () =>
+        executeTask<TranslationBundle>({
+          task: mapPublishingTask("translation"),
+          payload: {
+            draft,
+            targetLocales: defaultTranslationTargets(),
+          },
+          agentId: "translator",
+          moduleId,
+        }),
+    );
     draft = { ...draft, translations: lingoExecution.output };
     draft = appendLog(draft, `${formatTaskExecutionLog(lingoExecution)} · translations ready`);
   }
 
   if (!options?.skipDomainValidation) {
     draft = withStage(draft, "domain_validation", options);
-    const validationExecution = await executeTask<DomainValidationReport>({
-      task: mapPublishingTask("domain_validation"),
-      payload: { draft },
-      agentId: "domain-validator",
-      moduleId,
-      skipCache: true,
-      skipValidation: true,
-    });
+    const validationExecution = await withCapabilityAttribution(
+      "domain-validator",
+      options?.attributionReporter,
+      options?.workItemRef,
+      "domain_validation",
+      () =>
+        executeTask<DomainValidationReport>({
+          task: mapPublishingTask("domain_validation"),
+          payload: { draft },
+          agentId: "domain-validator",
+          moduleId,
+          skipCache: true,
+          skipValidation: true,
+        }),
+    );
     if (validationExecution.output) {
       draft = { ...draft, validationReport: validationExecution.output };
       draft = appendLog(

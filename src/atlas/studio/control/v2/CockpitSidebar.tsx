@@ -12,6 +12,7 @@ export type CockpitNavId =
   | "bugs"
   | "memory"
   | "activity"
+  | "atlas"
   | "settings";
 
 const NAV_ITEMS: Array<{ id: CockpitNavId; label: string; icon: string }> = [
@@ -23,6 +24,10 @@ const NAV_ITEMS: Array<{ id: CockpitNavId; label: string; icon: string }> = [
   { id: "roadmap", label: "Roadmap", icon: "▣" },
   { id: "bugs", label: "Bugs", icon: "⚠" },
   { id: "memory", label: "Memory", icon: "◉" },
+  // Navigation Alignment · exposes the existing, already-working /atlas route (The Room) —
+  // placed last before Settings, matching how routes.ts already treats it as a secondary
+  // destination, not a primary daily-flow section.
+  { id: "atlas", label: "Atlas", icon: "◈" },
   { id: "settings", label: "Settings", icon: "⚙" },
 ];
 

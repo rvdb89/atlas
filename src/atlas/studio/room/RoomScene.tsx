@@ -1,15 +1,17 @@
 import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
 
+import CompanyInterior from "./CompanyInterior";
 import ArchwayRecess from "./objects/ArchwayRecess";
 import DepartmentWall from "./objects/DepartmentWall";
 import Heart from "./objects/Heart";
 import SmallHollow from "./objects/SmallHollow";
 import ThresholdStone from "./objects/ThresholdStone";
 import { ROOM_MOTION } from "./motion";
+import type { DoorwayPresence } from "./roomData";
 import { ROOM_COLORS, ROOM_RADIUS } from "./theme";
 import { useRoomTransition } from "./useRoomTransition";
-import type { RoomObjectId } from "./types";
+import type { DepartmentSpec, DoorwayId, RoomObjectId } from "./types";
 
 /**
  * The Room — first-person composition, Version 1 (`ATLAS_SPRINT_LOG.md`,
@@ -38,24 +40,108 @@ import type { RoomObjectId } from "./types";
  * Manual review found this v2 result more legible than either — neither
  * was ratified, and both have been reverted. This file is deliberately
  * back to the version that worked.
+ *
+ * Sprint 21 ("First Company") adds one more state, the same way: entering
+ * a Company Doorway does not open a screen or a new route — it cross-fades
+ * this same stage from the Room composition to `CompanyInterior`, both
+ * living inside the one shared `stage` frame. No teleport, no hard cut:
+ * the Room content recedes and grows slightly (as if passing by) while the
+ * Company content arrives from a slightly wider frame into full view — the
+ * same flat-opacity/scale technique every other state change in The Room
+ * already uses, just applied to two whole compositions instead of one
+ * object.
+ *
+ * Same-day correction: Atlas may never disappear from any part of the
+ * world (`ATLAS_IDENTITY_CONSTITUTION.md` ch.1–3, `ATLAS_VISUAL_PRINCIPLES.md`
+ * §2 — the Heart is a point of contact, not a container Atlas lives in).
+ * `presenceLightStyle` and `peripheryStyle` are computed once, here, and
+ * passed to `CompanyInterior` as-is, so the Heart it renders shares the
+ * exact same Awakening animation as the Heart in the Room — never a second,
+ * independently-tuned copy of the same idea.
+ *
+ * Sprint 22 ("Company Identity") passes `enteredCompany` straight through
+ * to `CompanyInterior` as `doorway`, so it can tell the two doorways apart.
+ * `RoomScene` itself makes no identity decisions — it only tells
+ * `CompanyInterior` which door was used; the actual composition
+ * differences live entirely in `CompanyInterior`.
+ *
+ * Sprint 4.2 ("Capability Migration 03 — Company Interior") also passes the
+ * same `doorwayPresence` already threaded to the two Room-level Archway
+ * Recesses above straight through to `CompanyInterior` — the identical
+ * object, not a copy. `CompanyInterior`'s own hardcoded per-doorway
+ * `COMPANY_IDENTITY` table is gone; it now derives everything it shows from
+ * this one real, shared value, the same one its own doorway already
+ * rendered on the wall a moment ago.
+ *
+ * Sprint 23 correction ("The Room unfolds"): manual review of "First
+ * Truth" found the real problem was never Operations — it was that every
+ * piece of company state (departments, their warmth, the floor objects,
+ * Ambient Company Health) was already visible before the CEO had
+ * activated anything. An opacity-based reveal was tried first and
+ * rejected on manual test: a barely-there object is still a rendered
+ * object. The ratified fix is a direct boolean coupling instead — the
+ * whole company/business layer (Ambient Company Health, both Archway
+ * Recesses, Department Wall, Threshold Stone, Small Hollow) mounts only
+ * when `approached` is true, and does not exist in the render tree at all
+ * before it. It is gated as one group per layout region (never one child
+ * conditional at a time inside a shared row), so nothing partially
+ * appears and shifts a `space-between` layout mid-transition. The Heart,
+ * the stage scale, the Awakening glow, and the Room's own architecture
+ * (walls, floor material, the Archways' carved openings) stay outside
+ * this layer entirely and never reference `approached` here.
  */
 export default function RoomScene({
   approached,
+  enteredCompany,
+  departments,
+  ceoFocusWarmth,
+  heartVitality,
+  doorwayPresence,
+  readyToEnter,
   onSelect,
+  onExitCompany,
 }: {
   approached: boolean;
+  enteredCompany: DoorwayId | null;
+  /** Sprint 2.2 — Atlas Control's own real departments, already mapped to Department Wall's
+   * shape by `roomData.ts`. RoomScene makes no data decisions of its own; it only threads
+   * this through to the one object that renders it. */
+  departments: DepartmentSpec[];
+  /** Sprint 2.2 — the single 0–1 warmth value Threshold Stone needs (see `roomData.ts`'s
+   * `selectCeoFocus()`). RoomScene does not know what it means, only where it goes. */
+  ceoFocusWarmth: number;
+  /** Sprint 4.2 — the Heart's one variable property (see `roomData.ts`'s
+   * `deriveHeartVitality()`). Threaded to both Heart instances below (the Room's own, and
+   * the one `CompanyInterior` renders) — same point of contact, same value, never two. */
+  heartVitality: number;
+  /** Sprint 4.2.2 ("Company Doorway Completion") — each Archway Recess's one real, graduated
+   * warmth value (0–1, see `roomData.ts`'s `mapCompanyDoorways()`). RoomScene still makes no
+   * data decisions — it only replaces the two literals it used to hardcode with these two
+   * real, stable-identity-bound ones. */
+  doorwayPresence: DoorwayPresence;
+  /** Sprint 4.3 ("Room Entry Experience") — `false` while the Executive Briefing is still
+   * showing, `true` once the CEO has dismissed it. The entrance effect below now waits on
+   * this instead of firing unconditionally on mount, so "Atlas greets you" finishes as its
+   * own beat before "you enter The Room" begins as the next one — the same
+   * `ROOM_MOTION.TRANSITION` timing and easing as always, only re-triggered on a later,
+   * more deliberate condition. */
+  readyToEnter: boolean;
   onSelect: (object: RoomObjectId) => void;
+  onExitCompany: () => void;
 }) {
   const entrance = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    if (!readyToEnter) {
+      return;
+    }
     Animated.timing(entrance, {
       toValue: 1,
       duration: ROOM_MOTION.TRANSITION.duration,
       easing: ROOM_MOTION.TRANSITION.easing,
       useNativeDriver: true,
     }).start();
-  }, [entrance]);
+  }, [entrance, readyToEnter]);
 
   const approachProgress = useRoomTransition(approached);
 
@@ -96,42 +182,120 @@ export default function RoomScene({
     opacity: approachProgress,
   };
 
+  // Sprint 21 — one cross-fade between the two whole compositions that can
+  // occupy the same stage. Room content recedes and grows slightly, as if
+  // passing by; Company content arrives from a slightly wider frame into
+  // full view. One shared transition, one shared timing, applied to a
+  // whole scene instead of one object — never a hard cut.
+  const companyProgress = useRoomTransition(enteredCompany !== null);
+
+  const roomContentStyle = {
+    opacity: companyProgress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [1, 0],
+    }),
+    transform: [
+      {
+        scale: companyProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [1, 1.05],
+        }),
+      },
+    ],
+  };
+
+  const companyContentStyle = {
+    opacity: companyProgress,
+    transform: [
+      {
+        scale: companyProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.95, 1],
+        }),
+      },
+    ],
+  };
+
   return (
     <View style={styles.void}>
       <Animated.View style={[styles.stage, stageStyle]}>
-        {/* Ambient Company Health — a property of the room's light, never
-            an object with its own edge, never touched by approach-state. */}
-        <View pointerEvents="none" style={styles.ambientCore} />
-        <View pointerEvents="none" style={styles.ambientWarm} />
-
-        <Animated.View style={[styles.wallLevel, peripheryStyle]}>
-          <ArchwayRecess active={false} onPress={() => onSelect("doorway-left")} />
-          <DepartmentWall />
-          <ArchwayRecess active onPress={() => onSelect("doorway-right")} />
-        </Animated.View>
-
-        {/* The Awakening (Sprint 18 v2) — three bounded, layered glow
-            circles centered on the Heart, fading in with approach-state.
-            Same flat-opacity-circle technique the Heart itself uses; never
-            a gradient, never a hard-edged rectangle. */}
         <Animated.View
-          pointerEvents="none"
-          style={[styles.presenceLight, presenceLightStyle]}
+          pointerEvents={enteredCompany ? "none" : "box-none"}
+          style={[styles.contentLayer, roomContentStyle]}
         >
-          <View style={[styles.glowRing, styles.glowOuter]} />
-          <View style={[styles.glowRing, styles.glowMid]} />
-          <View style={[styles.glowRing, styles.glowInner]} />
+          {/* Sprint 23 correction, boolean-mount form: the whole company
+              layer is coupled directly to `approached` — not to an
+              animated opacity. Before Awakening none of it exists in the
+              tree; after, all of it mounts together. Split across three
+              JSX positions only because each region has its own RN parent
+              (the absolute-fill ambient layer, the `wallLevel` row, the
+              `floor` row) — every occurrence below tests the exact same
+              `approached` boolean in the same render pass, so they always
+              mount/unmount together as one atomic group, never staggered
+              per child (that staggering, with only the left Archway
+              conditional inside `wallLevel`, is what previously shifted
+              Department Wall in the `space-between` row). */}
+          {approached && (
+            <>
+              <View pointerEvents="none" style={styles.ambientCore} />
+              <View pointerEvents="none" style={styles.ambientWarm} />
+            </>
+          )}
+
+          <View style={styles.wallLevel}>
+            {approached && (
+              <>
+                <ArchwayRecess warmth={doorwayPresence.left} onPress={() => onSelect("doorway-left")} />
+                <DepartmentWall departments={departments} />
+                <ArchwayRecess warmth={doorwayPresence.right} onPress={() => onSelect("doorway-right")} />
+              </>
+            )}
+          </View>
+
+          {/* The Awakening (Sprint 18 v2) glow — outside the company layer,
+              untouched: always mounted, its own existing
+              `presenceLightStyle` animation and timing. */}
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.presenceLight, presenceLightStyle]}
+          >
+            <View style={[styles.glowRing, styles.glowOuter]} />
+            <View style={[styles.glowRing, styles.glowMid]} />
+            <View style={[styles.glowRing, styles.glowInner]} />
+          </Animated.View>
+
+          <View style={styles.heartLevel} pointerEvents="box-none">
+            <Heart onPress={() => onSelect("heart")} vitality={heartVitality} />
+          </View>
+
+          {/* Floor material (`floorLevel`) is architecture and stays
+              mounted; the objects on it are the company layer. */}
+          <View style={styles.floorLevel}>
+            <View style={styles.floor}>
+              {approached && (
+                <>
+                  <ThresholdStone onPress={() => onSelect("inbox")} warmth={ceoFocusWarmth} />
+                  <SmallHollow onPress={() => onSelect("tools")} />
+                </>
+              )}
+            </View>
+          </View>
         </Animated.View>
 
-        <View style={styles.heartLevel} pointerEvents="box-none">
-          <Heart onPress={() => onSelect("heart")} />
-        </View>
-
-        <Animated.View style={[styles.floorLevel, peripheryStyle]}>
-          <View style={styles.floor}>
-            <ThresholdStone onPress={() => onSelect("inbox")} />
-            <SmallHollow onPress={() => onSelect("tools")} />
-          </View>
+        {/* First Company (Sprint 21) — unchanged. */}
+        <Animated.View
+          pointerEvents={enteredCompany ? "box-none" : "none"}
+          style={[styles.contentLayer, companyContentStyle]}
+        >
+          <CompanyInterior
+            doorway={enteredCompany}
+            onExit={onExitCompany}
+            onSelectHeart={() => onSelect("heart")}
+            presenceLightStyle={presenceLightStyle}
+            peripheryStyle={peripheryStyle}
+            heartVitality={heartVitality}
+            doorwayPresence={doorwayPresence}
+          />
         </Animated.View>
       </Animated.View>
     </View>
@@ -154,6 +318,10 @@ const styles = StyleSheet.create({
     borderRadius: ROOM_RADIUS.stage,
     overflow: "hidden",
     backgroundColor: ROOM_COLORS.wallBase,
+  },
+
+  contentLayer: {
+    ...StyleSheet.absoluteFill,
   },
 
   ambientCore: {

@@ -5,7 +5,7 @@ import { bootstrapAtlas } from "@/atlas/bootstrap";
 import { isAnthropicConfigured } from "@/atlas/config/env";
 import { updatePlanStepByKind } from "@/atlas/brain/planner";
 import { runPublishingPipeline } from "@/atlas/publishing/pipeline/PublishingPipeline";
-import type { ContentType, PublicationDraft } from "@/atlas/publishing/types";
+import type { ContentType, PublicationDraft, TeamAttributionReporter } from "@/atlas/publishing/types";
 import type {
   KnowledgeBiteCategoryId,
   KnowledgeBiteSection,
@@ -533,7 +533,13 @@ function removeStubEntries(
   return { content, removedCount };
 }
 
-export async function runContentGenerationEngine(missionIdInput: string): Promise<ExecutionEngineResult> {
+export async function runContentGenerationEngine(
+  missionIdInput: string,
+  // Sprint 1.2 — Anna & Yara. Optional and additive: omitting this reproduces today's exact
+  // behavior (no attribution reporting). See src/atlas/team/PublishingAttributionReporter.ts
+  // for the concrete implementation atlas-runtime.ts passes in.
+  attributionReporter?: TeamAttributionReporter,
+): Promise<ExecutionEngineResult> {
   const missionId = missionIdInput.trim().toUpperCase();
   const config = CONTENT_MISSIONS[missionId];
 
@@ -587,6 +593,9 @@ export async function runContentGenerationEngine(missionIdInput: string): Promis
           skipLinking: true,
           skipDomainValidation: true,
           skipQualityScoring: true,
+          // Sprint 1.2 — Anna & Yara: purely observational, no effect on which stages run.
+          attributionReporter,
+          workItemRef: `${missionId}:${article.slug}`,
         },
       );
 

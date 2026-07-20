@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import type { ControlSnapshot } from "../types";
 import GlassCard from "./GlassCard";
 import StatusPill from "./StatusPill";
-import { V2 } from "./v2Theme";
+import { V2, type V2Tone } from "./v2Theme";
 
 type MemorySectionV2Props = {
   snapshot: ControlSnapshot;
@@ -20,32 +20,37 @@ function formatMemoryUpdatedAt(iso: string): string {
   });
 }
 
+/** Sprint 2.2a note — Department Source-of-Truth Alignment: "memory" used to be one of four
+ * hardcoded pseudo-departments `buildRealDepartments()` appended unconditionally (alongside
+ * "engineering"/"product"/"intelligence"), none of which corresponded to a ratified department
+ * or a real team's operational agents. That fake department is gone — the four ratified
+ * departments are engineering/publishing/customer-contact/signal-research (@/atlas/team/
+ * department.types), and Memory is not one of them; it never was a department with its own
+ * agents, only a health signal that happened to be dressed up as one. This section already had
+ * a second, independent, genuinely real memory data source (`snapshot.memory`, unchanged by
+ * Sprint 2.2a) sitting right below the old fake-department block — the two were showing the same
+ * underlying status text twice. `statusFromMemoryHealth` below reproduces the old computed
+ * department's exact health-tier thresholds so this pill's behavior is unchanged; only its
+ * source (a real memory model, not a fake department) is. */
+function statusFromMemoryHealth(health: number): { label: string; tone: V2Tone } {
+  if (health >= 90) return { label: "Healthy", tone: "success" };
+  if (health >= 70) return { label: "Active", tone: "success" };
+  if (health >= 50) return { label: "Attention", tone: "warning" };
+  return { label: "Idle", tone: "danger" };
+}
+
 export default function MemorySectionV2({ snapshot }: MemorySectionV2Props) {
-  const memoryDept = snapshot.operations.find((op) => op.department === "memory");
-  // CEO decision 2026-07-12 — "memory" is guaranteed to be present in snapshot.operations by
-  // both data sources: mockCompanyModels.ts's hardcoded department list, and
-  // buildRealDepartments() in scripts/atlas/realCompanyData.ts (unconditional "computed" entry,
-  // independent of agent data). The old `?? "Attention"` / `?? "Memory upgrade proposal"`
-  // fallbacks were unreachable dead code that would have silently shown a fictional status if
-  // that invariant ever broke. Failing loudly here instead.
-  if (!memoryDept) {
-    throw new Error(
-      "MemorySectionV2: 'memory' department is missing from snapshot.operations. This is " +
-        "guaranteed to exist by mockCompanyModels.ts (mock path) and buildRealDepartments() in " +
-        "scripts/atlas/realCompanyData.ts (live runtime path) — if this fires, that invariant has " +
-        "been broken.",
-    );
-  }
   const memory = snapshot.memory;
+  const memoryStatus = statusFromMemoryHealth(memory.health);
   const lastUpdatedLabel = memory.lastUpdated ? new Date(memory.lastUpdated).toLocaleString() : "No entries yet";
 
   return (
     <GlassCard title="Memory" subtitle="Company knowledge and recall systems" badge="Live">
       <View style={styles.row}>
         <View style={styles.block}>
-          <Text style={styles.label}>Department status</Text>
-          <StatusPill label={memoryDept.statusLabel} tone="warning" />
-          <Text style={styles.focus}>{memoryDept.currentFocus}</Text>
+          <Text style={styles.label}>Memory status</Text>
+          <StatusPill label={memoryStatus.label} tone={memoryStatus.tone} />
+          <Text style={styles.focus}>{memory.statusLabel}</Text>
         </View>
         <View style={styles.block}>
           <Text style={styles.label}>BRAIN-002 Memory Engine</Text>

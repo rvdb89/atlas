@@ -41,6 +41,16 @@ import { Easing } from "react-native";
  *   both less legible than this v2 result. Neither was ratified; both have
  *   been reverted. This is the version review confirmed clearly worked,
  *   restored deliberately in place of further parameter tuning.
+ *
+ * - `REVEAL` governs Sprint 23's correction ("The Room unfolds"). Before
+ *   the CEO activates the Heart, everything that represents actual company
+ *   state — departments, their warmth, the floor objects, Ambient Company
+ *   Health — sits at this one, single, barely-there opacity, never at 0
+ *   (nothing is unmounted or deleted, so nothing needs a separate entrance
+ *   later). The Heart and the Room's own architecture are exempt and never
+ *   reference this constant. `dormant` is the only number; everything it
+ *   gates shares the same `approachProgress` interpolation
+ *   (`dormant → 1`), so there is exactly one reveal, not one per object.
  */
 export const ROOM_MOTION = {
   TRANSITION: {
@@ -60,5 +70,8 @@ export const ROOM_MOTION = {
       mid: 0.08,
       inner: 0.12,
     },
+  },
+  REVEAL: {
+    dormant: 0.06,
   },
 } as const;

@@ -145,7 +145,11 @@ export function ManagementTeamSection({ snapshot }: SnapshotProps) {
           <View key={member.id} style={styles.managementRow}>
             <View style={styles.managementCopy}>
               <Text style={styles.managementTitle}>{member.title}</Text>
-              <Text style={styles.managementDept}>{DEPARTMENT_LABELS[member.department]}</Text>
+              {/* Sprint 2.2a · member.department is null for the Branch Director — Atlas' own
+                  reasoning identity, not a department member. */}
+              <Text style={styles.managementDept}>
+                {member.department ? DEPARTMENT_LABELS[member.department] : "Atlas Core"}
+              </Text>
               <Text style={styles.managementResp}>{member.currentResponsibility}</Text>
               <Text style={styles.managementInit}>Initiative · {member.currentInitiative}</Text>
             </View>

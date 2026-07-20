@@ -44,7 +44,8 @@ type RuntimeAgentEntry = {
   id: string;
   name: string;
   role: string;
-  department: string;
+  /** Sprint 2.2a · ratified department id, or null (currently only branch-director). */
+  department: string | null;
   status: "active" | "idle";
   health: number;
   currentInitiative: string;
@@ -543,7 +544,7 @@ function mapRuntimeAgent(agent: RuntimeAgentEntry): AgentModel {
     workload: (agent.status === "active" ? "balanced" : "light") as WorkloadLevel,
     currentInitiative: agent.currentInitiative,
     currentResponsibility: agent.currentResponsibility,
-    department: agent.department as DepartmentId,
+    department: agent.department as DepartmentId | null,
   };
 }
 

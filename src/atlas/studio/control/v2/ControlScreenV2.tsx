@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 
 import { APP_URL } from "@/atlas/config/ports";
 
+import { CEO_SURFACE_ROUTES } from "../../ceoSurface";
 import { useStudioBootstrap } from "../../hooks/useStudioBootstrap";
 import { openAppTab, openOrLaunchApp } from "../appLauncher";
 import { useControlDashboard } from "../useControlDashboard";
@@ -33,6 +34,13 @@ import { V2 } from "./v2Theme";
 
 export type AppLaunchStatus = "idle" | "checking" | "starting" | "timeout" | "bridge-unreachable" | "popup-blocked";
 
+/**
+ * ADR-001 (`ATLAS_ARCHITECTURE_DECISIONS.md`, Sprint 4.1) — this screen is the
+ * transitional Atlas Control surface. The Room (`RoomScreen.tsx`, `CEO_SURFACE_ROUTES.canonical`)
+ * is the canonical CEO-facing Atlas surface going forward. Existing capability here migrates
+ * into spatial Room destinations per the ADR's migration map (Sprint 4.2+) — no new
+ * CEO-facing capability should be added exclusively to this screen.
+ */
 export default function ControlScreenV2() {
   useStudioBootstrap();
   const insets = useSafeAreaInsets();
@@ -81,6 +89,15 @@ export default function ControlScreenV2() {
 
     if (id === "settings") {
       router.push("/studio/settings");
+      return;
+    }
+
+    // Navigation Alignment · The Room is a separate screen, not an in-page section — same
+    // pattern as "settings" above, the one other nav item that navigates away instead of
+    // scrolling. Route comes from CEO_SURFACE_ROUTES (ADR-001) rather than a literal, so the
+    // canonical destination has exactly one source of truth.
+    if (id === "atlas") {
+      router.push(CEO_SURFACE_ROUTES.canonical);
       return;
     }
 

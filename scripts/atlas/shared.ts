@@ -78,6 +78,14 @@ export function resolveAtlasStudioLaunchRoute(session?: {
 
 export const ROOT_DIR = process.cwd();
 
+// Sprint 1.3 — Tom (Engineering): moved here (from atlas-runtime.ts) so a separate, short-lived
+// CLI process (scripts/atlas-apply.ts) can open its own SqlitePersistenceAdapter pointed at the
+// exact same on-disk database file, without importing atlas-runtime.ts itself — that module
+// runs `main()` unconditionally at import time (starts the full always-on runtime), so
+// importing it from a one-shot CLI would be a serious, unintended behavior change. shared.ts
+// has no such side effect, so this is the safe common home for the constant.
+export const EXECUTIVE_MEMORY_DB_FILE = join(ROOT_DIR, "reports", "executive-memory", "executive-memory.db");
+
 export type StatusLevel = "ok" | "warning" | "error";
 
 export function printBanner(): void {

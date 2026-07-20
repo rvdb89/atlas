@@ -8,6 +8,8 @@
  * navigable in Prototype 1 — the brief does not ask for that, so it is not
  * invented here.
  */
+import type { RatifiedDepartmentId } from "@/atlas/team/department.types";
+
 export type RoomObjectId =
   | "heart"
   | "inbox"
@@ -15,7 +17,24 @@ export type RoomObjectId =
   | "doorway-left"
   | "doorway-right";
 
-export type DepartmentId = "engineering" | "sales" | "finance" | "operations";
+/**
+ * The two Company Doorways, narrowed from `RoomObjectId` — Sprint 21
+ * ("First Company"). Not a new object type: the same two ids the Archway
+ * Recess objects already used, just named so `enteredCompany` state can be
+ * typed precisely.
+ */
+export type DoorwayId = Extract<RoomObjectId, "doorway-left" | "doorway-right">;
+
+/** Sprint 2.2a · alias of the one canonical department model — see
+ * `@/atlas/team/department.types`'s `RatifiedDepartmentId`. Sprint 2.2 had widened this to a
+ * plain `string` because the department source was still an open-ended, unratified set; now
+ * that Sprint 2.2a makes Atlas Control's own `DepartmentOperation[]` always exactly the four
+ * ratified departments, The Room can (and should) consume that same closed type directly
+ * instead of a permissive `string` — this is a type-only tightening, not a new mapping: The
+ * Room still contains no organization logic of its own, it only narrows what it accepts from
+ * `src/atlas/studio/control/types.ts`. The Wall's own `space-between` layout already
+ * generalizes to any number of departments without further changes. */
+export type DepartmentId = RatifiedDepartmentId;
 
 export type DepartmentState = "calm" | "elevated";
 

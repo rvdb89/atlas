@@ -1,6 +1,19 @@
 /** Atlas Control — CEO Operating System information architecture (CONTROL-005). */
 
-export type ControlStatus = "healthy" | "attention" | "critical" | "idle" | "active" | "pending" | "planning";
+import type { RatifiedDepartmentId } from "@/atlas/team/department.types";
+
+/** Sprint 2.2a adds "no-signal" — mirrors company-state's EntityStatus (see its comment). An
+ * honest state for an entity (currently: a department) with no real operational signal to
+ * derive a status from. Never assigned merely to fill a UI slot. */
+export type ControlStatus =
+  | "healthy"
+  | "attention"
+  | "critical"
+  | "idle"
+  | "active"
+  | "pending"
+  | "planning"
+  | "no-signal";
 
 export type ManagementStatus = "active" | "idle" | "blocked" | "waiting";
 
@@ -22,17 +35,10 @@ export type KpiStatus = "healthy" | "attention" | "critical";
 
 export type WorkloadLevel = "light" | "balanced" | "heavy" | "overloaded";
 
-export type DepartmentId =
-  | "engineering"
-  | "operations"
-  | "marketing"
-  | "design"
-  | "product"
-  | "intelligence"
-  | "memory"
-  | "quality"
-  | "planning"
-  | "research";
+/** Sprint 2.2a · alias of the one canonical department model — see
+ * `@/atlas/team/department.types`'s `RatifiedDepartmentId`. Kept as a local name for the same
+ * reason `businessModels.types.ts` does — one value set, defined once, imported twice. */
+export type DepartmentId = RatifiedDepartmentId;
 
 export type InboxCategory =
   | "sprint_approval"
@@ -152,7 +158,9 @@ export type ManagementMember = {
   id: string;
   name: string;
   title: string;
-  department: DepartmentId;
+  /** Sprint 2.2a · null for a member with no ratified department — currently only the
+   * Branch Director, Atlas' own reasoning identity, not a department member. */
+  department: DepartmentId | null;
   status: ManagementStatus;
   currentResponsibility: string;
   currentInitiative: string;
@@ -394,15 +402,9 @@ export const URGENCY_LABELS: Record<InboxUrgency, string> = {
 
 export const DEPARTMENT_LABELS: Record<DepartmentId, string> = {
   engineering: "Engineering",
-  operations: "Operations",
-  marketing: "Marketing",
-  design: "Design",
-  product: "Product",
-  intelligence: "Intelligence",
-  memory: "Memory",
-  quality: "Quality",
-  planning: "Planning",
-  research: "Research",
+  publishing: "Publishing",
+  "customer-contact": "Customer Contact",
+  "signal-research": "Signal & Research",
 };
 
 export const ACTIVITY_TYPE_LABELS: Record<ActivityEventType, string> = {

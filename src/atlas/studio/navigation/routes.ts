@@ -6,7 +6,14 @@ export type StudioRouteItem = {
   description: string;
 };
 
-/** Primary Atlas Control navigation — daily command center first. */
+/**
+ * Primary Atlas Control navigation — daily command center first.
+ *
+ * ADR-001 (`ATLAS_ARCHITECTURE_DECISIONS.md`, Sprint 4.1): "Atlas Control" (`/studio/control`,
+ * `id: "control"`) is the transitional CEO surface, not the canonical one — see
+ * `src/atlas/studio/ceoSurface.ts`. This array is left structurally unchanged by that
+ * decision; only the meaning of the "control" entry is now explicit.
+ */
 export const ATLAS_STUDIO_NAV: StudioRouteItem[] = [
   { id: "control", emoji: "◆", title: "Atlas Control", route: "/studio/control", description: "CEO operating system" },
   { id: "entities", emoji: "⬡", title: "Entities", route: "/studio/entities", description: "Entity catalog" },
@@ -19,8 +26,17 @@ export const ATLAS_STUDIO_NAV: StudioRouteItem[] = [
   { id: "settings", emoji: "⚙", title: "Settings", route: "/studio/settings", description: "Studio config" },
 ];
 
-/** Secondary routes — still available, not primary daily flow. */
+/**
+ * Secondary routes — still available, not primary daily flow.
+ *
+ * ADR-001 (`ATLAS_ARCHITECTURE_DECISIONS.md`, Sprint 4.1): "atlas"/"room" both point at
+ * `RoomScreen.tsx`, the canonical CEO surface (`src/atlas/studio/ceoSurface.ts`). This
+ * duplicate pair of entries for one screen is known, pre-existing nav debt, named in the
+ * ADR's "left unresolved for Sprint 4.2" list — not restructured here to keep this change
+ * to annotation only.
+ */
 export const ATLAS_STUDIO_SECONDARY_NAV: StudioRouteItem[] = [
+  { id: "atlas", emoji: "◈", title: "Atlas", route: "/atlas", description: "The Room · first living prototype" },
   { id: "room", emoji: "◈", title: "The Room", route: "/room", description: "Prototype 1 · spatial Atlas" },
   { id: "ceo", emoji: "★", title: "CEO Workflow", route: "/studio/ceo-workflow", description: "Secondary · legacy release flow" },
   { id: "mission", emoji: "◉", title: "Mission Control", route: "/studio", description: "Secondary · OS widgets" },

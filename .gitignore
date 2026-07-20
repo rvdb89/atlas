@@ -44,6 +44,7 @@ yarn-error.*
 public/atlas-runtime-state.json
 reports/runtime/
 reports/memory/
+reports/executive-memory/
 
 example
 

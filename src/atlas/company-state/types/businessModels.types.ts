@@ -1,6 +1,20 @@
 /** Raw business models — mutable source data for the Company State Engine. */
 
-export type EntityStatus = "healthy" | "attention" | "critical" | "idle" | "active" | "pending" | "planning";
+import type { RatifiedDepartmentId } from "@/atlas/team/department.types";
+
+/** Sprint 2.2a adds "no-signal": a department (or, in principle, any other entity) that has
+ * no real operational signal to compute a status from. Distinct from every other value here —
+ * it is never derived from a health score, and must never be assigned merely to fill a UI
+ * slot. See DepartmentModel below and ATLAS_SPRINT_2.2A note in labels.ts. */
+export type EntityStatus =
+  | "healthy"
+  | "attention"
+  | "critical"
+  | "idle"
+  | "active"
+  | "pending"
+  | "planning"
+  | "no-signal";
 
 export type AgentStatus = "active" | "idle" | "blocked" | "waiting";
 
@@ -27,17 +41,11 @@ export type ApprovalUrgency = "low" | "medium" | "high" | "urgent";
 
 export type InitiativeLane = "now" | "next" | "later" | "blocked";
 
-export type DepartmentId =
-  | "engineering"
-  | "operations"
-  | "marketing"
-  | "design"
-  | "product"
-  | "intelligence"
-  | "memory"
-  | "quality"
-  | "planning"
-  | "research";
+/** Sprint 2.2a · alias of the one canonical department model — see
+ * `@/atlas/team/department.types`'s `RatifiedDepartmentId`. Kept as a local name (rather than
+ * importing `RatifiedDepartmentId` everywhere) so this file's own consumers don't all need to
+ * change their imports; the value set is the single source of truth, defined once. */
+export type DepartmentId = RatifiedDepartmentId;
 
 export type ActivityEventType =
   | "sprint_started"
@@ -91,7 +99,10 @@ export type AgentModel = {
   workload: WorkloadLevel;
   currentInitiative: string;
   currentResponsibility: string;
-  department: DepartmentId;
+  /** Sprint 2.2a · null for an agent with no ratified department — currently only
+   * `branch-director`, Atlas' own reasoning identity, not a department member. Never invent a
+   * department to fill this field. */
+  department: DepartmentId | null;
 };
 
 export type DepartmentModel = {

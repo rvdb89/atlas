@@ -13,6 +13,8 @@ const STATUS_LABEL: Record<ControlStatus, string> = {
   active: "Active",
   pending: "Pending",
   planning: "Planning",
+  // Sprint 2.2a · honest state for an entity with no real operational signal yet.
+  "no-signal": "No signal yet",
 };
 
 const STATUS_COLOR: Record<ControlStatus, string> = {
@@ -23,6 +25,7 @@ const STATUS_COLOR: Record<ControlStatus, string> = {
   active: CONTROL_COLORS.accent,
   pending: CONTROL_COLORS.gold,
   planning: CONTROL_COLORS.textSoft,
+  "no-signal": CONTROL_COLORS.textSoft,
 };
 
 const KPI_STATUS_COLOR: Record<KpiStatus, string> = {

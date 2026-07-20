@@ -1,16 +1,14 @@
 import type { DepartmentId, EntityStatus, SprintLifecycle } from "./types";
 
+/** Sprint 2.2a · the four ratified departments — see `@/atlas/team/department.types`'s
+ * `RATIFIED_DEPARTMENTS` for the canonical id/label source. Hand-duplicated here as a
+ * `Record<DepartmentId, string>` (same pattern this file already uses elsewhere) so that a
+ * missing label is a compile error, not a silent gap. */
 export const DEPARTMENT_LABELS: Record<DepartmentId, string> = {
   engineering: "Engineering",
-  operations: "Operations",
-  marketing: "Marketing",
-  design: "Design",
-  product: "Product",
-  intelligence: "Intelligence",
-  memory: "Memory",
-  quality: "Quality",
-  planning: "Planning",
-  research: "Research",
+  publishing: "Publishing",
+  "customer-contact": "Customer Contact",
+  "signal-research": "Signal & Research",
 };
 
 export function entityStatusLabel(status: EntityStatus): string {
@@ -22,6 +20,9 @@ export function entityStatusLabel(status: EntityStatus): string {
     active: "Active",
     pending: "Pending",
     planning: "Planning",
+    /** Sprint 2.2a · honest label for an entity (currently: a department) with no real
+     * operational signal — never "Healthy", never a fabricated score. */
+    "no-signal": "No signal yet",
   };
   return labels[status];
 }

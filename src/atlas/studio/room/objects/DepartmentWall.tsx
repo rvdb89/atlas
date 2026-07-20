@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import { Animated, StyleSheet, View, ViewStyle } from "react-native";
 
 import { ROOM_COLORS } from "../theme";
 import type { DepartmentSpec } from "../types";
@@ -15,23 +15,44 @@ import type { DepartmentSpec } from "../types";
  *
  * Not individually clickable in Prototype 1 — the Atlas Build brief does
  * not ask departments to be navigable objects, so nothing is invented here.
+ *
+ * Sprint 23 ("First Truth") set the first mock truth this sprint proved: "Operations vraagt
+ * aandacht" — the same Warm Vein property that carried Engineering's elevated state carrying
+ * Operations's instead. Position stays exactly where structure already put it (Visual
+ * Principle 7); only how much warmth that fixed position shows follows significance (Visual
+ * Principle 8).
+ *
+ * Sprint 2.2 ("The Room — First Living Prototype") replaces the hardcoded four-department
+ * mock array with `departments`, a real prop — the actual departments and warmth now come
+ * from Atlas Control's own live state (`src/atlas/studio/room/roomData.ts`'s
+ * `mapDepartmentsForRoom()`, fed by `useControlDashboard()` in `RoomScreen.tsx`). Nothing
+ * about the Vein / Warm Vein / Grain Shift rendering changes — only where the list and each
+ * department's warmth now come from. The wall's existing `space-between` layout already
+ * generalizes to any real department count without further changes.
+ *
+ * Same-day correction ("The Room unfolds"): the whole wall now accepts an
+ * optional animated `style` — `RoomScene` passes its shared reveal opacity
+ * (`ROOM_MOTION.REVEAL`, driven by `approachProgress`) so the wall, and
+ * every department's own warmth on it, sits almost invisible before the
+ * Heart is activated and fully present after. Applied to this existing
+ * root view, not a new wrapper, so nothing about the wall's own layout
+ * changes — only its opacity, from the outside.
  */
-const DEPARTMENTS: DepartmentSpec[] = [
-  { id: "engineering", label: "Engineering", state: "elevated" },
-  { id: "sales", label: "Sales", state: "calm" },
-  { id: "finance", label: "Finance", state: "calm" },
-  { id: "operations", label: "Operations", state: "calm" },
-];
-
-export default function DepartmentWall() {
+export default function DepartmentWall({
+  departments,
+  style,
+}: {
+  departments: DepartmentSpec[];
+  style?: Animated.WithAnimatedValue<ViewStyle>;
+}) {
   return (
-    <View style={styles.wall}>
+    <Animated.View style={[styles.wall, style]}>
       <View style={styles.band}>
-        {DEPARTMENTS.map((department) => (
+        {departments.map((department) => (
           <Department key={department.id} spec={department} />
         ))}
       </View>
-    </View>
+    </Animated.View>
   );
 }
 

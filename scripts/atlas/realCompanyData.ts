@@ -7,6 +7,7 @@ import { getCapabilityState } from "@/atlas/constitution";
 
 import { ROOT_DIR } from "./shared";
 import type { MissionPackageSummary } from "./missionPackage";
+import { RATIFIED_DEPARTMENT_IDS, type RatifiedDepartmentId } from "@/atlas/team/department.types";
 
 /**
  * Real, computed replacements for the remaining mock sections of the Atlas Control
@@ -73,92 +74,83 @@ export function buildRealRoadmap(
 // ---------------------------------------------------------------------------
 
 export type RuntimeDepartmentAgent = {
-  department: string;
+  /** Sprint 2.2a · ratified department id, or null for agents with no team identity (e.g.
+   * branch-director) — those agents are excluded from department aggregation entirely, never
+   * forced into one. */
+  department: RatifiedDepartmentId | null;
   name: string;
   health: number;
   currentInitiative: string;
 };
 
 export type RuntimeDepartment = {
-  id: string;
+  id: RatifiedDepartmentId;
   health: number;
-  status: "healthy" | "active" | "attention" | "idle";
+  /** Sprint 2.2a · "no-signal" is a distinct, honest state — not a health-derived status. It
+   * means no operational agent currently resolves to this department, so there is nothing
+   * real to compute a status from. It must never be produced by `statusFromHealth()`, and
+   * `health` on a no-signal entry is a placeholder (0), not a real score. */
+  status: "healthy" | "active" | "attention" | "idle" | "no-signal";
   currentWork: string;
   owner: string;
 };
 
-function statusFromHealth(health: number): RuntimeDepartment["status"] {
+function statusFromHealth(health: number): Exclude<RuntimeDepartment["status"], "no-signal"> {
   if (health >= 90) return "healthy";
   if (health >= 70) return "active";
   if (health >= 50) return "attention";
   return "idle";
 }
 
-export function buildRealDepartments(input: {
-  agents: RuntimeDepartmentAgent[];
-  auditScore: number | null;
-  memoryHealth: number;
-  memoryStatusLabel: string;
-  roadmap: RuntimeRoadmapItem[];
-  latestConfidence: number | null;
-}): RuntimeDepartment[] {
-  const byDept = new Map<string, RuntimeDepartmentAgent[]>();
+/**
+ * Sprint 2.2a — Department Source-of-Truth Alignment.
+ *
+ * Aggregates real operational agents into exactly the four ratified departments
+ * (`@/atlas/team/department.types`'s `RATIFIED_DEPARTMENT_IDS`) — always all four, always
+ * present, regardless of how many agents currently resolve to each one. A department with no
+ * resolved agents is reported honestly as `"no-signal"`, never given a fabricated health score
+ * or status just to fill the Department Wall.
+ *
+ * The four previous hardcoded pseudo-department entries this function used to append
+ * (id "engineering" from the audit score, "memory" from memory health, "product" from roadmap
+ * progress, "intelligence" from decision confidence) are removed here — none of the four
+ * corresponded to a ratified department or a real team's operational agents, and keeping them
+ * would have meant inventing department health from signals that were never about a
+ * department's own agents. Those underlying signals are not lost: audit score, memory health,
+ * roadmap, and decision confidence are still written to the runtime snapshot independently
+ * (`writeSnapshot()`'s own `audit`/`memory`/`roadmap`/`latest` fields in atlas-runtime.ts) and
+ * reach the dashboard through their own sections, not through the department list.
+ */
+export function buildRealDepartments(input: { agents: RuntimeDepartmentAgent[] }): RuntimeDepartment[] {
+  const byDept = new Map<RatifiedDepartmentId, RuntimeDepartmentAgent[]>();
   for (const agent of input.agents) {
+    if (agent.department === null) continue; // no team identity — not a department member
     const list = byDept.get(agent.department) ?? [];
     list.push(agent);
     byDept.set(agent.department, list);
   }
 
-  const agentDerived: RuntimeDepartment[] = [...byDept.entries()].map(([department, members]) => {
+  return RATIFIED_DEPARTMENT_IDS.map((id) => {
+    const members = byDept.get(id);
+    if (!members || members.length === 0) {
+      return {
+        id,
+        health: 0,
+        status: "no-signal",
+        currentWork: "No operational agents assigned yet",
+        owner: "—",
+      };
+    }
+
     const health = Math.round(members.reduce((sum, member) => sum + member.health, 0) / members.length);
     return {
-      id: department,
+      id,
       health,
       status: statusFromHealth(health),
       currentWork: members[0]?.currentInitiative ?? "Idle",
       owner: members.map((member) => member.name).join(", "),
     };
   });
-
-  const roadmapProgress =
-    input.roadmap.length > 0
-      ? Math.round(input.roadmap.reduce((sum, item) => sum + item.progress, 0) / input.roadmap.length)
-      : 0;
-  const confidencePct = input.latestConfidence !== null ? Math.round(input.latestConfidence * 100) : null;
-
-  const computed: RuntimeDepartment[] = [
-    {
-      id: "engineering",
-      health: input.auditScore ?? 0,
-      status: statusFromHealth(input.auditScore ?? 0),
-      currentWork: input.auditScore !== null ? `Latest audit score: ${input.auditScore}/100` : "No audit run yet",
-      owner: "Atlas Auditor",
-    },
-    {
-      id: "memory",
-      health: input.memoryHealth,
-      status: statusFromHealth(input.memoryHealth),
-      currentWork: input.memoryStatusLabel,
-      owner: "Atlas Brain",
-    },
-    {
-      id: "product",
-      health: roadmapProgress,
-      status: statusFromHealth(roadmapProgress),
-      currentWork: `Average roadmap progress: ${roadmapProgress}%`,
-      owner: "Atlas Brain",
-    },
-    {
-      id: "intelligence",
-      health: confidencePct ?? 50,
-      status: statusFromHealth(confidencePct ?? 50),
-      currentWork:
-        confidencePct !== null ? `Latest decision confidence: ${confidencePct}%` : "No Claude verdict yet this session",
-      owner: "Branch Director",
-    },
-  ];
-
-  return [...agentDerived, ...computed];
 }
 
 // ---------------------------------------------------------------------------

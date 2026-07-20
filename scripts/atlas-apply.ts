@@ -3,6 +3,16 @@ import "dotenv/config";
 import chalk from "chalk";
 
 import { applyProposedChanges } from "./atlas/applyEngine";
+// Sprint 1.3 — Tom (Engineering): this CLI is a separate, short-lived process — it opens its
+// own SqlitePersistenceAdapter instance pointed at the exact same on-disk database file
+// atlas-runtime.ts uses (EXECUTIVE_MEMORY_DB_FILE now lives in ./atlas/shared — never import
+// atlas-runtime.ts itself from here, it runs `main()` unconditionally at import time). Same
+// SqlitePersistenceAdapter class Sprint 0.1 already established — not a new persistence
+// client, not an HTTP self-call.
+import { EXECUTIVE_MEMORY_DB_FILE } from "./atlas/shared";
+import { SqlitePersistenceAdapter } from "@/atlas/executive-memory/server/SqlitePersistenceAdapter";
+import { ExecutiveMemoryService } from "@/atlas/executive-memory/server/ExecutiveMemoryService";
+import { createEngineeringAttributionReporter } from "@/atlas/team/EngineeringAttributionReporter";
 
 /**
  * EXEC-001 · Apply Engine CLI
@@ -33,7 +43,15 @@ async function main(): Promise<void> {
     return;
   }
 
-  const result = await applyProposedChanges(missionId);
+  // Sprint 1.3 — Tom (Engineering): optional/additive — applyProposedChanges() behaves
+  // identically with or without a reporter. Opened and closed within this single CLI
+  // invocation, same lifecycle as any other one-shot script touching Executive Memory.
+  const executiveMemoryAdapter = new SqlitePersistenceAdapter(EXECUTIVE_MEMORY_DB_FILE);
+  const executiveMemoryService = new ExecutiveMemoryService(executiveMemoryAdapter);
+  const engineeringAttributionReporter = createEngineeringAttributionReporter(executiveMemoryService);
+
+  const result = await applyProposedChanges(missionId, engineeringAttributionReporter);
+  executiveMemoryAdapter.close();
 
   if (!result.ok) {
     console.log(chalk.red(result.message));

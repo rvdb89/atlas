@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import { Animated, StyleSheet, View } from "react-native";
 
 import RoomTouchable from "../RoomTouchable";
 import { ROOM_COLORS } from "../theme";
@@ -11,16 +11,44 @@ import { ROOM_COLORS } from "../theme";
  * (the depth glow's intensity) — never a button, never a portal effect.
  *
  * Touch feedback is delegated entirely to `RoomTouchable` (Sprint 15) — the
- * same reaction for the quiet doorway and the active one. `active` only
- * ever changes the depth glow, never the touch response.
+ * same reaction for the quiet doorway and the active one. Neither `active`
+ * nor `warmth` ever changes the touch response, only the depth glow.
+ *
+ * Sprint 23 correction: the `frame`/`depth` carving is real architecture
+ * (fixed opening in the wall) and stays visible unconditionally, exactly
+ * like before. The `glow`, though, expresses the same "is this company
+ * active" judgment the Warm Vein expresses for departments — actual
+ * company state, not structure — so it now accepts the same optional
+ * `revealOpacity` every other piece of company state on the Room composes
+ * with (`RoomScene`'s `revealStyle.opacity`).
+ *
+ * Sprint 4.2.2 ("Company Doorway Completion"): the one judgment-driven
+ * property is now graduated, not binary — `warmth` (0–1, see `roomData.ts`'s
+ * `mapCompanyDoorways()`) carries a real company's actual degree of presence,
+ * completing what Sprint 13 already called "intensity" rather than replacing
+ * it. `active` still works exactly as before (`0` or `MAX_GLOW`) for any
+ * caller that doesn't pass `warmth` — that is deliberate, not a compatibility
+ * shim: `CompanyInterior.tsx`'s return doorway still uses only `active`, and
+ * this sprint does not touch that file. When both are given, `warmth` wins.
+ * Either way, the visual ceiling is unchanged: nothing here can glow brighter
+ * than the object already did before this sprint.
  */
+const MAX_GLOW = 0.55;
+
 export default function ArchwayRecess({
-  active,
+  active = false,
+  warmth,
   onPress,
+  revealOpacity,
 }: {
-  active: boolean;
+  active?: boolean;
+  warmth?: number;
   onPress: () => void;
+  revealOpacity?: Animated.Value | Animated.AnimatedInterpolation<number>;
 }) {
+  const intensity = (warmth ?? (active ? 1 : 0)) * MAX_GLOW;
+  const glowOpacity = revealOpacity ? Animated.multiply(revealOpacity, intensity) : intensity;
+
   return (
     <RoomTouchable
       onPress={onPress}
@@ -30,12 +58,7 @@ export default function ArchwayRecess({
     >
       <View pointerEvents="none" style={styles.frame}>
         <View style={styles.depth}>
-          <View
-            style={[
-              styles.glow,
-              { opacity: active ? 0.55 : 0 },
-            ]}
-          />
+          <Animated.View style={[styles.glow, { opacity: glowOpacity }]} />
         </View>
       </View>
     </RoomTouchable>

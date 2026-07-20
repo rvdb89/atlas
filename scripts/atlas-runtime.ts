@@ -12,14 +12,16 @@ import {
   getMemorySnapshot,
   localMemoryStore,
   pruneOldDecisionMemories,
+  type AtlasMemoryEntry,
   type RecentMemoryEntry,
 } from "@/atlas/brain/memory";
 import { missionRegistry, registerMissionFromSource } from "@/atlas/engineering/mission-orchestrator";
 import { ATLAS_AI_TEAM } from "@/atlas/agents/team";
-import type { CoreAgentId } from "@/atlas/publishing/plugin/types";
 import { isAnthropicConfigured } from "@/atlas/config/env";
 
-import { ROOT_DIR } from "./atlas/shared";
+import { ROOT_DIR, EXECUTIVE_MEMORY_DB_FILE } from "./atlas/shared";
+import { APPLY_BRIDGE_PORT, EXECUTIVE_MEMORY_PORT } from "./atlas/runtimePorts";
+import { removePidFileIfMatches } from "./atlas/runtimeLifecycle";
 import { ensureMissionPackage, type MissionPackageSummary } from "./atlas/missionPackage";
 import { applyProposedChanges } from "./atlas/applyEngine";
 import { runExecutionEngine, getExecutionProposalState, type ExecutionProposalState } from "./atlas/executionEngine";
@@ -29,10 +31,17 @@ import {
   getNextUnappliedContentMissionId,
 } from "./atlas/contentGenerationEngine";
 import { runTipsGenerationEngine, isTipsMission } from "./atlas/tipsGenerationEngine";
+import { createPublishingAttributionReporter } from "@/atlas/team/PublishingAttributionReporter";
+import { createEngineeringAttributionReporter } from "@/atlas/team/EngineeringAttributionReporter";
+import { departmentForOperationalId } from "@/atlas/team/DepartmentResolver";
+import type { RatifiedDepartmentId } from "@/atlas/team/department.types";
 import { readPendingCeoInstruction, writeCeoInstruction, clearCeoInstruction, type CeoInstruction } from "./atlas/ceoInstructions";
 import { listPendingFixMissions } from "./atlas/replanOnFailure";
 import { getAppsStatus, launchApp } from "./atlas/appsRegistry";
 import { getCapabilityState } from "@/atlas/constitution";
+import { SqlitePersistenceAdapter } from "@/atlas/executive-memory/server/SqlitePersistenceAdapter";
+import { ExecutiveMemoryService } from "@/atlas/executive-memory/server/ExecutiveMemoryService";
+import { startExecutiveMemoryHttpAdapter } from "@/atlas/executive-memory/server/ExecutiveMemoryHttpAdapter";
 import { getMissionCardById } from "@/atlas/engineering/mission-orchestrator";
 import { buildPlanForMission, findPlanByMissionId, registerPlan, updatePlanStatusById } from "@/atlas/brain/planner";
 import type { ExecutionPlan } from "@/atlas/brain/planner";
@@ -67,15 +76,25 @@ import {
  * State is written to:
  *   public/atlas-runtime-state.json  — latest snapshot, served statically by Expo web
  *   reports/runtime/activity.jsonl   — append-only history, survives restarts
- *   reports/memory/store.json        — BRAIN-002: Atlas' own memory entries, survives restarts
+ *   Executive Memory (atlas-memory/store) — BRAIN-002: Atlas' own memory entries, survives
+ *     restarts. Migrated off reports/memory/store.json in Sprint 0.3 — that file is now only
+ *     ever read once, as a one-time legacy import if Executive Memory has no snapshot yet.
  */
 
 const PUBLIC_DIR = join(ROOT_DIR, "public");
 const STATE_FILE = join(PUBLIC_DIR, "atlas-runtime-state.json");
 const RUNTIME_DIR = join(ROOT_DIR, "reports", "runtime");
 const ACTIVITY_LOG = join(RUNTIME_DIR, "activity.jsonl");
+/** Sprint 0.3 · Legacy path — only ever read once, for the one-time import into Executive
+ * Memory (see loadMemoryFromExecutiveMemory()). Never written by this file anymore. */
 const MEMORY_DIR = join(ROOT_DIR, "reports", "memory");
 const MEMORY_FILE = join(MEMORY_DIR, "store.json");
+/** Sprint 0.3 · Executive Memory namespace/key for the Memory Engine's full snapshot — one
+ * document, matching the exact shape reports/memory/store.json used to hold
+ * (localMemoryStore.exportAll()). See ATLAS_SPRINT_0.3_IMPLEMENTATION_PLAN.md §2.2 for why a
+ * single-document model was chosen over one document per entry. */
+const MEMORY_NAMESPACE = "atlas-memory";
+const MEMORY_KEY = "store";
 
 const SELF_REVIEW_INTENT =
   "Continuous self-review: evaluate current capability gaps and confirm or correct the next highest-value initiative.";
@@ -86,8 +105,20 @@ const DEFAULT_INTERVAL_MS = 5 * 60_000;
  * trigger the Apply Engine directly — bound to 127.0.0.1 only, never reachable from
  * outside this machine. The dashboard calls this best-effort; if the runtime isn't
  * running, approving still works normally in the browser, it just can't auto-apply
- * (the CEO can always fall back to `npm run atlas:apply -- <MISSION-ID>`). */
-const APPLY_BRIDGE_PORT = 8791;
+ * (the CEO can always fall back to `npm run atlas:apply -- <MISSION-ID>`).
+ *
+ * APPLY_BRIDGE_PORT and EXECUTIVE_MEMORY_PORT live in ./atlas/runtimePorts (imported above)
+ * rather than as local consts here, so that Runtime Lifecycle Management's separate CLI
+ * commands (atlas:runtime:start/status/stop/restart) can import the same port numbers without
+ * a circular import back into this file. Re-exported below for anything importing them
+ * straight from atlas-runtime.ts. */
+export { APPLY_BRIDGE_PORT, EXECUTIVE_MEMORY_PORT } from "./atlas/runtimePorts";
+
+/** Sprint 0.1 · Executive Memory — the persistent, platform-independent storage layer that
+ * Company State (Sprint 0.2) and the Memory Engine (Sprint 0.3) are both migrated onto. Bound
+ * to 0.0.0.0, unlike the apply-bridge above: a physical mobile device on the same network
+ * needs to reach this, and 127.0.0.1 on a phone refers to the phone itself, never this
+ * machine. See ATLAS_SPRINT_0.1_IMPLEMENTATION_PLAN.md for the full design. */
 
 type RuntimeActivityEntry = {
   id: string;
@@ -105,25 +136,25 @@ type RuntimeAgentEntry = {
   id: string;
   name: string;
   role: string;
-  department: string;
+  /** Sprint 2.2a · ratified department id (engineering/publishing/customer-contact/
+   * signal-research), resolved via the canonical CoreAgentId → TeamIdentityId →
+   * RatifiedDepartmentId chain (`@/atlas/team/DepartmentResolver`). null for agents that have
+   * no team identity — currently only `branch-director`, which is Atlas' own reasoning
+   * identity, not a department member. Never a stale/invented department string. */
+  department: RatifiedDepartmentId | null;
   status: "active" | "idle";
   health: number;
   currentInitiative: string;
   currentResponsibility: string;
 };
 
-/** Real department mapping for the actual AI team defined in agents/team.ts. */
-const AGENT_DEPARTMENTS: Record<CoreAgentId, string> = {
-  copywriter: "marketing",
-  "visual-designer": "design",
-  "fact-checker": "quality",
-  "link-engine": "research",
-  translator: "operations",
-  "domain-validator": "quality",
-  "branch-director": "planning",
-};
-
-/** Builds the real agent roster from ATLAS_AI_TEAM — no fictional names or metrics. */
+/** Builds the real agent roster from ATLAS_AI_TEAM — no fictional names or metrics.
+ *
+ * Sprint 2.2a: department is no longer a hand-typed, pre-Team-Identity-Foundation guess
+ * (the old `AGENT_DEPARTMENTS` map used fictional buckets like "marketing"/"design"/"quality"
+ * that were never reconciled with the ratified Tom/Anna/Yara/Scout/Jerry identities). It now
+ * resolves through the same canonical chain the rest of the Team Identity Foundation uses —
+ * see `@/atlas/team/DepartmentResolver`'s `departmentForOperationalId()`. */
 function buildRealAgents(latest: RuntimeActivityEntry): RuntimeAgentEntry[] {
   const claudeConfigured = isAnthropicConfigured();
 
@@ -135,7 +166,7 @@ function buildRealAgents(latest: RuntimeActivityEntry): RuntimeAgentEntry[] {
       id: member.id,
       name: member.name,
       role: member.role,
-      department: AGENT_DEPARTMENTS[member.id],
+      department: departmentForOperationalId(member.id),
       status: active ? "active" : "idle",
       health: active ? 100 : 40,
       currentInitiative: isBranchDirector
@@ -177,39 +208,77 @@ function readLatestAuditScore(): {
   }
 }
 
-/** BRAIN-002 · Restores Atlas' persisted memory entries so it survives a runtime restart
- * instead of starting each session with a blank memory. Best-effort: a missing or
- * corrupt file never blocks startup. */
-function loadMemoryFromDisk(): void {
+/** Sprint 0.3 · Restores Atlas' persisted memory entries so it survives a runtime restart
+ * instead of starting each session with a blank memory — now hydrated directly from the
+ * in-process Executive Memory Service instead of a raw JSON file (see CEO decision log for
+ * Sprint 0.3: no ExecutiveMemoryHttpClient here, this file IS the process that owns the
+ * Service). Best-effort: any failure to reach Executive Memory starts with an empty store,
+ * exactly like a missing/corrupt file did before.
+ *
+ * If Executive Memory has no snapshot yet (e.g. the very first boot after this migration),
+ * falls back to a one-time import of the legacy reports/memory/store.json — read once, then
+ * written into Executive Memory so every later boot uses Executive Memory as the sole source
+ * of truth. The legacy file itself is never modified or deleted by this. */
+async function loadMemoryFromExecutiveMemory(service: ExecutiveMemoryService): Promise<void> {
   bootstrapAtlasMemory();
-  if (!existsSync(MEMORY_FILE)) return;
 
   try {
-    const entries = JSON.parse(readFileSync(MEMORY_FILE, "utf8"));
-    if (Array.isArray(entries)) {
-      localMemoryStore.importAll(entries);
+    const existing = await service.load<AtlasMemoryEntry[]>(MEMORY_NAMESPACE, MEMORY_KEY);
+    if (existing) {
+      localMemoryStore.importAll(existing.value);
+      return;
     }
   } catch (error) {
-    console.error(chalk.red("Kon memory-store niet laden:"), error instanceof Error ? error.message : error);
+    console.error(
+      chalk.red("Kon memory-store niet laden uit Executive Memory:"),
+      error instanceof Error ? error.message : error,
+    );
+    return;
+  }
+
+  if (!existsSync(MEMORY_FILE)) return;
+  try {
+    const entries = JSON.parse(readFileSync(MEMORY_FILE, "utf8"));
+    if (!Array.isArray(entries)) return;
+    localMemoryStore.importAll(entries);
+    await service.save(MEMORY_NAMESPACE, MEMORY_KEY, entries);
+    console.log(
+      chalk.cyan(
+        `  memory: eenmalig ${entries.length} entries gemigreerd van reports/memory/store.json naar Executive Memory`,
+      ),
+    );
+  } catch (error) {
+    console.error(
+      chalk.red("Kon legacy memory-store niet migreren naar Executive Memory:"),
+      error instanceof Error ? error.message : error,
+    );
   }
 }
 
-/** Writes every memory entry back to disk — called after each cycle so new memories
- * (recorded by the Decision Engine) survive the next restart.
+/** Writes every memory entry to Executive Memory — called after each cycle so new memories
+ * (recorded by the Decision Engine) survive the next restart. One document, one save() per
+ * cycle — same batch cadence as the old full-file rewrite it replaces.
  *
  * BRAIN-009 · Prunes old decision-type memories first (see MemoryRetention.ts) — without
- * this, reports/memory/store.json grows without limit (~250 new decision memories/day
- * measured in this project), rewritten in full on every single cycle. Best-effort and
- * silent when there's nothing to prune; logs a line only when it actually removes something,
- * so this is never a mystery if someone goes looking at why old entries disappeared. */
-function persistMemoryToDisk(): void {
+ * this, the memory store grows without limit (~250 new decision memories/day measured in
+ * this project), rewritten in full on every single cycle. Best-effort and silent when
+ * there's nothing to prune; logs a line only when it actually removes something. Saving to
+ * Executive Memory is itself best-effort too — a failure is logged but never blocks or
+ * crashes the cycle, same "memory is best-effort" philosophy as rememberDecision(). */
+async function persistMemoryToExecutiveMemory(service: ExecutiveMemoryService): Promise<void> {
   const pruned = pruneOldDecisionMemories();
   if (pruned > 0) {
     console.log(chalk.dim(`  memory: pruned ${pruned} old decision memor${pruned === 1 ? "y" : "ies"} (retention cap)`));
   }
 
-  mkdirSync(MEMORY_DIR, { recursive: true });
-  writeFileSync(MEMORY_FILE, JSON.stringify(localMemoryStore.exportAll(), null, 2), "utf8");
+  try {
+    await service.save(MEMORY_NAMESPACE, MEMORY_KEY, localMemoryStore.exportAll());
+  } catch (error) {
+    console.error(
+      chalk.red("Kon memory-store niet opslaan naar Executive Memory:"),
+      error instanceof Error ? error.message : error,
+    );
+  }
 }
 
 /** Builds a small, honest summary of the persistent memory store for the dashboard.
@@ -374,7 +443,14 @@ function writeExecutionAttemptMarker(missionId: string, ok: boolean, message: st
  * writing into the real working tree still always requires an explicit CEO Inbox "Approve"
  * click (or `npm run atlas:apply`). Best-effort and guarded: does nothing once a proposal
  * already exists or has been applied, and backs off for a while after a failed attempt. */
-async function ensureExecutionProposal(missionId: string | null): Promise<ExecutionProposalState> {
+async function ensureExecutionProposal(
+  missionId: string | null,
+  // Sprint 1.2 — Anna & Yara. Optional and additive: omitting this reproduces today's exact
+  // behavior. Threaded through to runContentGenerationEngine() so content missions can report
+  // capability attribution via the existing in-process ExecutiveMemoryService — no self-HTTP
+  // call, same precedent as Sprint 0.3.
+  executiveMemoryService?: ExecutiveMemoryService,
+): Promise<ExecutionProposalState> {
   if (!missionId) return "none";
 
   const state = getExecutionProposalState(missionId);
@@ -411,9 +487,12 @@ async function ensureExecutionProposal(missionId: string | null): Promise<Execut
     // pipeline would be pure overhead (see tipsGenerationEngine.ts). Same downstream contract
     // either way (proposed-changes/ + CEO Inbox + Apply Engine), so nothing else in this
     // function needs to branch.
+    const attributionReporter = executiveMemoryService
+      ? createPublishingAttributionReporter(executiveMemoryService)
+      : undefined;
     const result =
       missionKind === "content"
-        ? await runContentGenerationEngine(missionId)
+        ? await runContentGenerationEngine(missionId, attributionReporter)
         : missionKind === "tips"
           ? await runTipsGenerationEngine(missionId)
           : await runExecutionEngine(missionId);
@@ -440,7 +519,12 @@ async function ensureExecutionProposal(missionId: string | null): Promise<Execut
   }
 }
 
-async function runCycle(cycle: number, startedAt: string, intervalMs: number): Promise<void> {
+async function runCycle(
+  cycle: number,
+  startedAt: string,
+  intervalMs: number,
+  executiveMemoryService: ExecutiveMemoryService,
+): Promise<void> {
   // Reload engineering/missions/*.mission every cycle, not just at process start — so a
   // brand-new mission file (e.g. an ad hoc CEO request) becomes selectable on the very next
   // cycle without needing to restart the always-on runtime process. Idempotent: re-registering
@@ -534,7 +618,7 @@ async function runCycle(cycle: number, startedAt: string, intervalMs: number): P
   // EXEC-001 · Once there's a real package for the top priority, automatically draft a
   // code proposal too — the CEO only ever needs to see the resulting Inbox item and click
   // Approve, no CLI step required. Still never touches the working tree on its own.
-  const executionProposalState = await ensureExecutionProposal(chosenMissionId);
+  const executionProposalState = await ensureExecutionProposal(chosenMissionId, executiveMemoryService);
 
   // CONTENT-001 · Once a pending CEO instruction has actually been applied (drafted,
   // approved via CEO Inbox, and written into the working tree), the request is fully
@@ -558,14 +642,12 @@ async function runCycle(cycle: number, startedAt: string, intervalMs: number): P
   // real Atlas Auditor report, and real git history. No fabricated fields.
   const roadmap = buildRealRoadmap(decision.ruleBased.evolution.evolutionRecommendations, chosenMissionId);
 
-  const departments = buildRealDepartments({
-    agents,
-    auditScore: audit?.overallScore ?? null,
-    memoryHealth: memory.health,
-    memoryStatusLabel: memory.statusLabel,
-    roadmap,
-    latestConfidence: entry.confidence,
-  });
+  // Sprint 2.2a · departments are now derived solely from real operational agents, resolved
+  // through the canonical department chain — see buildRealDepartments()'s own doc comment for
+  // why audit score / memory health / roadmap / decision confidence no longer feed synthetic
+  // department entries here (they remain independently present on this same snapshot via
+  // `audit`, `memory`, `roadmap`, and `latest` below).
+  const departments = buildRealDepartments({ agents });
 
   const bugs = parseAuditWarnings(audit?.reportPath ?? undefined);
 
@@ -627,7 +709,7 @@ async function runCycle(cycle: number, startedAt: string, intervalMs: number): P
     plan,
   });
 
-  persistMemoryToDisk();
+  await persistMemoryToExecutiveMemory(executiveMemoryService);
 
   if (activePackage) {
     const packageColor = activePackage.alreadyExisted ? chalk.dim : chalk.magenta;
@@ -655,7 +737,10 @@ async function runCycle(cycle: number, startedAt: string, intervalMs: number): P
  * any external interface. Exposes exactly one action: apply an already-reviewed proposal
  * for a mission ID. Best-effort from the browser's side; this server existing or not
  * never affects the rest of the runtime loop. */
-function startApplyBridge(): Server {
+function startApplyBridge(executiveMemoryService: ExecutiveMemoryService): Server {
+  // Sprint 1.3 — Tom (Engineering): constructed once per bridge start, reused across every
+  // /apply request. Optional/additive from applyProposedChanges()'s point of view.
+  const engineeringAttributionReporter = createEngineeringAttributionReporter(executiveMemoryService);
   const server = createServer((req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -776,7 +861,7 @@ function startApplyBridge(): Server {
           return;
         }
 
-        const result = await applyProposedChanges(missionId);
+        const result = await applyProposedChanges(missionId, engineeringAttributionReporter);
         console.log(
           result.ok
             ? chalk.green(`  [apply-bridge] applied ${result.applied.length} file(s) for ${result.missionId}`)
@@ -802,6 +887,33 @@ function startApplyBridge(): Server {
   return server;
 }
 
+/** Sprint 0.1 · Creates the Executive Memory Service in-process: the SQLite adapter and
+ * Service run inside this same runtime process (no separate process to manage). Split from
+ * the HTTP transport below (Sprint 0.3) so `service` exists — and can be used directly, no
+ * HTTP round-trip needed — before anything in this file that has a hard dependency on it
+ * runs, including in `--once` mode, which never starts the HTTP transport at all. See
+ * ATLAS_SPRINT_0.1_IMPLEMENTATION_PLAN.md chapter 1 and ATLAS_SPRINT_0.3_IMPLEMENTATION_PLAN.md
+ * for the reasoning. */
+function createExecutiveMemoryService(): {
+  service: ExecutiveMemoryService;
+  adapter: SqlitePersistenceAdapter;
+} {
+  const adapter = new SqlitePersistenceAdapter(EXECUTIVE_MEMORY_DB_FILE);
+  const service = new ExecutiveMemoryService(adapter);
+  return { service, adapter };
+}
+
+/** Sprint 0.1 · Starts the LAN-reachable HTTP transport on top of an already-created Service —
+ * this is what web/mobile clients and Company State's ExecutiveMemoryHttpClient talk to.
+ * Bound to 0.0.0.0, unlike the apply-bridge: a physical device on the same network needs to
+ * reach this, and 127.0.0.1 on a phone refers to the phone itself. Only started for a
+ * continuous runtime (not `--once`) — same position/timing as before Sprint 0.3. */
+async function startExecutiveMemoryHttpTransport(service: ExecutiveMemoryService): Promise<Server> {
+  const server = await startExecutiveMemoryHttpAdapter(service, EXECUTIVE_MEMORY_PORT);
+  console.log(chalk.dim(`  executive-memory: http://0.0.0.0:${EXECUTIVE_MEMORY_PORT} (LAN-reachable, web + mobile)`));
+  return server;
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const once = args.includes("--once");
@@ -815,8 +927,16 @@ async function main(): Promise<void> {
   );
   console.log("");
 
+  // Sprint 0.3 · Executive Memory's Service must exist before anything tries to hydrate or
+  // persist Atlas' memory — created directly in-process here (no HTTP round-trip to itself,
+  // see the CEO decision log for Sprint 0.3). This must happen before the very first cycle,
+  // including in `--once` mode, since runCycle() needs it to persist memory at the end of
+  // every cycle. The HTTP transport (LAN-reachable, for web/mobile/Company State) still only
+  // starts later, once the runtime actually goes continuous — same as before.
+  const { service: executiveMemoryService, adapter: executiveMemoryAdapter } = createExecutiveMemoryService();
+
   loadMissionFilesFromDisk();
-  loadMemoryFromDisk();
+  await loadMemoryFromExecutiveMemory(executiveMemoryService);
   const startedAt = new Date().toISOString();
   let cycle = readHistory().length;
 
@@ -841,7 +961,7 @@ async function main(): Promise<void> {
     cycleInProgress = true;
     cycle += 1;
     try {
-      await runCycle(cycle, startedAt, intervalMs);
+      await runCycle(cycle, startedAt, intervalMs, executiveMemoryService);
     } catch (error) {
       console.error(chalk.red(`[cycle ${cycle}] failed:`), error instanceof Error ? error.message : error);
     } finally {
@@ -853,6 +973,7 @@ async function main(): Promise<void> {
 
   if (once) {
     console.log(chalk.dim("Single cycle complete — exiting (--once)."));
+    executiveMemoryAdapter.close();
     return;
   }
 
@@ -860,13 +981,22 @@ async function main(): Promise<void> {
     void tick();
   }, intervalMs);
 
-  const applyBridge = startApplyBridge();
+  const applyBridge = startApplyBridge(executiveMemoryService);
+  const executiveMemoryServer = await startExecutiveMemoryHttpTransport(executiveMemoryService);
 
   const shutdown = (): void => {
     console.log("");
     console.log(chalk.dim("Atlas Runtime stopping…"));
     clearInterval(timer);
     applyBridge.close();
+    executiveMemoryServer.close();
+    executiveMemoryAdapter.close();
+    // Runtime Lifecycle Management (tooling, buiten sprintteling) · Additive only: removes
+    // .atlas/runtime.pid if and only if it still names this exact process. Never touches a
+    // PID file belonging to another process — see scripts/atlas/runtimeLifecycle.ts, which
+    // owns writing this file when the runtime is started via `npm run atlas:runtime:start`.
+    // A no-op when nothing wrote a matching PID file (e.g. the raw `--no-watch` command).
+    removePidFileIfMatches(process.pid);
     process.exit(0);
   };
 

@@ -77,17 +77,14 @@ export function createMockCompanyModels(): CompanyModels {
         currentInitiative: "Not started",
       },
     ],
+    // Sprint 2.2a · the four ratified departments (@/atlas/team/department.types). Mock
+    // fallback data only — used when no real runtime snapshot is available — so this is
+    // illustrative, not derived from the mock `agents` below.
     departments: [
       { id: "engineering", health: 93, status: "active", currentWork: "Company State Engine", owner: "Engineering Director" },
-      { id: "operations", health: 91, status: "healthy", currentWork: "Studio and app runtimes stable", owner: "Operations Director" },
-      { id: "marketing", health: 72, status: "attention", currentWork: "CEO approval for summer collection", owner: "Marketing Director" },
-      { id: "research", health: 85, status: "idle", currentWork: "Capability gap analysis", owner: "Research Director" },
-      { id: "quality", health: 90, status: "active", currentWork: "Branch Director Review for CONTROL-006", owner: "Quality Director" },
-      { id: "memory", health: 68, status: "attention", currentWork: "MEMORY-001 upgrade proposal", owner: "Memory Director" },
-      { id: "planning", health: 89, status: "active", currentWork: "Roadmap lanes and sprint planning", owner: "Planning Director" },
-      { id: "product", health: 87, status: "active", currentWork: "Roadmap prioritization", owner: "Planning Director" },
-      { id: "intelligence", health: 96, status: "healthy", currentWork: "CEO command and Atlas advice", owner: "Branch Director" },
-      { id: "design", health: 80, status: "idle", currentWork: "Executive polish queued for DX-004", owner: "Design Lead" },
+      { id: "publishing", health: 78, status: "attention", currentWork: "CEO approval for summer collection", owner: "Publishing Director" },
+      { id: "customer-contact", health: 91, status: "healthy", currentWork: "Customer inquiries handled promptly", owner: "Customer Contact Director" },
+      { id: "signal-research", health: 85, status: "idle", currentWork: "Capability gap analysis", owner: "Signal & Research Director" },
     ],
     agents: [
       {
@@ -99,7 +96,8 @@ export function createMockCompanyModels(): CompanyModels {
         workload: "balanced",
         currentInitiative: "CONTROL-006 alignment",
         currentResponsibility: "CEO briefing and company direction",
-        department: "intelligence",
+        // Sprint 2.2a · Atlas' own reasoning identity — never a department member.
+        department: null,
       },
       {
         id: "engineering-director",
@@ -121,7 +119,7 @@ export function createMockCompanyModels(): CompanyModels {
         workload: "balanced",
         currentInitiative: "Studio health monitoring",
         currentResponsibility: "Platform runtime and Studio availability",
-        department: "operations",
+        department: "engineering",
       },
       {
         id: "memory-director",
@@ -132,7 +130,7 @@ export function createMockCompanyModels(): CompanyModels {
         workload: "light",
         currentInitiative: "MEMORY-001 proposal",
         currentResponsibility: "Knowledge base readiness",
-        department: "memory",
+        department: "signal-research",
       },
       {
         id: "marketing-director",
@@ -143,7 +141,7 @@ export function createMockCompanyModels(): CompanyModels {
         workload: "light",
         currentInitiative: "Summer collection approval",
         currentResponsibility: "Doughbert seasonal content",
-        department: "marketing",
+        department: "publishing",
       },
       {
         id: "quality-director",
@@ -154,7 +152,7 @@ export function createMockCompanyModels(): CompanyModels {
         workload: "balanced",
         currentInitiative: "CONTROL-006 audit",
         currentResponsibility: "Branch Director Review",
-        department: "quality",
+        department: "publishing",
       },
       {
         id: "research-director",
@@ -165,7 +163,7 @@ export function createMockCompanyModels(): CompanyModels {
         workload: "light",
         currentInitiative: "BRAIN-006 scouting",
         currentResponsibility: "Capability gap analysis",
-        department: "research",
+        department: "signal-research",
       },
       {
         id: "planning-director",
@@ -176,7 +174,7 @@ export function createMockCompanyModels(): CompanyModels {
         workload: "balanced",
         currentInitiative: "Now / Next / Later board",
         currentResponsibility: "Roadmap lanes and sprint planning",
-        department: "planning",
+        department: "engineering",
       },
     ],
     initiatives: [

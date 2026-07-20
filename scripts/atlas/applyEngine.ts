@@ -31,9 +31,30 @@ import { draftFixMissionForFailedValidation, type FixMissionDraftResult } from "
  *    automatically when the CEO approves the matching "Review engineering package" item
  *    in Atlas Control (via the local apply-bridge server in atlas-runtime.ts) — both paths
  *    call this exact same function, so behavior is identical either way.
+ *
+ * Sprint 1.3 — Tom (Engineering) · This module now optionally reports real apply outcomes via
+ * EngineeringAttributionReporter (see below). It never imports Executive Memory or
+ * TeamAttribution directly — same decoupling principle as Sprint 1.2's Publishing Pipeline. See
+ * src/atlas/team/EngineeringAttributionReporter.ts for the concrete bridge to Executive Memory.
  */
 
 export type AppliedFileChange = { path: string; action: "create" | "modify"; bytesWritten: number };
+
+// Sprint 1.3 — Tom (Engineering). The EngineeringAttributionReporter contract (and its event
+// types) lives in src/atlas/team/EngineeringAttributionReporter.ts, not here — this file only
+// ever imports the *type*, never the concrete adapter/factory that actually touches Executive
+// Memory or TeamAttribution (that import stays confined to scripts/atlas-runtime.ts and
+// scripts/atlas-apply.ts, the two real call sites). Keeping the contract itself in src/atlas/
+// rather than here also avoids scripts/** (Node-only, excluded from the root tsconfig) ever
+// being reached from an src/-side import — the dependency direction stays scripts/ → src/,
+// same as everywhere else in this codebase.
+import type { EngineeringAttributionReporter } from "@/atlas/team/EngineeringAttributionReporter";
+export type {
+  EngineeringActionConfirmedEvent,
+  EngineeringActionFailedEvent,
+  EngineeringAttributionReporter,
+  EngineeringCapabilityId,
+} from "@/atlas/team/EngineeringAttributionReporter";
 
 export type ApplyEngineResult =
   | {
@@ -115,8 +136,17 @@ function rememberApply(missionId: string, applied: AppliedFileChange[]): void {
 
 /** Applies an already-reviewed Execution Engine proposal to the real working tree. Always
  * resolves; never throws — callers (CLI, local apply-bridge server) get a structured
- * ok/false result instead. */
-export async function applyProposedChanges(missionIdInput: string): Promise<ApplyEngineResult> {
+ * ok/false result instead.
+ *
+ * Sprint 1.3 — Tom (Engineering): `reporter` is optional and additive (see
+ * EngineeringAttributionReporter above). Omitting it reproduces today's exact behavior. When
+ * present, it is only ever consulted AFTER a real apply attempt has begun (manifest found and
+ * readable) — the two early ok:false returns above that path (missing proposed-changes/,
+ * missing/corrupt manifest) report no event at all, since no engineering action was attempted. */
+export async function applyProposedChanges(
+  missionIdInput: string,
+  reporter?: EngineeringAttributionReporter,
+): Promise<ApplyEngineResult> {
   const missionId = missionIdInput.trim().toUpperCase();
   const reviewDir = join(ROOT_DIR, "engineering", "packages", missionId, "proposed-changes");
 
@@ -138,110 +168,167 @@ export async function applyProposedChanges(missionIdInput: string): Promise<Appl
     };
   }
 
-  // This function only ever runs after an explicit CEO Inbox "Approve" click (or the
-  // equivalent `npm run atlas:apply` CLI) — so reaching this point IS the approval-gate step
-  // resolving, and the apply step starting.
-  safeStepUpdate(missionId, "approval-gate", { status: "completed" });
-  safeStepUpdate(missionId, "apply", { status: "running" });
+  // Sprint 1.3 — Tom (Engineering): everything below this point is one real apply attempt.
+  // Wrapping it in try/catch changes nothing about control flow on the success path (every
+  // line inside is byte-for-byte the same as before this sprint) — on a thrown error, it now
+  // reports a failed attribution event and then rethrows the *exact same, unmodified* error,
+  // which is indistinguishable from the error propagating uncaught as it already did before
+  // this sprint (this function had no top-level try/catch previously either).
+  try {
+    // This function only ever runs after an explicit CEO Inbox "Approve" click (or the
+    // equivalent `npm run atlas:apply` CLI) — so reaching this point IS the approval-gate step
+    // resolving, and the apply step starting.
+    safeStepUpdate(missionId, "approval-gate", { status: "completed" });
+    safeStepUpdate(missionId, "apply", { status: "running" });
 
-  const entries = manifest.files ?? [];
+    const entries = manifest.files ?? [];
 
-  // Bugfix 2026-07-10 · A manifest that legitimately proposes 0 files (mission.implement
-  // concluded the work already exists elsewhere — a real, valid outcome, not a failure) used
-  // to be treated identically to "manifest missing/corrupt": ok:false, nothing archived, never
-  // recorded in appliedHistory. That left the CEO Inbox permanently stuck showing "approved
-  // but not applied — run npm run atlas:apply" for a mission that will *always* propose 0
-  // files again on retry, an unclearable warning loop. Found live on BRAIN-007. Now: 0 files
-  // is resolved the same way as N files — archived to applied-<timestamp>/ so
-  // buildAppliedHistory() picks it up and the warning clears itself, same as any other apply.
-  const applied: AppliedFileChange[] = [];
-  const skipped: SkippedFileChange[] = [];
+    // Bugfix 2026-07-10 · A manifest that legitimately proposes 0 files (mission.implement
+    // concluded the work already exists elsewhere — a real, valid outcome, not a failure) used
+    // to be treated identically to "manifest missing/corrupt": ok:false, nothing archived, never
+    // recorded in appliedHistory. That left the CEO Inbox permanently stuck showing "approved
+    // but not applied — run npm run atlas:apply" for a mission that will *always* propose 0
+    // files again on retry, an unclearable warning loop. Found live on BRAIN-007. Now: 0 files
+    // is resolved the same way as N files — archived to applied-<timestamp>/ so
+    // buildAppliedHistory() picks it up and the warning clears itself, same as any other apply.
+    const applied: AppliedFileChange[] = [];
+    const skipped: SkippedFileChange[] = [];
 
-  for (const entry of entries) {
-    const path = typeof entry.path === "string" ? entry.path.trim() : "";
-    const action = entry.action === "modify" ? "modify" : "create";
+    for (const entry of entries) {
+      const path = typeof entry.path === "string" ? entry.path.trim() : "";
+      const action = entry.action === "modify" ? "modify" : "create";
 
-    if (!path || !isSafePath(path)) {
-      skipped.push({ path: path || "(onbekend pad)", reason: "Pad geweigerd door veiligheidscontrole bij toepassen." });
-      continue;
+      if (!path || !isSafePath(path)) {
+        skipped.push({ path: path || "(onbekend pad)", reason: "Pad geweigerd door veiligheidscontrole bij toepassen." });
+        continue;
+      }
+
+      const source = join(reviewDir, path);
+      if (!existsSync(source)) {
+        skipped.push({ path, reason: "Bestand staat in de manifest maar ontbreekt in proposed-changes/." });
+        continue;
+      }
+
+      const content = readFileSync(source, "utf8");
+      const destination = join(ROOT_DIR, path);
+      mkdirSync(dirname(destination), { recursive: true });
+      writeFileSync(destination, content, "utf8");
+      applied.push({ path, action, bytesWritten: Buffer.byteLength(content, "utf8") });
     }
 
-    const source = join(reviewDir, path);
-    if (!existsSync(source)) {
-      skipped.push({ path, reason: "Bestand staat in de manifest maar ontbreekt in proposed-changes/." });
-      continue;
-    }
+    const archiveDir = join(ROOT_DIR, "engineering", "packages", missionId, `applied-${Date.now()}`);
+    const archiveDirName = archiveDir.split("/").pop() ?? String(Date.now());
+    renameSync(reviewDir, archiveDir);
+    safeStepUpdate(missionId, "apply", { status: "completed" });
 
-    const content = readFileSync(source, "utf8");
-    const destination = join(ROOT_DIR, path);
-    mkdirSync(dirname(destination), { recursive: true });
-    writeFileSync(destination, content, "utf8");
-    applied.push({ path, action, bytesWritten: Buffer.byteLength(content, "utf8") });
-  }
+    let validation: PostApplyValidationResult | null = null;
+    let fixMission: FixMissionDraftResult = null;
+    if (applied.length > 0) {
+      rememberApply(missionId, applied);
+      safeStepUpdate(missionId, "validate", { status: "running" });
 
-  const archiveDir = join(ROOT_DIR, "engineering", "packages", missionId, `applied-${Date.now()}`);
-  renameSync(reviewDir, archiveDir);
-  safeStepUpdate(missionId, "apply", { status: "completed" });
-
-  let validation: PostApplyValidationResult | null = null;
-  let fixMission: FixMissionDraftResult = null;
-  if (applied.length > 0) {
-    rememberApply(missionId, applied);
-    safeStepUpdate(missionId, "validate", { status: "running" });
-
-    // EXEC-002 · Best-effort, never blocks the (already-successful) apply: a typecheck or
-    // staging problem here is reported, not thrown — the files are already safely in the
-    // working tree at this point regardless of what this step finds.
-    try {
-      validation = runPostApplyValidation({
-        missionId,
-        title: manifest?.title ?? missionId,
-        summary: manifest?.summary ?? "",
-        applied,
-        archiveDir,
-      });
-    } catch {
-      validation = null;
-    }
-
-    const validationPassed = validation ? validation.typecheckOk && validation.testsOk : null;
-    safeStepUpdate(missionId, "validate", {
-      status: validationPassed === false ? "failed" : "completed",
-    });
-
-    // BRAIN-011 · If validation just found a real problem, don't just report it — draft a
-    // real fix proposal too, same best-effort/never-blocks guarantee as validation itself.
-    if (validation) {
+      // EXEC-002 · Best-effort, never blocks the (already-successful) apply: a typecheck or
+      // staging problem here is reported, not thrown — the files are already safely in the
+      // working tree at this point regardless of what this step finds.
       try {
-        fixMission = await draftFixMissionForFailedValidation({
+        validation = runPostApplyValidation({
           missionId,
           title: manifest?.title ?? missionId,
+          summary: manifest?.summary ?? "",
           applied,
           archiveDir,
-          validation,
         });
       } catch {
-        fixMission = null;
+        validation = null;
+      }
+
+      const validationPassed = validation ? validation.typecheckOk && validation.testsOk : null;
+      safeStepUpdate(missionId, "validate", {
+        status: validationPassed === false ? "failed" : "completed",
+      });
+
+      // BRAIN-011 · If validation just found a real problem, don't just report it — draft a
+      // real fix proposal too, same best-effort/never-blocks guarantee as validation itself.
+      if (validation) {
+        try {
+          fixMission = await draftFixMissionForFailedValidation({
+            missionId,
+            title: manifest?.title ?? missionId,
+            applied,
+            archiveDir,
+            validation,
+          });
+        } catch {
+          fixMission = null;
+        }
+      }
+
+      // Sprint 1.3 — Tom (Engineering): the ONLY point in this file where "confirmed" fires —
+      // applied.length > 0 means real file(s) were genuinely written to the working tree, the
+      // one unambiguous "engineering action actually completed" signal that exists here.
+      // Deliberately NOT gated on validationPassed: EXEC-002/003 validation is advisory-only
+      // everywhere else in this function too (see the comment above — a failing typecheck
+      // never un-applies the files), so gating attribution on it would contradict the system's
+      // own definition of "applied". Validation outcome is included in the description as
+      // context, not as a precondition.
+      if (reporter?.onActionConfirmed) {
+        const validationNote = validation
+          ? ` (typecheck: ${validation.typecheckOk ? "ok" : "failed"}, tests: ${validation.testsOk ? "ok" : "failed"})`
+          : "";
+        try {
+          await reporter.onActionConfirmed({
+            capabilityId: "claude-engineer",
+            workItemRef: `${missionId}:${archiveDirName}`,
+            occurredAt: new Date().toISOString(),
+            description: `${applied.length} bestand(en) toegepast op de working tree voor ${missionId}${validationNote}.`,
+          });
+        } catch (error) {
+          // Fail-open: an attribution write failure must never surface as an apply failure —
+          // the files are already safely applied at this point.
+          console.error(
+            "applyEngine: kon confirmed-attributie niet melden:",
+            error instanceof Error ? error.message : error,
+          );
+        }
+      }
+    } else {
+      // A legitimately empty proposal (mission already implemented elsewhere) — nothing to
+      // validate, not a failure, and not an engineering action either: nothing was actually
+      // written to the working tree, so no attribution event fires here (see the "no event"
+      // rule for skipped/no-op paths).
+      safeStepUpdate(missionId, "validate", { status: "skipped" });
+    }
+
+    // The plan's job ends here regardless of validation outcome: the code is in the working
+    // tree either way. A failed validation drafts a *new* fix mission (its own separate plan),
+    // it doesn't reopen this one.
+    safeStatusUpdate(missionId, { status: "completed", completedAt: new Date().toISOString() });
+
+    return {
+      ok: true,
+      missionId,
+      applied,
+      skipped,
+      archivedTo: `engineering/packages/${missionId}/${archiveDirName}`,
+      validation,
+      fixMission,
+    };
+  } catch (error) {
+    if (reporter?.onActionFailed) {
+      try {
+        await reporter.onActionFailed({
+          capabilityId: "claude-engineer",
+          workItemRef: `${missionId}:attempt-${Date.now()}`,
+          occurredAt: new Date().toISOString(),
+          reason: error instanceof Error ? error.message : String(error),
+        });
+      } catch (reportError) {
+        console.error(
+          "applyEngine: kon failed-attributie niet melden:",
+          reportError instanceof Error ? reportError.message : reportError,
+        );
       }
     }
-  } else {
-    // A legitimately empty proposal (mission already implemented elsewhere) — nothing to
-    // validate, not a failure. See the 2026-07-10 bugfix note above.
-    safeStepUpdate(missionId, "validate", { status: "skipped" });
+    throw error;
   }
-
-  // The plan's job ends here regardless of validation outcome: the code is in the working
-  // tree either way. A failed validation drafts a *new* fix mission (its own separate plan),
-  // it doesn't reopen this one.
-  safeStatusUpdate(missionId, { status: "completed", completedAt: new Date().toISOString() });
-
-  return {
-    ok: true,
-    missionId,
-    applied,
-    skipped,
-    archivedTo: `engineering/packages/${missionId}/${archiveDir.split("/").pop()}`,
-    validation,
-    fixMission,
-  };
 }

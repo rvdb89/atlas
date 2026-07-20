@@ -163,7 +163,7 @@ function mapAgent(agent: CompanyState["agents"][number]): ManagementMember {
     id: agent.id,
     name: agent.name,
     title: agent.role,
-    department: agent.department as DepartmentId,
+    department: agent.department as DepartmentId | null,
     status: agent.status as ManagementStatus,
     currentResponsibility: agent.currentResponsibility,
     currentInitiative: agent.currentInitiative,
