@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { buildBriefingSteps, type BriefingStep } from "./briefingSteps";
+import { ROOM_MOTION } from "./motion";
 import type { ExecutiveBriefing } from "./roomData";
 import { ROOM_COLORS } from "./theme";
 import { useRoomTransition } from "./useRoomTransition";
+import { RATIFIED_DEPARTMENTS, type RatifiedDepartmentId } from "@/atlas/team";
 import { ADJUST_OPTIONS, type NeedsChangeOptionId } from "@/atlas/studio/control/types";
 
 /**
@@ -29,6 +31,18 @@ import { ADJUST_OPTIONS, type NeedsChangeOptionId } from "@/atlas/studio/control
  * reorder `steps` out from under the CEO mid-sequence. Whether an item still needs a response is
  * instead read live, each render, against the current `briefing.decisions.items` — so a button
  * that's already been acted on stops offering itself again without the step list itself moving.
+ *
+ * Sprint 5.4 ("Jarvis Experience") adds exactly two presentation-only things on top, per the
+ * roadmap's own "punt verschijnt, pauze, visualisatie, verdwijnt, volgende punt": (1) when a step
+ * carries `visualReference` (Sprint 5.1's `SynthesisPoint.visualReference`, threaded through by
+ * `briefingSteps.ts` — never new data), a small `PointVisual` renders, echoing Department Wall's
+ * own Vein/Warm Vein motif and the one canonical department label table (`RATIFIED_DEPARTMENTS`)
+ * — never a new rendering system, never touching `DepartmentWall.tsx` itself. (2) advancing now
+ * plays a calm exit — the current step fades out (`exitOpacity`, driven by the exact same
+ * `ROOM_MOTION.TRANSITION` duration/easing every other Room transition already uses) and only
+ * once that finishes does the next step mount and play its own existing entrance. One thought
+ * finishes before the next begins, using the one motion constant this whole file already
+ * depended on — no second timing system, no new `Animated.Value` type.
  */
 export default function ExecutiveBriefingOverlay({
   visible,
@@ -56,6 +70,12 @@ export default function ExecutiveBriefingOverlay({
   const [steps, setSteps] = useState<BriefingStep[]>([]);
   const capturedRef = useRef(false);
 
+  // Sprint 5.4 — the current step's own exit fade. One `Animated.Value`, reused every advance
+  // (never a fresh one per step, unlike the entrance animation below) — reset to 1 the instant a
+  // new step mounts, then animated to 0 the instant the CEO advances again.
+  const exitOpacity = useRef(new Animated.Value(1)).current;
+  const [isAdvancing, setIsAdvancing] = useState(false);
+
   // Freeze the step sequence once per session, the first moment a real briefing exists — never
   // re-derived from `briefing` again while `visible` stays true, so an action taken mid-briefing
   // (which changes `snapshot.ceoInbox`, and therefore what a fresh `buildBriefingSteps()` call
@@ -63,6 +83,8 @@ export default function ExecutiveBriefingOverlay({
   useEffect(() => {
     if (!visible) {
       capturedRef.current = false;
+      setIsAdvancing(false);
+      exitOpacity.setValue(1);
       return;
     }
     if (!capturedRef.current && briefing) {
@@ -70,7 +92,7 @@ export default function ExecutiveBriefingOverlay({
       setStepIndex(0);
       capturedRef.current = true;
     }
-  }, [visible, briefing]);
+  }, [visible, briefing, exitOpacity]);
 
   const cardStyle = {
     opacity: progress,
@@ -92,13 +114,31 @@ export default function ExecutiveBriefingOverlay({
   // `stepIndex`; only on the last step does the exact same press become the real "Enter The
   // Room" dismissal. Either way, an Adjust option row left open on the current step is closed
   // first — it must never silently carry over into Threshold Stone after entering The Room.
+  //
+  // Sprint 5.4 — advancing no longer swaps the step instantly. The current step fades out first
+  // (`exitOpacity`, the same `ROOM_MOTION.TRANSITION` duration/easing as every other transition
+  // in this file) and only once that finishes does `stepIndex` actually move — "Atlas finishes
+  // one thought before beginning the next," not two thoughts overlapping mid-fade.
   const handleAdvance = () => {
-    onResetAdjusting();
-    if (isLastStep) {
-      onClose();
+    if (isAdvancing) {
       return;
     }
-    setStepIndex((index) => Math.min(index + 1, steps.length - 1));
+    onResetAdjusting();
+    setIsAdvancing(true);
+    Animated.timing(exitOpacity, {
+      toValue: 0,
+      duration: ROOM_MOTION.TRANSITION.duration,
+      easing: ROOM_MOTION.TRANSITION.easing,
+      useNativeDriver: true,
+    }).start(() => {
+      if (isLastStep) {
+        onClose();
+        return;
+      }
+      setStepIndex((index) => Math.min(index + 1, steps.length - 1));
+      exitOpacity.setValue(1);
+      setIsAdvancing(false);
+    });
   };
 
   // Live (not frozen) — the same real ids `briefing.decisions.items` currently contains, used
@@ -112,19 +152,21 @@ export default function ExecutiveBriefingOverlay({
       <View style={StyleSheet.absoluteFill} />
       <Animated.View style={[styles.card, cardStyle]}>
         {currentStep ? (
-          <BriefingStepView
-            key={currentStep.id}
-            step={currentStep}
-            stillWaitingIds={stillWaitingIds}
-            adjustingItemId={adjustingItemId}
-            onApprove={onApprove}
-            onAdjustClick={onAdjustClick}
-            onAdjustOption={onAdjustOption}
-            onDefer={onDefer}
-          />
+          <Animated.View style={{ width: "100%", opacity: exitOpacity }}>
+            <BriefingStepView
+              key={currentStep.id}
+              step={currentStep}
+              stillWaitingIds={stillWaitingIds}
+              adjustingItemId={adjustingItemId}
+              onApprove={onApprove}
+              onAdjustClick={onAdjustClick}
+              onAdjustOption={onAdjustOption}
+              onDefer={onDefer}
+            />
+          </Animated.View>
         ) : null}
 
-        <Pressable style={styles.closeButton} onPress={handleAdvance}>
+        <Pressable style={[styles.closeButton, isAdvancing && styles.closeButtonFading]} onPress={handleAdvance}>
           <Text style={styles.closeLabel}>{isLastStep ? "Enter The Room" : "Continue"}</Text>
         </Pressable>
       </Animated.View>
@@ -171,6 +213,8 @@ function BriefingStepView({
 
   return (
     <Animated.View style={[styles.section, stepStyle]}>
+      {step.visualReference ? <PointVisual departmentId={step.visualReference} /> : null}
+
       {step.lines.map((line, index) => (
         <Text key={index} style={lineStyleFor(step.kind, index)}>
           {line}
@@ -214,6 +258,28 @@ function BriefingStepView({
   );
 }
 
+/**
+ * Sprint 5.4 — "a subtle contextual visual," never a new rendering system. Echoes Department
+ * Wall's own Vein / Warm Vein motif (`objects/DepartmentWall.tsx`) using the same two-layer
+ * shape and the same `ROOM_COLORS` ember tokens, at card scale — this does not import or modify
+ * that component (it renders inside The Room, currently hidden behind this overlay's own
+ * backdrop; nothing here reaches into it). The label is read from `RATIFIED_DEPARTMENTS`, the
+ * one existing canonical department-name table, not invented here. Renders only when the step
+ * actually carries a `visualReference` — never a placeholder, never for its own sake.
+ */
+function PointVisual({ departmentId }: { departmentId: string }) {
+  const label = RATIFIED_DEPARTMENTS[departmentId as RatifiedDepartmentId]?.label ?? departmentId;
+  return (
+    <View style={styles.pointVisual}>
+      <View style={styles.pointVisualShape}>
+        <View style={styles.pointVisualVein} />
+        <View style={styles.pointVisualWarmVein} />
+      </View>
+      <Text style={styles.pointVisualLabel}>{label}</Text>
+    </View>
+  );
+}
+
 function lineStyleFor(kind: BriefingStep["kind"], index: number) {
   switch (kind) {
     case "welcome":
@@ -253,6 +319,51 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 22,
+  },
+
+  // Sprint 5.4 — a small echo of Department Wall's own Vein/Warm Vein shape (same colors, same
+  // two-layer idiom, at card scale), plus the department's real, existing label. Sits above the
+  // step's text, never larger or louder than it — "support the story, never distract from it."
+  pointVisual: {
+    alignItems: "center",
+    alignSelf: "center",
+    gap: 4,
+    marginBottom: 4,
+  },
+
+  pointVisualShape: {
+    width: 36,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  pointVisualVein: {
+    position: "absolute",
+    width: 10,
+    height: "100%",
+    borderRadius: 8,
+    backgroundColor: ROOM_COLORS.wallDeep,
+    opacity: 0.35,
+  },
+
+  pointVisualWarmVein: {
+    position: "absolute",
+    width: 10,
+    height: 20,
+    borderRadius: 8,
+    backgroundColor: ROOM_COLORS.emberCore,
+    opacity: 0.85,
+  },
+
+  pointVisualLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#8A8272",
+  },
+
+  closeButtonFading: {
+    opacity: 0.55,
   },
 
   section: {

@@ -25,6 +25,11 @@ export type BriefingStep = {
    * informational, exactly as `CompanyIssue` and `LivePlanSummary` have no approve/adjust/defer
    * mechanism anywhere in this codebase (verified in Sprint 5.1's investigation). */
   decisionItems?: CeoInboxItem[];
+  /** Sprint 5.4 ("Jarvis Experience") — only ever set on the `"attention"` step, only ever the
+   * same real `RatifiedDepartmentId` string `Synthesis.points[].visualReference` already carries
+   * (Sprint 5.1, `synthesisEngine.ts`). Not a new field of data — `composeSynthesis()` already
+   * computed this; this is the first time a step actually reads it. */
+  visualReference?: string;
 };
 
 /**
@@ -44,7 +49,12 @@ export function buildBriefingSteps(briefing: ExecutiveBriefing): BriefingStep[] 
   ];
 
   if (briefing.attention.length > 0) {
-    steps.push({ id: "attention", kind: "attention", lines: briefing.attention });
+    // Sprint 5.4 — the same ranked `Synthesis.points` Sprint 5.1 already exposed on
+    // `ExecutiveBriefing.synthesis`; only ever the top attention point carries a
+    // `visualReference` (`synthesisEngine.ts`'s own capacity-clause logic, untouched here), so
+    // at most one is ever found. No new ranking, no re-derivation — a lookup, not a decision.
+    const visualReference = briefing.synthesis.points.find((point) => point.visualReference)?.visualReference;
+    steps.push({ id: "attention", kind: "attention", lines: briefing.attention, visualReference });
   }
 
   if (briefing.decisions.count > 0) {

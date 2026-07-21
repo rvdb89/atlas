@@ -52,6 +52,45 @@ test("attention step is included only when the briefing has attention lines", ()
   ]);
 });
 
+test("Sprint 5.4 — the attention step carries visualReference when a synthesis point has one", () => {
+  const steps = buildBriefingSteps(
+    baseBriefing({
+      attention: ["Engineering needs attention — reduced capacity."],
+      synthesis: {
+        generatedAt: "2026-07-21T08:00:00.000Z",
+        points: [
+          {
+            id: "issue-bug-1",
+            kind: "issue",
+            rank: 0,
+            headline: "Engineering needs attention",
+            evidence: "reduced capacity",
+            requiresAttention: true,
+            visualReference: "engineering",
+          },
+        ],
+        hasMeaningfulActivity: false,
+        capacityConstrained: false,
+        recommendation: undefined,
+      },
+    }),
+  );
+
+  assert.equal(steps.find((step) => step.kind === "attention")?.visualReference, "engineering");
+  // No other step ever carries a visualReference.
+  for (const step of steps) {
+    if (step.kind !== "attention") {
+      assert.equal(step.visualReference, undefined);
+    }
+  }
+});
+
+test("Sprint 5.4 — no visualReference on the attention step when no synthesis point has one", () => {
+  const steps = buildBriefingSteps(baseBriefing({ attention: ["Checkout fails on the pizza flow needs attention."] }));
+
+  assert.equal(steps.find((step) => step.kind === "attention")?.visualReference, undefined);
+});
+
 const sampleInboxItem = {
   id: "inbox-1",
   title: "Approve the summer menu roadmap change",

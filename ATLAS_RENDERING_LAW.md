@@ -1,6 +1,6 @@
 # Atlas Rendering Law
 
-**Version:** 1.0 — Ratified
+**Version:** 1.1 — Ratified (Sprint 5.4 amendment: sequential narrative mode, §6)
 
 *A one-page architecture note. Every engineer must read this before building any rendering logic for Atlas. It is not philosophy and not implementation — it is the boundary between the two.*
 
@@ -27,6 +27,12 @@ Judgment on its own does not need to compare two things numerically. Comparison 
 **5. Why every future visual decision is one expression of the same judgment**
 
 Position, size, brightness, motion, stillness — none of these are separate design decisions with their own logic. Each is a different sense through which the same underlying judgment becomes perceptible. A rendering engine should never ask, property by property, "what should this look like." It should ask once — "what has Atlas judged" — and let every visual property answer from that one source. If two properties ever disagree about what matters most right now, the rendering is wrong, not because either was badly tuned, but because they were drawn from two sources instead of one.
+
+**6. Why a sequential narrative mode is still one judgment, not two** *(Sprint 5.4 amendment — "Jarvis Experience," Fase 5)*
+
+Sections 1–5 describe how judgment becomes visible in a single shared space, all at once. The CEO Briefing (Fase 5) adds a second dimension: time. When Atlas narrates instead of displaying, it does not gain a second rendering law — it applies the same one across a sequence instead of a surface. Each Synthesis point is still simply the thing judgment has ranked most worth saying next; the sequence is nothing but that ranking, made perceptible one step at a time instead of many at once. A point may carry its own supporting visualisation — a highlight or emphasis on an existing Room element — but that visualisation is never a second source of truth: it is the same judgment that produced the point's words, made visible through a second sense, exactly as Principle 5 already requires of any two properties describing the same thing. A point disappears, calmly, before the next appears — not because attention decays on a timer, but because two judged things are never shown competing for the same moment any more than Principle 4 permits them to compete for the same space.
+
+*In practice:* the sequential narrative mode is exactly one point on screen at a time, each with its own appear → pause (CEO-paced) → disappear beat, using the Room's one existing motion constant (`ROOM_MOTION.TRANSITION`) for both directions — never a second timing system. Supporting visualisation, when present, is drawn from the same existing Room materialization language, never a new rendering system of its own. Heart, Department Wall, and the rest of the Room's static-reveal architecture are unaffected — this mode is a temporal reading of the same one law, layered on top, not a replacement for it.
 
 **The principle this protects**
 
