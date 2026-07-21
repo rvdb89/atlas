@@ -1,52 +1,76 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { buildBriefingSteps, type BriefingStep } from "./briefingSteps";
 import type { ExecutiveBriefing } from "./roomData";
 import { ROOM_COLORS } from "./theme";
 import { useRoomTransition } from "./useRoomTransition";
+import { ADJUST_OPTIONS, type NeedsChangeOptionId } from "@/atlas/studio/control/types";
 
 /**
  * Executive Briefing — Sprint 4.2 ("Executive Briefing v1") first turned the real snapshot into
  * six short sections (welcome, business update, executive judgement, attention, CEO decisions,
  * closing). Sprint 4.3 ("Room Entry Experience") staged those six sections as one cascading
- * reveal within a single open animation. Sprint 5.2 ("Sequential Business Briefing") replaces
- * that cascade with a genuinely sequential, CEO-paced experience: one step is on screen at a
- * time, and the CEO advances it deliberately — the same shift "Do NOT introduce a separate
- * motion duration" and "sequencing, not different animation speeds" already pointed toward.
+ * reveal. Sprint 5.2 ("Sequential Business Briefing") replaced that with a genuinely sequential,
+ * CEO-paced experience: one step on screen at a time, advanced deliberately.
  *
- * `buildBriefingSteps()` (`briefingSteps.ts`) is the only new logic here, and it is purely
- * presentational — it slices the existing `ExecutiveBriefing` object into an ordered step list,
- * never recomputing any of its content. `roomData.ts` and `synthesisEngine.ts` (Sprint 5.1) are
- * untouched.
+ * Sprint 5.3 ("Actionable Executive Briefing") adds exactly one thing on top: the CEO Decisions
+ * step can now be acted on directly, without waiting to enter The Room. `approveInbox`,
+ * `adjustInbox`, `deferInbox` and `adjustingItemId` below are the *exact same* functions and
+ * state `useControlDashboard()` already exposes to `CeoFocusOverlay.tsx` — no second mutation
+ * path, no new approval workflow. Business Update, Executive Judgement and Attention stay purely
+ * informational: `CompanyIssue` and `LivePlanSummary` have no approve/adjust/defer mechanism
+ * anywhere in this codebase (confirmed in Sprint 5.1's investigation), so those steps carry no
+ * `decisionItems` and render no action row — "expose actions only when they already exist."
  *
- * Still shares the exact same Soft State Transition (`useRoomTransition`) and card/backdrop
- * treatment every other Room overlay already uses. The backdrop still does not dismiss on tap
- * (Sprint 4.3) — the CEO's only control is the single button at the bottom, which reads
- * "Continue" until the final step and only becomes "Enter The Room" — the one action that
- * actually dismisses this overlay — once that final step is on screen.
+ * The step *sequence* itself is captured once per session (`capturedStepsRef`) the first moment
+ * a real briefing is available, and never recomputed from a later, action-mutated snapshot —
+ * taking an action changes what `snapshot.ceoInbox` looks like, which would otherwise shrink or
+ * reorder `steps` out from under the CEO mid-sequence. Whether an item still needs a response is
+ * instead read live, each render, against the current `briefing.decisions.items` — so a button
+ * that's already been acted on stops offering itself again without the step list itself moving.
  */
 export default function ExecutiveBriefingOverlay({
   visible,
   briefing,
   onClose,
+  adjustingItemId,
+  onApprove,
+  onAdjustClick,
+  onAdjustOption,
+  onDefer,
+  onResetAdjusting,
 }: {
   visible: boolean;
   briefing: ExecutiveBriefing | null;
   onClose: () => void;
+  adjustingItemId: string | null;
+  onApprove: (id: string) => void;
+  onAdjustClick: (id: string) => void;
+  onAdjustOption: (id: string, option: NeedsChangeOptionId) => void;
+  onDefer: (id: string) => void;
+  onResetAdjusting: () => void;
 }) {
   const progress = useRoomTransition(visible);
   const [stepIndex, setStepIndex] = useState(0);
+  const [steps, setSteps] = useState<BriefingStep[]>([]);
+  const capturedRef = useRef(false);
 
-  const steps = briefing ? buildBriefingSteps(briefing) : [];
-
-  // A fresh briefing session (the overlay becoming visible again) always starts back at the
-  // first step — Welcome — it never resumes mid-sequence from a previous visit.
+  // Freeze the step sequence once per session, the first moment a real briefing exists — never
+  // re-derived from `briefing` again while `visible` stays true, so an action taken mid-briefing
+  // (which changes `snapshot.ceoInbox`, and therefore what a fresh `buildBriefingSteps()` call
+  // would produce) can never shrink or reorder the sequence the CEO is already partway through.
   useEffect(() => {
-    if (visible) {
-      setStepIndex(0);
+    if (!visible) {
+      capturedRef.current = false;
+      return;
     }
-  }, [visible]);
+    if (!capturedRef.current && briefing) {
+      setSteps(buildBriefingSteps(briefing));
+      setStepIndex(0);
+      capturedRef.current = true;
+    }
+  }, [visible, briefing]);
 
   const cardStyle = {
     opacity: progress,
@@ -66,8 +90,10 @@ export default function ExecutiveBriefingOverlay({
   // The CEO can only ever move forward, one approved step at a time — there is no control to
   // skip ahead or jump to the end. Pressing the button on any step but the last only advances
   // `stepIndex`; only on the last step does the exact same press become the real "Enter The
-  // Room" dismissal.
+  // Room" dismissal. Either way, an Adjust option row left open on the current step is closed
+  // first — it must never silently carry over into Threshold Stone after entering The Room.
   const handleAdvance = () => {
+    onResetAdjusting();
     if (isLastStep) {
       onClose();
       return;
@@ -75,11 +101,28 @@ export default function ExecutiveBriefingOverlay({
     setStepIndex((index) => Math.min(index + 1, steps.length - 1));
   };
 
+  // Live (not frozen) — the same real ids `briefing.decisions.items` currently contains, used
+  // only to tell a frozen step's items whether they've already been acted on since the sequence
+  // was captured, so their action row can stop offering itself without the item disappearing
+  // from the step entirely.
+  const stillWaitingIds = new Set((briefing?.decisions.items ?? []).map((item) => item.id));
+
   return (
     <Animated.View pointerEvents={visible ? "auto" : "none"} style={[styles.backdrop, { opacity: progress }]}>
       <View style={StyleSheet.absoluteFill} />
       <Animated.View style={[styles.card, cardStyle]}>
-        {currentStep ? <BriefingStepView key={currentStep.id} step={currentStep} /> : null}
+        {currentStep ? (
+          <BriefingStepView
+            key={currentStep.id}
+            step={currentStep}
+            stillWaitingIds={stillWaitingIds}
+            adjustingItemId={adjustingItemId}
+            onApprove={onApprove}
+            onAdjustClick={onAdjustClick}
+            onAdjustOption={onAdjustOption}
+            onDefer={onDefer}
+          />
+        ) : null}
 
         <Pressable style={styles.closeButton} onPress={handleAdvance}>
           <Text style={styles.closeLabel}>{isLastStep ? "Enter The Room" : "Continue"}</Text>
@@ -96,7 +139,23 @@ export default function ExecutiveBriefingOverlay({
  * new step — reusing the existing transition hook exactly as written, not a second animation
  * system with its own timing.
  */
-function BriefingStepView({ step }: { step: BriefingStep }) {
+function BriefingStepView({
+  step,
+  stillWaitingIds,
+  adjustingItemId,
+  onApprove,
+  onAdjustClick,
+  onAdjustOption,
+  onDefer,
+}: {
+  step: BriefingStep;
+  stillWaitingIds: Set<string>;
+  adjustingItemId: string | null;
+  onApprove: (id: string) => void;
+  onAdjustClick: (id: string) => void;
+  onAdjustOption: (id: string, option: NeedsChangeOptionId) => void;
+  onDefer: (id: string) => void;
+}) {
   const progress = useRoomTransition(true);
   const stepStyle = {
     opacity: progress,
@@ -117,6 +176,40 @@ function BriefingStepView({ step }: { step: BriefingStep }) {
           {line}
         </Text>
       ))}
+
+      {step.decisionItems?.map((item) => {
+        const stillWaiting = stillWaitingIds.has(item.id);
+        return (
+          <View key={item.id} style={styles.decisionItem}>
+            <Text style={styles.decisionTitle}>{item.title}</Text>
+            {stillWaiting ? (
+              adjustingItemId === item.id ? (
+                <View style={styles.optionRow}>
+                  {ADJUST_OPTIONS.map((option) => (
+                    <Pressable key={option.id} onPress={() => onAdjustOption(item.id, option.id)}>
+                      <Text style={styles.optionLabel}>{option.label}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              ) : (
+                <View style={styles.actionRow}>
+                  <Pressable style={styles.actionPill} onPress={() => onApprove(item.id)}>
+                    <Text style={styles.actionLabel}>Approve</Text>
+                  </Pressable>
+                  <Pressable style={styles.actionPill} onPress={() => onAdjustClick(item.id)}>
+                    <Text style={styles.actionLabel}>Adjust</Text>
+                  </Pressable>
+                  <Pressable style={styles.actionPill} onPress={() => onDefer(item.id)}>
+                    <Text style={styles.actionLabel}>Later</Text>
+                  </Pressable>
+                </View>
+              )
+            ) : (
+              <Text style={styles.decisionNoted}>Noted.</Text>
+            )}
+          </View>
+        );
+      })}
     </Animated.View>
   );
 }
@@ -211,6 +304,65 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     color: "#5A5344",
     textAlign: "center",
+  },
+
+  // Sprint 5.3 — same visual language `CeoFocusOverlay.tsx` already established for an
+  // individual actionable item, reused rather than reinvented.
+  decisionItem: {
+    width: "100%",
+    gap: 4,
+    alignItems: "center",
+    marginTop: 4,
+  },
+
+  decisionTitle: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "700",
+    color: "#2E291F",
+    textAlign: "center",
+  },
+
+  decisionNoted: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#8A8272",
+  },
+
+  actionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 2,
+  },
+
+  actionPill: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    backgroundColor: "rgba(58, 52, 42, 0.08)",
+  },
+
+  actionLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#3A342A",
+  },
+
+  optionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 14,
+    marginTop: 2,
+  },
+
+  optionLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: ROOM_COLORS.emberDeep,
+    paddingVertical: 4,
   },
 
   closeButton: {

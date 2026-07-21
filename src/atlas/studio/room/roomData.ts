@@ -194,7 +194,11 @@ export type ExecutiveBriefing = {
   businessUpdate: string[];
   judgement: string;
   attention: string[];
-  decisions: { count: number; summary: string };
+  /** Sprint 5.3 ("Actionable Executive Briefing") — `items` is the same real `CeoInboxItem[]`
+   * slice `summary` already describes in prose, now also returned as objects so the briefing
+   * step can attach the existing approve/adjust/defer actions to each one. Capped at 3, same
+   * as the summary sentence — never the full inbox. */
+  decisions: { count: number; summary: string; items: CeoInboxItem[] };
   closing: string;
   /** Sprint 5.1 ("Briefing Generator: Synthese → Briefing") — the ranked, limited Synthesis
    * output Business Update, Executive Judgement and Attention above were translated from.
@@ -268,15 +272,21 @@ export function composeExecutiveBriefing(snapshot: ControlSnapshot): ExecutiveBr
 
   const grouped = groupCeoInboxItems(snapshot.ceoInbox);
   const waiting = [...grouped.attention, ...grouped.pending];
+  // Sprint 5.3 ("Actionable Executive Briefing") — `topWaiting` is the exact same slice the
+  // summary sentence below already reduced `waiting` to; now also returned as real
+  // `CeoInboxItem[]` (not just their titles) so the presentation layer can attach the existing
+  // approve/adjust/defer actions to each one. No new selection, no new ranking — one already-
+  // computed list, read twice.
+  const topWaiting = waiting.slice(0, 3);
   const decisions =
     waiting.length === 0
-      ? { count: 0, summary: "Nothing is waiting on your decision." }
+      ? { count: 0, summary: "Nothing is waiting on your decision.", items: [] as CeoInboxItem[] }
       : {
           count: waiting.length,
-          summary: `${waiting.length} ${waiting.length === 1 ? "decision is" : "decisions are"} waiting for you: ${waiting
-            .slice(0, 3)
+          summary: `${waiting.length} ${waiting.length === 1 ? "decision is" : "decisions are"} waiting for you: ${topWaiting
             .map((item) => item.title)
             .join(", ")}${waiting.length > 3 ? `, and ${waiting.length - 3} more` : ""}.`,
+          items: topWaiting,
         };
 
   const closing = composeClosing(snapshot, synthesis);

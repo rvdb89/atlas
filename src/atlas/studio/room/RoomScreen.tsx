@@ -212,6 +212,12 @@ export default function RoomScreen() {
         visible={briefingOpen && briefing !== null}
         briefing={briefing}
         onClose={handleCloseBriefing}
+        adjustingItemId={adjustingItemId}
+        onApprove={approveInbox}
+        onAdjustClick={handleAdjustClick}
+        onAdjustOption={adjustInbox}
+        onDefer={deferInbox}
+        onResetAdjusting={() => setAdjustingItemId(null)}
       />
     </View>
   );

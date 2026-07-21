@@ -18,7 +18,7 @@ function baseBriefing(overrides: Partial<ExecutiveBriefing> = {}): ExecutiveBrie
     businessUpdate: ["Everything remained stable while you were away."],
     judgement: "Everything looks steady.",
     attention: [],
-    decisions: { count: 0, summary: "Nothing is waiting on your decision." },
+    decisions: { count: 0, summary: "Nothing is waiting on your decision.", items: [] },
     closing: "Nothing is actively in progress right now. I'll keep watching for what needs your attention next.",
     synthesis: {
       generatedAt: "2026-07-21T08:00:00.000Z",
@@ -52,9 +52,25 @@ test("attention step is included only when the briefing has attention lines", ()
   ]);
 });
 
+const sampleInboxItem = {
+  id: "inbox-1",
+  title: "Approve the summer menu roadmap change",
+  category: "roadmap_decision" as const,
+  urgency: "high" as const,
+  reason: "Demand has shifted toward summer items.",
+  recommendation: "Approve the roadmap change.",
+  status: "pending" as const,
+};
+
 test("decisions step is included only when decisions.count is greater than zero", () => {
   const steps = buildBriefingSteps(
-    baseBriefing({ decisions: { count: 1, summary: "1 decision is waiting for you: Approve the summer menu." } }),
+    baseBriefing({
+      decisions: {
+        count: 1,
+        summary: "1 decision is waiting for you: Approve the summer menu roadmap change.",
+        items: [sampleInboxItem],
+      },
+    }),
   );
 
   assert.deepEqual(
@@ -63,11 +79,37 @@ test("decisions step is included only when decisions.count is greater than zero"
   );
 });
 
+test("Sprint 5.3 — the decisions step carries the real CeoInboxItem[] for attaching existing actions", () => {
+  const steps = buildBriefingSteps(
+    baseBriefing({
+      decisions: {
+        count: 1,
+        summary: "1 decision is waiting for you: Approve the summer menu roadmap change.",
+        items: [sampleInboxItem],
+      },
+    }),
+  );
+
+  const decisionsStep = steps.find((step) => step.kind === "decisions");
+  assert.deepEqual(decisionsStep?.decisionItems, [sampleInboxItem]);
+  // No other step ever carries decisionItems — issues/plan/work points have no existing
+  // approve/adjust/defer mechanism, so they must stay purely informational.
+  for (const step of steps) {
+    if (step.kind !== "decisions") {
+      assert.equal(step.decisionItems, undefined);
+    }
+  }
+});
+
 test("full briefing (attention and decisions both present) always follows the approved six-part order", () => {
   const steps = buildBriefingSteps(
     baseBriefing({
       attention: ["Checkout fails on the pizza flow needs attention."],
-      decisions: { count: 1, summary: "1 decision is waiting for you: Approve the summer menu." },
+      decisions: {
+        count: 1,
+        summary: "1 decision is waiting for you: Approve the summer menu roadmap change.",
+        items: [sampleInboxItem],
+      },
     }),
   );
 

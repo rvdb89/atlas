@@ -1,4 +1,5 @@
 import type { ExecutiveBriefing } from "./roomData";
+import type { CeoInboxItem } from "@/atlas/studio/control/types";
 
 /**
  * Briefing Steps — Sprint 5.2 ("Sequential Business Briefing").
@@ -18,6 +19,12 @@ export type BriefingStep = {
   id: string;
   kind: BriefingStepKind;
   lines: string[];
+  /** Sprint 5.3 ("Actionable Executive Briefing") — only ever set on the `"decisions"` step,
+   * only ever the same real `CeoInboxItem[]` `ExecutiveBriefing.decisions.items` already
+   * carries. Every other step kind has no existing CEO Inbox action to attach and stays
+   * informational, exactly as `CompanyIssue` and `LivePlanSummary` have no approve/adjust/defer
+   * mechanism anywhere in this codebase (verified in Sprint 5.1's investigation). */
+  decisionItems?: CeoInboxItem[];
 };
 
 /**
@@ -41,7 +48,12 @@ export function buildBriefingSteps(briefing: ExecutiveBriefing): BriefingStep[] 
   }
 
   if (briefing.decisions.count > 0) {
-    steps.push({ id: "decisions", kind: "decisions", lines: [briefing.decisions.summary] });
+    steps.push({
+      id: "decisions",
+      kind: "decisions",
+      lines: [briefing.decisions.summary],
+      decisionItems: briefing.decisions.items,
+    });
   }
 
   steps.push({ id: "closing", kind: "closing", lines: [briefing.closing] });
