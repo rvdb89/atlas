@@ -1,31 +1,30 @@
+import { useEffect, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { buildBriefingSteps, type BriefingStep } from "./briefingSteps";
 import type { ExecutiveBriefing } from "./roomData";
 import { ROOM_COLORS } from "./theme";
 import { useRoomTransition } from "./useRoomTransition";
 
 /**
- * Executive Briefing — Sprint 4.2 ("Executive Briefing v1"). The CEO's first moment inside
- * The Room: Atlas speaks first, in the six-part order already approved (welcome, business
- * update, executive judgement, attention, CEO decisions, closing), before anything else in
- * the Room is touched. `composeExecutiveBriefing()` (`roomData.ts`) already turns the real
- * snapshot into these six short sections — this component only renders them, in order, as one
- * coherent message, never as separate cards or a dashboard.
+ * Executive Briefing — Sprint 4.2 ("Executive Briefing v1") first turned the real snapshot into
+ * six short sections (welcome, business update, executive judgement, attention, CEO decisions,
+ * closing). Sprint 4.3 ("Room Entry Experience") staged those six sections as one cascading
+ * reveal within a single open animation. Sprint 5.2 ("Sequential Business Briefing") replaces
+ * that cascade with a genuinely sequential, CEO-paced experience: one step is on screen at a
+ * time, and the CEO advances it deliberately — the same shift "Do NOT introduce a separate
+ * motion duration" and "sequencing, not different animation speeds" already pointed toward.
  *
- * Shares the exact same Soft State Transition (`useRoomTransition`) and card/backdrop
- * treatment every other Room overlay already uses (`PlaceholderOverlay.tsx`,
- * `CeoFocusOverlay.tsx`) — this reads as the same Atlas, not a new surface with its own rules.
- * Dismissing it (the one action available here) reveals the ordinary Room underneath,
- * unchanged; any further detail the CEO wants lives behind the Room's existing objects
- * (Threshold Stone, Company Doorways, Department Wall), never inside this overlay itself.
+ * `buildBriefingSteps()` (`briefingSteps.ts`) is the only new logic here, and it is purely
+ * presentational — it slices the existing `ExecutiveBriefing` object into an ordered step list,
+ * never recomputing any of its content. `roomData.ts` and `synthesisEngine.ts` (Sprint 5.1) are
+ * untouched.
  *
- * Sprint 4.3 ("Room Entry Experience") — the CEO now dismisses this deliberately, via
- * "Enter The Room" only; the backdrop no longer closes it on tap. The three sections below
- * reveal in sequence — Greeting, then Business Update + Executive Judgement, then Attention +
- * CEO Decisions + Closing — but this is staged entirely by giving each group its own
- * `inputRange` window over the *same* `progress` value `useRoomTransition` already produces.
- * There is still exactly one timing loop and one duration (`ROOM_MOTION.TRANSITION`, unchanged);
- * nothing here introduces a second `Animated.Value` or a different speed.
+ * Still shares the exact same Soft State Transition (`useRoomTransition`) and card/backdrop
+ * treatment every other Room overlay already uses. The backdrop still does not dismiss on tap
+ * (Sprint 4.3) — the CEO's only control is the single button at the bottom, which reads
+ * "Continue" until the final step and only becomes "Enter The Room" — the one action that
+ * actually dismisses this overlay — once that final step is on screen.
  */
 export default function ExecutiveBriefingOverlay({
   visible,
@@ -37,6 +36,17 @@ export default function ExecutiveBriefingOverlay({
   onClose: () => void;
 }) {
   const progress = useRoomTransition(visible);
+  const [stepIndex, setStepIndex] = useState(0);
+
+  const steps = briefing ? buildBriefingSteps(briefing) : [];
+
+  // A fresh briefing session (the overlay becoming visible again) always starts back at the
+  // first step — Welcome — it never resumes mid-sequence from a previous visit.
+  useEffect(() => {
+    if (visible) {
+      setStepIndex(0);
+    }
+  }, [visible]);
 
   const cardStyle = {
     opacity: progress,
@@ -50,87 +60,84 @@ export default function ExecutiveBriefingOverlay({
     ],
   };
 
-  // Sprint 4.3 — three windows over the one shared `progress` value. Each stage finishes
-  // revealing earlier than the next, producing a cascade inside the existing transition
-  // duration rather than a second animation system.
-  const stage1Style = stageStyle(progress, [0, 0.35]);
-  const stage2Style = stageStyle(progress, [0.2, 0.6]);
-  const stage3Style = stageStyle(progress, [0.45, 1]);
+  const currentStep = steps[stepIndex] ?? null;
+  const isLastStep = stepIndex >= steps.length - 1;
+
+  // The CEO can only ever move forward, one approved step at a time — there is no control to
+  // skip ahead or jump to the end. Pressing the button on any step but the last only advances
+  // `stepIndex`; only on the last step does the exact same press become the real "Enter The
+  // Room" dismissal.
+  const handleAdvance = () => {
+    if (isLastStep) {
+      onClose();
+      return;
+    }
+    setStepIndex((index) => Math.min(index + 1, steps.length - 1));
+  };
 
   return (
-    <Animated.View
-      pointerEvents={visible ? "auto" : "none"}
-      style={[styles.backdrop, { opacity: progress }]}
-    >
+    <Animated.View pointerEvents={visible ? "auto" : "none"} style={[styles.backdrop, { opacity: progress }]}>
       <View style={StyleSheet.absoluteFill} />
       <Animated.View style={[styles.card, cardStyle]}>
-        {briefing ? (
-          <View style={styles.body}>
-            <Animated.View style={stage1Style}>
-              <Text style={styles.greeting}>{briefing.greeting}.</Text>
-            </Animated.View>
+        {currentStep ? <BriefingStepView key={currentStep.id} step={currentStep} /> : null}
 
-            <Animated.View style={[styles.stageGroup, stage2Style]}>
-              <View style={styles.section}>
-                {briefing.businessUpdate.map((line, index) => (
-                  <Text key={index} style={index === 0 ? styles.leadLine : styles.line}>
-                    {line}
-                  </Text>
-                ))}
-              </View>
-
-              <Text style={styles.judgement}>{briefing.judgement}</Text>
-            </Animated.View>
-
-            <Animated.View style={[styles.stageGroup, stage3Style]}>
-              {briefing.attention.length > 0 ? (
-                <View style={styles.section}>
-                  {briefing.attention.map((line, index) => (
-                    <Text key={index} style={styles.attentionLine}>
-                      {line}
-                    </Text>
-                  ))}
-                </View>
-              ) : null}
-
-              <Text style={styles.line}>{briefing.decisions.summary}</Text>
-
-              <Text style={styles.closing}>{briefing.closing}</Text>
-            </Animated.View>
-          </View>
-        ) : null}
-
-        <Animated.View style={stage3Style}>
-          <Pressable style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeLabel}>Enter The Room</Text>
-          </Pressable>
-        </Animated.View>
+        <Pressable style={styles.closeButton} onPress={handleAdvance}>
+          <Text style={styles.closeLabel}>{isLastStep ? "Enter The Room" : "Continue"}</Text>
+        </Pressable>
       </Animated.View>
     </Animated.View>
   );
 }
 
-/** Sprint 4.3 — derives one stage's opacity/translateY from the shared `progress` value over
- * its own `inputRange` window, clamped so it holds at rest before/after that window instead of
- * over- or under-shooting. No new `Animated.Value`; this is purely a different read of the one
- * that already exists. */
-function stageStyle(progress: Animated.Value, inputRange: [number, number]) {
-  return {
-    opacity: progress.interpolate({
-      inputRange,
-      outputRange: [0, 1],
-      extrapolate: "clamp" as const,
-    }),
+/**
+ * One step's own reveal. Keying this by `step.id` in the parent makes React remount it on every
+ * advance, which re-triggers `useRoomTransition`'s own mount-time animation (0 → 1, the same
+ * `ROOM_MOTION.TRANSITION` duration and easing every other overlay already uses) fresh for each
+ * new step — reusing the existing transition hook exactly as written, not a second animation
+ * system with its own timing.
+ */
+function BriefingStepView({ step }: { step: BriefingStep }) {
+  const progress = useRoomTransition(true);
+  const stepStyle = {
+    opacity: progress,
     transform: [
       {
         translateY: progress.interpolate({
-          inputRange,
+          inputRange: [0, 1],
           outputRange: [8, 0],
-          extrapolate: "clamp" as const,
         }),
       },
     ],
   };
+
+  return (
+    <Animated.View style={[styles.section, stepStyle]}>
+      {step.lines.map((line, index) => (
+        <Text key={index} style={lineStyleFor(step.kind, index)}>
+          {line}
+        </Text>
+      ))}
+    </Animated.View>
+  );
+}
+
+function lineStyleFor(kind: BriefingStep["kind"], index: number) {
+  switch (kind) {
+    case "welcome":
+      return styles.greeting;
+    case "businessUpdate":
+      return index === 0 ? styles.leadLine : styles.line;
+    case "judgement":
+      return styles.judgement;
+    case "attention":
+      return styles.attentionLine;
+    case "decisions":
+      return styles.line;
+    case "closing":
+      return styles.closing;
+    default:
+      return styles.line;
+  }
 }
 
 const styles = StyleSheet.create({
@@ -145,23 +152,19 @@ const styles = StyleSheet.create({
   card: {
     maxWidth: 480,
     width: "100%",
+    minHeight: 220,
     backgroundColor: ROOM_COLORS.wallBase,
     borderRadius: 20,
     paddingVertical: 32,
     paddingHorizontal: 28,
     alignItems: "center",
+    justifyContent: "center",
     gap: 22,
   },
 
-  body: {
+  section: {
     width: "100%",
-    gap: 16,
-  },
-
-  // Sprint 4.3 — matches `body`'s own gap so grouping items inside a staged Animated.View
-  // reproduces the original spacing exactly once the whole card is revealed.
-  stageGroup: {
-    gap: 16,
+    gap: 8,
   },
 
   greeting: {
@@ -169,10 +172,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#2E291F",
     textAlign: "center",
-  },
-
-  section: {
-    gap: 4,
   },
 
   leadLine: {

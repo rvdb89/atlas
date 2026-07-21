@@ -1,14 +1,8 @@
 import { buildTimeGreeting } from "@/atlas/company-state/calculations/scoreUtils";
 import { groupCeoInboxItems } from "@/atlas/studio/control/ceoInbox/ceoInboxView";
-import type {
-  BusinessOverview,
-  CeoInboxItem,
-  ControlSnapshot,
-  DepartmentOperation,
-  ManagementMember,
-} from "@/atlas/studio/control/types";
-import { summarizeRecentWork } from "@/atlas/studio/control/v2/cockpitOpeningHelpers";
+import type { BusinessOverview, CeoInboxItem, ControlSnapshot, DepartmentOperation } from "@/atlas/studio/control/types";
 
+import { composeSynthesis, type Synthesis } from "./synthesisEngine";
 import type { DepartmentSpec, DepartmentState, DoorwayId } from "./types";
 
 /**
@@ -202,73 +196,71 @@ export type ExecutiveBriefing = {
   attention: string[];
   decisions: { count: number; summary: string };
   closing: string;
+  /** Sprint 5.1 ("Briefing Generator: Synthese → Briefing") — the ranked, limited Synthesis
+   * output Business Update, Executive Judgement and Attention above were translated from.
+   * Not rendered directly by the current overlay (Sprint 4.3's three-stage reveal is
+   * unchanged); carried here so a future sequential beat (Sprint 5.2 — "one point at a time")
+   * can play through the same real, already-ranked points instead of re-deriving them. */
+  synthesis: Synthesis;
 };
 
 /**
- * Sprint 4.2 ("Executive Briefing v1") — composes the six approved briefing sections
- * (welcome, business update, executive judgement, attention, CEO decisions, closing) from the
- * same real `ControlSnapshot` every other Room capability already reads. Reuses rather than
- * re-derives wherever a real function already exists: `buildTimeGreeting()` is the same
- * time-aware greeting `CompanyStateEngine.ts`'s own `buildCeoCommand()` already produces;
- * `summarizeRecentWork()` is the same real appliedHistory/activity summarizer
- * `CockpitOpening.tsx`'s "While You Were Away" zone already uses; `groupCeoInboxItems()` is
- * the same shared grouping `selectCeoFocus()` above and Threshold Stone already use. Nothing
- * here is a second implementation of any of those three.
+ * Sprint 4.2 ("Executive Briefing v1") composed the six approved briefing sections directly
+ * from separate Room capabilities, each with its own ad hoc filter/sort. Sprint 5.1
+ * ("Briefing Generator: Synthese → Briefing") replaces that: `composeSynthesis()`
+ * (`synthesisEngine.ts`) is now the single cross-domain ranking pass, and this function only
+ * translates its already-ranked, already-limited output into the six approved sections — it no
+ * longer independently filters `issues`, re-checks `operations`, or re-derives a judgement
+ * ladder from raw plan status itself.
  *
- * Deliberately excluded as inputs: `atlasAdvice`, `ceoCommand.reason/todayAdvice`, and Memory
- * — none of those are on this capability's approved source list, and Memory specifically must
- * never appear as briefing content (it describes Atlas's own retention, not the company).
+ * Per the sprint's own rules, three sections stay sourced directly, not through Synthesis:
+ * `buildTimeGreeting()` for the welcome (unchanged since Sprint 4.2 — the same time-aware
+ * greeting `CompanyStateEngine.ts`'s own `buildCeoCommand()` already produces); CEO Decisions
+ * from `groupCeoInboxItems()` (unchanged — forcing decisions through Synthesis would create
+ * false semantics, since Synthesis's own recommendation is deliberately a *different* fact:
+ * the single most important item, not the full waiting list); and Closing from current active
+ * work (Live Plan / Roadmap Now lane), unless Synthesis carries a real recommendation, in which
+ * case the briefing ends with that instead, per rule 4.
  *
- * Known, named limitation: `CompanyIssue.owner` and `RoadmapInitiative.owner` are untyped
- * strings with no confirmed relationship to `DepartmentId` or `ManagementMember.id` anywhere
- * in the data model (verified by trace, not assumed) — so this function never attributes a
- * specific issue or roadmap item to a specific department or team member. Department/
- * Management capacity is only ever spoken from a department's own real `label`/`status`
- * fields (and, for individual attribution, an exact `ManagementMember.department` match),
- * never inferred from an issue's or initiative's owner string.
+ * Deliberately excluded as inputs, same as Sprint 4.2: `atlasAdvice`, `ceoCommand.reason/
+ * todayAdvice`, and Memory — none are on this capability's approved source list, and Memory
+ * specifically must never appear as briefing content.
+ *
+ * Known, named limitation (carried over, still true): `CompanyIssue.owner` and
+ * `RoadmapInitiative.owner` are untyped strings with no confirmed relationship to
+ * `DepartmentId` or `ManagementMember.id` — so Synthesis, and this translation layer, never
+ * attribute a specific issue to a specific team member, only to a department via an exact
+ * `ManagementMember.department` match (see `synthesisEngine.ts`'s `capacityClause`).
  */
 export function composeExecutiveBriefing(snapshot: ControlSnapshot): ExecutiveBriefing {
   const greeting = buildTimeGreeting();
+  const synthesis = composeSynthesis(snapshot);
 
-  const recent = summarizeRecentWork(snapshot.appliedHistory, snapshot.activity);
-  const businessUpdate: string[] = [recent.summary, ...recent.lines];
+  // Headlines never carry their own trailing punctuation (see `synthesisEngine.ts`) — this is
+  // the one place a "." is added, so no section can end up with an accidental double period
+  // regardless of what real evidence text (e.g. `CompanyIssue.impact`) already ends with.
+  const workPoints = synthesis.points.filter((point) => !point.requiresAttention);
+  const businessUpdate: string[] = workPoints.flatMap((point) => {
+    const lines = [`${point.headline}.`];
+    // "work" evidence is the same real, already-limited titles `summarizeRecentWork()`
+    // produced (`;`-joined on the point itself for traceability) — split back out here purely
+    // for display, not re-derived from any raw source.
+    if (point.kind === "work" && point.evidence) {
+      lines.push(...point.evidence.split("; ").filter(Boolean));
+    }
+    return lines;
+  });
 
-  const plan = snapshot.livePlan;
-  if (plan?.status === "completed") {
-    businessUpdate.push(`The current initiative, ${plan.goal}, finished successfully.`);
-  } else if (plan?.status === "cancelled") {
-    businessUpdate.push(`The initiative "${plan.goal}" was cancelled.`);
-  }
-
-  const criticalIssues = snapshot.issues.filter(
-    (issue) => issue.status !== "resolved" && (issue.severity === "critical" || issue.severity === "high"),
-  );
-  const worstDepartment = snapshot.operations.find(
-    (operation) => operation.status === "idle" || operation.status === "no-signal",
-  );
-
-  const attention: string[] = [];
-  if (criticalIssues.length > 0) {
-    const top = criticalIssues[0];
-    attention.push(`${top.title} needs attention — ${top.impact}.`);
-  }
-  if (plan?.status === "failed") {
-    attention.push(`Today's priority, ${plan.goal}, did not complete successfully.`);
-  }
-  if ((criticalIssues.length > 0 || plan?.status === "failed") && worstDepartment) {
-    attention.push(capacityClause(worstDepartment, snapshot.management));
-  }
-
-  const allDepartmentsQuiet =
-    snapshot.operations.length > 0 &&
-    snapshot.operations.every((operation) => operation.status === "idle" || operation.status === "no-signal");
+  const attention: string[] = synthesis.points
+    .filter((point) => point.requiresAttention)
+    .map((point) => `${point.headline} — ${point.evidence}`);
 
   let judgement: string;
-  if (criticalIssues.length > 0 || plan?.status === "failed") {
+  if (attention.length > 0) {
     judgement = "One area needs attention today.";
-  } else if (allDepartmentsQuiet) {
+  } else if (synthesis.capacityConstrained) {
     judgement = "Team capacity is unusually low across the board today.";
-  } else if (recent.hasActivity) {
+  } else if (synthesis.hasMeaningfulActivity) {
     judgement = "The business made good operational progress.";
   } else {
     judgement = "Everything looks steady.";
@@ -287,33 +279,37 @@ export function composeExecutiveBriefing(snapshot: ControlSnapshot): ExecutiveBr
             .join(", ")}${waiting.length > 3 ? `, and ${waiting.length - 3} more` : ""}.`,
         };
 
-  const nowLane = snapshot.roadmap.filter((item) => item.lane === "now");
-  let closing: string;
+  const closing = composeClosing(snapshot, synthesis);
+
+  return { greeting, businessUpdate, judgement, attention, decisions, closing, synthesis };
+}
+
+/** Closing stays sourced directly from current active work (rule 2), unless Synthesis carries a
+ * real recommendation (rule 4) — in which case the briefing ends there instead, with an
+ * explicit pointer to the existing CEO Inbox approve/adjust/defer path rather than any new
+ * approval mechanism. Never both: a recommendation, when present, replaces the generic
+ * "continuing work on X" line rather than appending to it, so the closing never restates the
+ * same fact twice. */
+function composeClosing(snapshot: ControlSnapshot, synthesis: Synthesis): string {
+  if (synthesis.recommendation) {
+    return `My recommendation: ${synthesis.recommendation.text} It's waiting for you in the CEO Inbox — approve, adjust, or defer whenever you're ready.`;
+  }
+
+  const plan = snapshot.livePlan;
   if (plan && (plan.status === "executing" || plan.status === "ready" || plan.status === "draft")) {
-    closing = `I'm continuing work on ${plan.goal}. I'll let you know if anything needs you.`;
-  } else if (nowLane.length > 0) {
+    return `I'm continuing work on ${plan.goal}. I'll let you know if anything needs you.`;
+  }
+
+  const nowLane = snapshot.roadmap.filter((item) => item.lane === "now");
+  if (nowLane.length > 0) {
     const titles = nowLane
       .slice(0, 2)
       .map((item) => item.title)
       .join(", ");
-    closing = `Atlas is currently focused on ${titles}${
+    return `Atlas is currently focused on ${titles}${
       nowLane.length > 2 ? `, and ${nowLane.length - 2} more` : ""
     }. I'll let you know if anything needs you.`;
-  } else {
-    closing = "Nothing is actively in progress right now. I'll keep watching for what needs your attention next.";
   }
 
-  return { greeting, businessUpdate, judgement, attention, decisions, closing };
-}
-
-/** Speaks a department's own real capacity signal, refined with a named individual only when
- * `ManagementMember.department` exactly matches — a type-safe join, never a string guess. */
-function capacityClause(department: DepartmentOperation, management: ManagementMember[]): string {
-  const blockedMember = management.find(
-    (member) => member.department === department.department && member.status === "blocked",
-  );
-  if (blockedMember) {
-    return `${blockedMember.name} on ${department.label} is currently blocked.`;
-  }
-  return `${department.label} is currently running at reduced capacity.`;
+  return "Nothing is actively in progress right now. I'll keep watching for what needs your attention next.";
 }

@@ -287,6 +287,104 @@ test("no signal is duplicated across sections under different wording", () => {
   );
 });
 
+test("Sprint 5.1 — multiple open issues are reduced to a single ranked point, critical outranks high", () => {
+  const snapshot = baseSnapshot({
+    issues: [
+      {
+        id: "bug-high",
+        title: "Slow checkout on the pizza flow",
+        severity: "high",
+        impact: "Some orders take longer than usual.",
+        owner: "unknown",
+        recommendation: "Investigate the payment provider latency.",
+        expectedFix: "",
+        status: "open",
+      },
+      {
+        id: "bug-critical",
+        title: "Checkout fails on the pizza flow",
+        severity: "critical",
+        impact: "Customers cannot complete an order.",
+        owner: "unknown",
+        recommendation: "Roll back the last release.",
+        expectedFix: "",
+        status: "open",
+      },
+      {
+        id: "bug-critical-2",
+        title: "Second critical incident",
+        severity: "critical",
+        impact: "A second, unrelated critical fault.",
+        owner: "unknown",
+        recommendation: "…",
+        expectedFix: "",
+        status: "open",
+      },
+    ],
+  });
+
+  const briefing = composeExecutiveBriefing(snapshot);
+
+  // Three real, open issues exist; Synthesis reduces this to exactly one ranked point.
+  assert.equal(briefing.attention.length, 1);
+  assert.equal(briefing.synthesis.points.filter((point) => point.requiresAttention).length, 1);
+  // Critical outranks high — the critical issue listed first in `issues` wins, not array order.
+  assert.ok(briefing.attention[0].startsWith("Checkout fails on the pizza flow needs attention"));
+  // The lower-ranked critical issue and the high issue are genuinely dropped, not just hidden —
+  // they must not reappear anywhere else in the briefing under different wording.
+  const allText = [...briefing.businessUpdate, briefing.judgement, ...briefing.attention, briefing.closing].join(" \n ");
+  assert.ok(!allText.includes("Second critical incident"));
+  assert.ok(!allText.includes("Slow checkout on the pizza flow"));
+});
+
+test("Sprint 5.1 — a genuine CEO Inbox recommendation ends the briefing with an existing response path", () => {
+  const snapshot = baseSnapshot({
+    ceoInbox: [
+      {
+        id: "inbox-1",
+        title: "Approve the summer menu roadmap change",
+        category: "roadmap_decision",
+        urgency: "high",
+        reason: "Demand has shifted toward summer items.",
+        recommendation: "Approve the roadmap change — the shift is well-supported by recent orders.",
+        status: "pending",
+      },
+    ],
+  });
+
+  const briefing = composeExecutiveBriefing(snapshot);
+
+  assert.ok(briefing.closing.startsWith("My recommendation: Approve the roadmap change"));
+  assert.ok(briefing.closing.includes("CEO Inbox"));
+  assert.equal(briefing.synthesis.recommendation?.ceoInboxItemId, "inbox-1");
+});
+
+test("Sprint 5.1 — no recommendation is manufactured when no CEO Inbox item carries one", () => {
+  const snapshot = baseSnapshot({
+    ceoInbox: [
+      {
+        id: "inbox-1",
+        title: "Approve new marketing copy",
+        category: "marketing",
+        urgency: "medium",
+        reason: "…",
+        recommendation: "",
+        status: "pending",
+      },
+    ],
+  });
+
+  const briefing = composeExecutiveBriefing(snapshot);
+
+  assert.equal(briefing.synthesis.recommendation, undefined);
+  assert.ok(!briefing.closing.startsWith("My recommendation:"));
+  // Falls through to the ordinary "nothing in progress" closing, same as the quiet state.
+  assert.equal(
+    briefing.closing,
+    "Nothing is actively in progress right now. I'll keep watching for what needs your attention next.",
+  );
+});
+
 test("no unsupported financial or external-performance claims appear anywhere", () => {
   const briefing = composeExecutiveBriefing(baseSnapshot());
   const allText = [
