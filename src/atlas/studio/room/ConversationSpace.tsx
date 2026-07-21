@@ -97,7 +97,7 @@ export default function ConversationSpace({
         />
 
         <Pressable style={styles.closeLink} onPress={onClose}>
-          <Text style={styles.closeLabel}>Terug naar The Room</Text>
+          <Text style={styles.closeLabel}>Terug naar Atlas Space</Text>
         </Pressable>
       </Animated.View>
     </Animated.View>
@@ -119,6 +119,13 @@ const styles = StyleSheet.create({
     minHeight: 320,
     backgroundColor: ROOM_COLORS.wallBase,
     borderRadius: 24,
+    borderWidth: 1,
+    borderColor: ROOM_COLORS.glassBorder,
+    shadowColor: ROOM_COLORS.emberWarm,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.14,
+    shadowRadius: 30,
+    elevation: 8,
     paddingVertical: 36,
     paddingHorizontal: 32,
     alignItems: "center",
@@ -160,9 +167,9 @@ const styles = StyleSheet.create({
   hint: {
     fontSize: 11,
     fontWeight: "600",
-    letterSpacing: 0.4,
+    letterSpacing: 0.6,
     textTransform: "uppercase",
-    color: ROOM_COLORS.wallDeep,
+    color: ROOM_COLORS.textSecondary,
     marginBottom: 16,
   },
 
@@ -172,9 +179,9 @@ const styles = StyleSheet.create({
     minHeight: 120,
     fontSize: 17,
     lineHeight: 26,
-    color: "#3A342A",
+    color: ROOM_COLORS.textPrimary,
     borderBottomWidth: 1,
-    borderBottomColor: ROOM_COLORS.wallDeep,
+    borderBottomColor: ROOM_COLORS.glassBorder,
     paddingBottom: 12,
     textAlignVertical: "top",
   },
@@ -187,6 +194,6 @@ const styles = StyleSheet.create({
   closeLabel: {
     fontSize: 13,
     fontWeight: "600",
-    color: ROOM_COLORS.wallDeep,
+    color: ROOM_COLORS.textSecondary,
   },
 });

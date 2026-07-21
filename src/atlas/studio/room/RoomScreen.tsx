@@ -10,7 +10,6 @@ import {
   composeExecutiveBriefing,
   deriveHeartVitality,
   mapCompanyDoorways,
-  mapDepartmentsForRoom,
   selectCeoFocus,
 } from "./roomData";
 import RoomScene from "./RoomScene";
@@ -57,18 +56,24 @@ const PLACEHOLDER_MESSAGE: Record<PlaceholderObjectId, string> = {
  *
  * Sprint 2.2 ("The Room — First Living Prototype") is the first sprint to feed this screen
  * real company state instead of mock data. `useControlDashboard()` is the exact same hook
- * `ControlScreenV2.tsx` already uses — no new fetch path, no new backend. `roomData.ts`'s two
- * pure mapping functions turn that one real snapshot into what Department Wall and Threshold
- * Stone each need; `RoomScreen` itself makes no data decisions, it only holds the two derived
- * values and passes them down. CEO Inbox and AI Tools are no longer treated the same way:
- * "inbox" now opens `CeoFocusOverlay` (real, capped, judged content); "tools" stays exactly
- * the placeholder it already was — not one of this sprint's six required elements.
+ * `ControlScreenV2.tsx` already uses — no new fetch path, no new backend. `roomData.ts`'s
+ * mapping functions turn that one real snapshot into what each object needs; `RoomScreen`
+ * itself makes no data decisions, it only holds the derived values and passes them down.
+ * CEO Inbox and AI Tools are no longer treated the same way: "inbox" now opens
+ * `CeoFocusOverlay` (real, capped, judged content); "tools" stays exactly the placeholder it
+ * already was — not one of this sprint's six required elements.
  *
  * Sprint 4.1 ("Architectuurbeslissing & fundament") ratifies this screen as the canonical
  * CEO-facing Atlas surface — see ADR-001 in `ATLAS_ARCHITECTURE_DECISIONS.md` and
  * `src/atlas/studio/ceoSurface.ts`. Atlas Control (`ControlScreenV2.tsx`) is transitional;
  * its remaining capability migrates here, into this object language, starting Sprint 4.2 —
  * never as a dashboard panel bolted onto the scene below.
+ *
+ * Phase 5.6 ("Atlas Space") retires `mapDepartmentsForRoom()`'s call site here. That function
+ * and `DepartmentSpec` are unchanged in `roomData.ts` — real, still available — but Space no
+ * longer has a permanent Department Wall to feed it to (see `RoomScene.tsx`, `objects/
+ * DepartmentProjection.tsx`). Departments now materialize only inside the Executive Briefing,
+ * driven by `ExecutiveBriefing.synthesis`, which this screen already computes below.
  */
 export default function RoomScreen() {
   const insets = useSafeAreaInsets();
@@ -85,11 +90,6 @@ export default function RoomScreen() {
   const [activeObject, setActiveObject] = useState<PlaceholderObjectId | null>(null);
   const [ceoFocusOpen, setCeoFocusOpen] = useState(false);
   const [briefingOpen, setBriefingOpen] = useState(true);
-
-  const departments = useMemo(
-    () => mapDepartmentsForRoom(snapshot?.operations ?? []),
-    [snapshot?.operations],
-  );
 
   const ceoFocus = useMemo(
     () => selectCeoFocus(snapshot?.ceoInbox ?? []),
@@ -173,7 +173,6 @@ export default function RoomScreen() {
       <RoomScene
         approached={approached}
         enteredCompany={enteredCompany}
-        departments={departments}
         ceoFocusWarmth={ceoFocus.warmth}
         heartVitality={heartVitality}
         doorwayPresence={doorwayPresence}
@@ -187,7 +186,7 @@ export default function RoomScreen() {
         onPress={enteredCompany ? handleExitCompany : () => router.back()}
       >
         <Text style={styles.exitLabel}>
-          {enteredCompany ? "← Terug naar The Room" : "← Verlaat The Room"}
+          {enteredCompany ? "← Terug naar Atlas Space" : "← Verlaat Atlas Space"}
         </Text>
       </Pressable>
 
@@ -239,6 +238,7 @@ const styles = StyleSheet.create({
   exitLabel: {
     fontSize: 13,
     fontWeight: "600",
-    color: "rgba(220, 213, 198, 0.7)",
+    letterSpacing: 0.3,
+    color: "rgba(143, 227, 255, 0.55)",
   },
 });

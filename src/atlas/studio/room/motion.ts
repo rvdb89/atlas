@@ -51,11 +51,32 @@ import { Easing } from "react-native";
  *   reference this constant. `dormant` is the only number; everything it
  *   gates shares the same `approachProgress` interpolation
  *   (`dormant → 1`), so there is exactly one reveal, not one per object.
+ *
+ * Phase 5.5 ("Jarvis Visual Identity") correction: `TRANSITION` is slowed
+ * and re-eased — 420ms `out(cubic)` read correctly for stone settling into
+ * place, but the brief calls for materialization: "appear, glow, stabilize,
+ * fade, dissolve... nothing should simply pop in." A cinematic ease-out
+ * (steep at first, a long soft settle at the tail) reads as light arriving,
+ * not a mechanical animation curve completing. Every consumer of
+ * `ROOM_MOTION.TRANSITION` (all Soft State Transitions, the Executive
+ * Briefing's own appear/disappear beat) inherits this from the one shared
+ * constant, unchanged in every other respect — still never a second timing
+ * system. `TOUCH` is untouched: touch feedback must stay immediately
+ * responsive, which is a different, deliberately-faster register this
+ * sprint has no reason to slow down.
+ *
+ * `BREATHE` is new: the Heart's one continuous, idle motion — "subtle
+ * pulse... light breathing... energy rather than decoration" per the
+ * brief. It is a slow, uniform loop, never selected conditionally on
+ * judgment (same discipline as `TRANSITION`/`TOUCH` above) — vitality still
+ * decides how bright and how present the Heart is; `BREATHE` only decides
+ * that it is quietly alive while it waits, the way a screen's own backlight
+ * never itself carries information.
  */
 export const ROOM_MOTION = {
   TRANSITION: {
-    duration: 420,
-    easing: Easing.out(Easing.cubic),
+    duration: 560,
+    easing: Easing.bezier(0.16, 1, 0.3, 1),
   },
   TOUCH: {
     duration: 140,
@@ -73,5 +94,10 @@ export const ROOM_MOTION = {
   },
   REVEAL: {
     dormant: 0.06,
+  },
+  BREATHE: {
+    duration: 2600,
+    easing: Easing.inOut(Easing.sin),
+    amplitude: 0.05,
   },
 } as const;

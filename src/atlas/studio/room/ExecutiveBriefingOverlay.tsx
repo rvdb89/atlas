@@ -3,10 +3,10 @@ import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { buildBriefingSteps, type BriefingStep } from "./briefingSteps";
 import { ROOM_MOTION } from "./motion";
+import DepartmentProjection from "./objects/DepartmentProjection";
 import type { ExecutiveBriefing } from "./roomData";
 import { ROOM_COLORS } from "./theme";
 import { useRoomTransition } from "./useRoomTransition";
-import { RATIFIED_DEPARTMENTS, type RatifiedDepartmentId } from "@/atlas/team";
 import { ADJUST_OPTIONS, type NeedsChangeOptionId } from "@/atlas/studio/control/types";
 
 /**
@@ -35,14 +35,22 @@ import { ADJUST_OPTIONS, type NeedsChangeOptionId } from "@/atlas/studio/control
  * Sprint 5.4 ("Jarvis Experience") adds exactly two presentation-only things on top, per the
  * roadmap's own "punt verschijnt, pauze, visualisatie, verdwijnt, volgende punt": (1) when a step
  * carries `visualReference` (Sprint 5.1's `SynthesisPoint.visualReference`, threaded through by
- * `briefingSteps.ts` — never new data), a small `PointVisual` renders, echoing Department Wall's
- * own Vein/Warm Vein motif and the one canonical department label table (`RATIFIED_DEPARTMENTS`)
- * — never a new rendering system, never touching `DepartmentWall.tsx` itself. (2) advancing now
+ * `briefingSteps.ts` — never new data), a small department visual renders. (2) advancing now
  * plays a calm exit — the current step fades out (`exitOpacity`, driven by the exact same
  * `ROOM_MOTION.TRANSITION` duration/easing every other Room transition already uses) and only
  * once that finishes does the next step mount and play its own existing entrance. One thought
  * finishes before the next begins, using the one motion constant this whole file already
  * depended on — no second timing system, no new `Animated.Value` type.
+ *
+ * Phase 5.6 ("Atlas Space") makes two further changes, both presentation, per "preserve
+ * Executive Briefing logic": (1) the department visual above is no longer this file's own
+ * inline `PointVisual` — it is `objects/DepartmentProjection.tsx`, the same shared component
+ * `RoomScene.tsx` no longer permanently mounts a Department Wall with. One implementation of
+ * "a department Atlas is currently discussing," reused here rather than duplicated, per
+ * Rendering Law Principle 5. (2) a small, constant Heart echo now sits at the top of the card,
+ * reusing `ConversationSpace.tsx`'s own ring/presence idiom — so the whole Briefing reads as
+ * Atlas speaking from one consistent point of origin, not a floating card unconnected to it.
+ * Nothing about the step sequence, the freeze/live-check pattern, or the action wiring changes.
  */
 export default function ExecutiveBriefingOverlay({
   visible,
@@ -151,6 +159,12 @@ export default function ExecutiveBriefingOverlay({
     <Animated.View pointerEvents={visible ? "auto" : "none"} style={[styles.backdrop, { opacity: progress }]}>
       <View style={StyleSheet.absoluteFill} />
       <Animated.View style={[styles.card, cardStyle]}>
+        <View pointerEvents="none" style={styles.heartEcho}>
+          <View style={[styles.heartRing, styles.heartRingOuter]} />
+          <View style={[styles.heartRing, styles.heartRingMid]} />
+          <View style={[styles.heartRing, styles.heartRingCore]} />
+        </View>
+
         {currentStep ? (
           <Animated.View style={{ width: "100%", opacity: exitOpacity }}>
             <BriefingStepView
@@ -167,7 +181,7 @@ export default function ExecutiveBriefingOverlay({
         ) : null}
 
         <Pressable style={[styles.closeButton, isAdvancing && styles.closeButtonFading]} onPress={handleAdvance}>
-          <Text style={styles.closeLabel}>{isLastStep ? "Enter The Room" : "Continue"}</Text>
+          <Text style={styles.closeLabel}>{isLastStep ? "Enter Atlas Space" : "Continue"}</Text>
         </Pressable>
       </Animated.View>
     </Animated.View>
@@ -213,7 +227,7 @@ function BriefingStepView({
 
   return (
     <Animated.View style={[styles.section, stepStyle]}>
-      {step.visualReference ? <PointVisual departmentId={step.visualReference} /> : null}
+      {step.visualReference ? <DepartmentProjection departmentId={step.visualReference} /> : null}
 
       {step.lines.map((line, index) => (
         <Text key={index} style={lineStyleFor(step.kind, index)}>
@@ -258,28 +272,6 @@ function BriefingStepView({
   );
 }
 
-/**
- * Sprint 5.4 — "a subtle contextual visual," never a new rendering system. Echoes Department
- * Wall's own Vein / Warm Vein motif (`objects/DepartmentWall.tsx`) using the same two-layer
- * shape and the same `ROOM_COLORS` ember tokens, at card scale — this does not import or modify
- * that component (it renders inside The Room, currently hidden behind this overlay's own
- * backdrop; nothing here reaches into it). The label is read from `RATIFIED_DEPARTMENTS`, the
- * one existing canonical department-name table, not invented here. Renders only when the step
- * actually carries a `visualReference` — never a placeholder, never for its own sake.
- */
-function PointVisual({ departmentId }: { departmentId: string }) {
-  const label = RATIFIED_DEPARTMENTS[departmentId as RatifiedDepartmentId]?.label ?? departmentId;
-  return (
-    <View style={styles.pointVisual}>
-      <View style={styles.pointVisualShape}>
-        <View style={styles.pointVisualVein} />
-        <View style={styles.pointVisualWarmVein} />
-      </View>
-      <Text style={styles.pointVisualLabel}>{label}</Text>
-    </View>
-  );
-}
-
 function lineStyleFor(kind: BriefingStep["kind"], index: number) {
   switch (kind) {
     case "welcome":
@@ -314,52 +306,60 @@ const styles = StyleSheet.create({
     minHeight: 220,
     backgroundColor: ROOM_COLORS.wallBase,
     borderRadius: 20,
-    paddingVertical: 32,
+    borderWidth: 1,
+    borderColor: ROOM_COLORS.glassBorder,
+    shadowColor: ROOM_COLORS.emberWarm,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.16,
+    shadowRadius: 32,
+    elevation: 10,
+    paddingVertical: 36,
     paddingHorizontal: 28,
     alignItems: "center",
     justifyContent: "center",
-    gap: 22,
+    gap: 24,
   },
 
-  // Sprint 5.4 — a small echo of Department Wall's own Vein/Warm Vein shape (same colors, same
-  // two-layer idiom, at card scale), plus the department's real, existing label. Sits above the
-  // step's text, never larger or louder than it — "support the story, never distract from it."
-  pointVisual: {
+  // Phase 5.6 — a small, constant echo of the Heart (same ring idiom `ConversationSpace.tsx`
+  // already uses), sitting above whichever step is currently showing. Not animated per step —
+  // it is the one constant point of origin the whole sequence speaks from, never remounted or
+  // re-triggered as steps advance.
+  heartEcho: {
+    height: 44,
     alignItems: "center",
-    alignSelf: "center",
-    gap: 4,
+    justifyContent: "center",
     marginBottom: 4,
   },
 
-  pointVisualShape: {
-    width: 36,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
+  heartRing: {
+    position: "absolute",
+    borderRadius: 999,
   },
 
-  pointVisualVein: {
-    position: "absolute",
-    width: 10,
-    height: "100%",
-    borderRadius: 8,
-    backgroundColor: ROOM_COLORS.wallDeep,
-    opacity: 0.35,
+  heartRingOuter: {
+    width: 44,
+    height: 44,
+    backgroundColor: ROOM_COLORS.emberWarm,
+    opacity: 0.14,
   },
 
-  pointVisualWarmVein: {
-    position: "absolute",
-    width: 10,
-    height: 20,
-    borderRadius: 8,
+  heartRingMid: {
+    width: 26,
+    height: 26,
+    backgroundColor: ROOM_COLORS.emberWarm,
+    opacity: 0.28,
+  },
+
+  heartRingCore: {
+    width: 12,
+    height: 12,
     backgroundColor: ROOM_COLORS.emberCore,
-    opacity: 0.85,
-  },
-
-  pointVisualLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#8A8272",
+    opacity: 0.9,
+    shadowColor: ROOM_COLORS.emberWarm,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 6,
   },
 
   closeButtonFading: {
@@ -372,48 +372,50 @@ const styles = StyleSheet.create({
   },
 
   greeting: {
-    fontSize: 20,
+    fontSize: 21,
     fontWeight: "700",
-    color: "#2E291F",
+    letterSpacing: 0.2,
+    color: ROOM_COLORS.textPrimary,
     textAlign: "center",
   },
 
   leadLine: {
     fontSize: 16,
-    lineHeight: 23,
+    lineHeight: 24,
     fontWeight: "600",
-    color: "#2E291F",
+    color: ROOM_COLORS.textPrimary,
     textAlign: "center",
   },
 
   line: {
     fontSize: 14,
-    lineHeight: 20,
-    color: "#5A5344",
+    lineHeight: 21,
+    color: ROOM_COLORS.textSecondary,
     textAlign: "center",
   },
 
   judgement: {
     fontSize: 16,
-    lineHeight: 23,
+    lineHeight: 24,
     fontWeight: "700",
-    color: ROOM_COLORS.emberDeep,
+    letterSpacing: 0.2,
+    color: ROOM_COLORS.emberWarm,
     textAlign: "center",
   },
 
   attentionLine: {
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 21,
     fontWeight: "600",
-    color: "#5A5344",
+    color: ROOM_COLORS.textSecondary,
     textAlign: "center",
   },
 
   closing: {
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 21,
     fontStyle: "italic",
-    color: "#5A5344",
+    color: ROOM_COLORS.textSecondary,
     textAlign: "center",
   },
 
@@ -430,14 +432,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     fontWeight: "700",
-    color: "#2E291F",
+    color: ROOM_COLORS.textPrimary,
     textAlign: "center",
   },
 
   decisionNoted: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#8A8272",
+    color: ROOM_COLORS.textSecondary,
   },
 
   actionRow: {
@@ -452,13 +454,15 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 999,
-    backgroundColor: "rgba(58, 52, 42, 0.08)",
+    backgroundColor: "rgba(47, 184, 255, 0.08)",
+    borderWidth: 1,
+    borderColor: ROOM_COLORS.glassBorder,
   },
 
   actionLabel: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#3A342A",
+    color: ROOM_COLORS.textPrimary,
   },
 
   optionRow: {
@@ -472,7 +476,7 @@ const styles = StyleSheet.create({
   optionLabel: {
     fontSize: 13,
     fontWeight: "600",
-    color: ROOM_COLORS.emberDeep,
+    color: ROOM_COLORS.emberWarm,
     paddingVertical: 4,
   },
 
@@ -486,6 +490,6 @@ const styles = StyleSheet.create({
   closeLabel: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#FFF7EE",
+    color: ROOM_COLORS.void,
   },
 });

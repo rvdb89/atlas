@@ -107,7 +107,7 @@ export default function CeoFocusOverlay({
           </View>
         )}
         <Pressable style={styles.closeButton} onPress={onClose}>
-          <Text style={styles.closeLabel}>Terug naar The Room</Text>
+          <Text style={styles.closeLabel}>Terug naar Atlas Space</Text>
         </Pressable>
       </Animated.View>
     </Animated.View>
@@ -128,6 +128,13 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: ROOM_COLORS.wallBase,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: ROOM_COLORS.glassBorder,
+    shadowColor: ROOM_COLORS.emberWarm,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.14,
+    shadowRadius: 26,
+    elevation: 8,
     paddingVertical: 32,
     paddingHorizontal: 28,
     alignItems: "center",
@@ -138,7 +145,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 25,
     textAlign: "center",
-    color: "#3A342A",
+    color: ROOM_COLORS.textPrimary,
   },
 
   list: {
@@ -153,13 +160,13 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#2E291F",
+    color: ROOM_COLORS.textPrimary,
   },
 
   itemReason: {
     fontSize: 14,
     lineHeight: 20,
-    color: "#5A5344",
+    color: ROOM_COLORS.textSecondary,
   },
 
   // Sprint 4.2 · deliberately not the same solid ember fill as `closeButton` below — three
@@ -177,13 +184,15 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 999,
-    backgroundColor: "rgba(58, 52, 42, 0.08)",
+    backgroundColor: "rgba(47, 184, 255, 0.08)",
+    borderWidth: 1,
+    borderColor: ROOM_COLORS.glassBorder,
   },
 
   actionLabel: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#3A342A",
+    color: ROOM_COLORS.textPrimary,
   },
 
   // Sprint 4.2 · the four Adjust options — plain text, no pill chrome at all, so revealing
@@ -199,7 +208,7 @@ const styles = StyleSheet.create({
   optionLabel: {
     fontSize: 13,
     fontWeight: "600",
-    color: ROOM_COLORS.emberDeep,
+    color: ROOM_COLORS.emberWarm,
     paddingVertical: 4,
   },
 
@@ -213,6 +222,6 @@ const styles = StyleSheet.create({
   closeLabel: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#FFF7EE",
+    color: ROOM_COLORS.void,
   },
 });

@@ -184,7 +184,7 @@ export default function CompanyInterior({
         pointerEvents="box-none"
       >
         <ArchwayRecess warmth={presence} onPress={onExit} />
-        <Text style={styles.caption}>Terug naar The Room</Text>
+        <Text style={styles.caption}>Terug naar Atlas Space</Text>
       </Animated.View>
     </View>
   );
@@ -263,6 +263,6 @@ const styles = StyleSheet.create({
 
   caption: {
     fontSize: 13,
-    color: "rgba(58, 52, 42, 0.6)",
+    color: "rgba(143, 227, 255, 0.5)",
   },
 });

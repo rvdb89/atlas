@@ -76,6 +76,8 @@ const styles = StyleSheet.create({
     height: 112,
     borderRadius: 10,
     backgroundColor: ROOM_COLORS.wallDeep,
+    borderWidth: 1,
+    borderColor: ROOM_COLORS.glassBorder,
     padding: 5,
   },
 
@@ -93,5 +95,10 @@ const styles = StyleSheet.create({
     height: "55%",
     borderRadius: 999,
     backgroundColor: ROOM_COLORS.emberWarm,
+    shadowColor: ROOM_COLORS.emberWarm,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 14,
+    elevation: 8,
   },
 });

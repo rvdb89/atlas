@@ -61,7 +61,7 @@ export default function PlaceholderOverlay({
       >
         <Text style={styles.message}>{displayMessage}</Text>
         <Pressable style={styles.closeButton} onPress={onClose}>
-          <Text style={styles.closeLabel}>Terug naar The Room</Text>
+          <Text style={styles.closeLabel}>Terug naar Atlas Space</Text>
         </Pressable>
       </Animated.View>
     </Animated.View>
@@ -82,6 +82,13 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: ROOM_COLORS.wallBase,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: ROOM_COLORS.glassBorder,
+    shadowColor: ROOM_COLORS.emberWarm,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.14,
+    shadowRadius: 26,
+    elevation: 8,
     paddingVertical: 32,
     paddingHorizontal: 28,
     alignItems: "center",
@@ -92,7 +99,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 25,
     textAlign: "center",
-    color: "#3A342A",
+    color: ROOM_COLORS.textPrimary,
   },
 
   closeButton: {
@@ -105,6 +112,6 @@ const styles = StyleSheet.create({
   closeLabel: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#FFF7EE",
+    color: ROOM_COLORS.void,
   },
 });

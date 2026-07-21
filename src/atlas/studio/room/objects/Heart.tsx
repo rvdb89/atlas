@@ -39,6 +39,15 @@ import { ROOM_COLORS } from "../theme";
  * Room, to read correctly as "how much attention/condition," so it carries the primary
  * expression; scale only reinforces it physically, and stays visibly secondary so it can
  * never be mistaken for its own, competing signal.
+ *
+ * Phase 5.5 ("Jarvis Visual Identity") adds exactly one more layer: `breathe`, a slow,
+ * continuous, uniform loop (`ROOM_MOTION.BREATHE`) — "subtle pulse... light breathing...
+ * energy rather than decoration" per the brief. It is a purely decorative idle motion, never
+ * selected on judgment (same discipline `ROOM_MOTION`'s own comments already hold `TRANSITION`
+ * and `TOUCH` to) — `vitality` still alone decides how bright and how present the Heart is;
+ * `breathe` only decides that it is quietly alive while nothing else is changing. It multiplies
+ * into the exact same `presenceScale`/ring-opacity values `vitality` already drives, rather than
+ * adding a second, competing transform or a second opacity source.
  */
 const SCALE_RANGE = { min: 0.9, max: 1 } as const;
 
@@ -50,6 +59,7 @@ export default function Heart({
   vitality?: number;
 }) {
   const animatedVitality = useRef(new Animated.Value(vitality)).current;
+  const breathe = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(animatedVitality, {
@@ -60,10 +70,42 @@ export default function Heart({
     }).start();
   }, [vitality, animatedVitality]);
 
-  const presenceScale = animatedVitality.interpolate({
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(breathe, {
+          toValue: 1,
+          duration: ROOM_MOTION.BREATHE.duration,
+          easing: ROOM_MOTION.BREATHE.easing,
+          useNativeDriver: true,
+        }),
+        Animated.timing(breathe, {
+          toValue: 0,
+          duration: ROOM_MOTION.BREATHE.duration,
+          easing: ROOM_MOTION.BREATHE.easing,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [breathe]);
+
+  const presenceScale = Animated.multiply(
+    animatedVitality.interpolate({
+      inputRange: [0, 1],
+      outputRange: [SCALE_RANGE.min, SCALE_RANGE.max],
+      extrapolate: "clamp",
+    }),
+    breathe.interpolate({
+      inputRange: [0, 1],
+      outputRange: [1 - ROOM_MOTION.BREATHE.amplitude * 0.3, 1 + ROOM_MOTION.BREATHE.amplitude * 0.3],
+    }),
+  );
+
+  const breatheGlow = breathe.interpolate({
     inputRange: [0, 1],
-    outputRange: [SCALE_RANGE.min, SCALE_RANGE.max],
-    extrapolate: "clamp",
+    outputRange: [1 - ROOM_MOTION.BREATHE.amplitude, 1 + ROOM_MOTION.BREATHE.amplitude],
   });
 
   return (
@@ -79,21 +121,21 @@ export default function Heart({
             style={[
               styles.ring,
               styles.ringOuter,
-              { opacity: Animated.multiply(animatedVitality, RING_OPACITY.outer) },
+              { opacity: Animated.multiply(Animated.multiply(animatedVitality, RING_OPACITY.outer), breatheGlow) },
             ]}
           />
           <Animated.View
             style={[
               styles.ring,
               styles.ringMid,
-              { opacity: Animated.multiply(animatedVitality, RING_OPACITY.mid) },
+              { opacity: Animated.multiply(Animated.multiply(animatedVitality, RING_OPACITY.mid), breatheGlow) },
             ]}
           />
           <Animated.View
             style={[
               styles.ring,
               styles.ringCore,
-              { opacity: Animated.multiply(animatedVitality, RING_OPACITY.core) },
+              { opacity: Animated.multiply(Animated.multiply(animatedVitality, RING_OPACITY.core), breatheGlow) },
             ]}
           />
         </Animated.View>
@@ -152,9 +194,17 @@ const styles = StyleSheet.create({
     backgroundColor: ROOM_COLORS.emberWarm,
   },
 
+  // Phase 5.5 — the one real light source in the Room gets the one real
+  // glow halo: a soft shadow in the same single energy colour, never a
+  // second one, never on any other object's core.
   ringCore: {
     width: CORE,
     height: CORE,
     backgroundColor: ROOM_COLORS.emberCore,
+    shadowColor: ROOM_COLORS.emberWarm,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 22,
+    elevation: 14,
   },
 });

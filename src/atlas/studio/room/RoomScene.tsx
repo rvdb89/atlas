@@ -3,7 +3,6 @@ import { Animated, StyleSheet, View } from "react-native";
 
 import CompanyInterior from "./CompanyInterior";
 import ArchwayRecess from "./objects/ArchwayRecess";
-import DepartmentWall from "./objects/DepartmentWall";
 import Heart from "./objects/Heart";
 import SmallHollow from "./objects/SmallHollow";
 import ThresholdStone from "./objects/ThresholdStone";
@@ -11,7 +10,7 @@ import { ROOM_MOTION } from "./motion";
 import type { DoorwayPresence } from "./roomData";
 import { ROOM_COLORS, ROOM_RADIUS } from "./theme";
 import { useRoomTransition } from "./useRoomTransition";
-import type { DepartmentSpec, DoorwayId, RoomObjectId } from "./types";
+import type { DoorwayId, RoomObjectId } from "./types";
 
 /**
  * The Room — first-person composition, Version 1 (`ATLAS_SPRINT_LOG.md`,
@@ -81,19 +80,27 @@ import type { DepartmentSpec, DoorwayId, RoomObjectId } from "./types";
  * rejected on manual test: a barely-there object is still a rendered
  * object. The ratified fix is a direct boolean coupling instead — the
  * whole company/business layer (Ambient Company Health, both Archway
- * Recesses, Department Wall, Threshold Stone, Small Hollow) mounts only
- * when `approached` is true, and does not exist in the render tree at all
- * before it. It is gated as one group per layout region (never one child
- * conditional at a time inside a shared row), so nothing partially
- * appears and shifts a `space-between` layout mid-transition. The Heart,
- * the stage scale, the Awakening glow, and the Room's own architecture
- * (walls, floor material, the Archways' carved openings) stay outside
- * this layer entirely and never reference `approached` here.
+ * Recesses, Threshold Stone, Small Hollow) mounts only when `approached`
+ * is true, and does not exist in the render tree at all before it. It is
+ * gated as one group per layout region (never one child conditional at a
+ * time inside a shared row), so nothing partially appears and shifts a
+ * `space-between` layout mid-transition. The Heart, the stage scale, the
+ * Awakening glow, and the Room's own architecture (walls, floor material,
+ * the Archways' carved openings) stay outside this layer entirely and
+ * never reference `approached` here.
+ *
+ * Phase 5.6 ("Atlas Space") retires the permanent Department Wall this comment used to
+ * describe. Departments are no longer a fixed place in the wall band — they are contextual
+ * projection identities Atlas materializes only while discussing one (see
+ * `objects/DepartmentProjection.tsx`, used by `ExecutiveBriefingOverlay.tsx`, the one existing
+ * place that "discussing a department" is a real event). `wallLevel` below now holds only the
+ * two Company Doorways; the space between them is genuinely empty, not a smaller version of the
+ * same wall. `mapDepartmentsForRoom()` (`roomData.ts`) and `DepartmentSpec` are untouched and
+ * still real — only this file's permanent visual consumer of them is removed.
  */
 export default function RoomScene({
   approached,
   enteredCompany,
-  departments,
   ceoFocusWarmth,
   heartVitality,
   doorwayPresence,
@@ -103,10 +110,6 @@ export default function RoomScene({
 }: {
   approached: boolean;
   enteredCompany: DoorwayId | null;
-  /** Sprint 2.2 — Atlas Control's own real departments, already mapped to Department Wall's
-   * shape by `roomData.ts`. RoomScene makes no data decisions of its own; it only threads
-   * this through to the one object that renders it. */
-  departments: DepartmentSpec[];
   /** Sprint 2.2 — the single 0–1 warmth value Threshold Stone needs (see `roomData.ts`'s
    * `selectCeoFocus()`). RoomScene does not know what it means, only where it goes. */
   ceoFocusWarmth: number;
@@ -246,7 +249,6 @@ export default function RoomScene({
             {approached && (
               <>
                 <ArchwayRecess warmth={doorwayPresence.left} onPress={() => onSelect("doorway-left")} />
-                <DepartmentWall departments={departments} />
                 <ArchwayRecess warmth={doorwayPresence.right} onPress={() => onSelect("doorway-right")} />
               </>
             )}
@@ -318,6 +320,13 @@ const styles = StyleSheet.create({
     borderRadius: ROOM_RADIUS.stage,
     overflow: "hidden",
     backgroundColor: ROOM_COLORS.wallBase,
+    borderWidth: 1,
+    borderColor: ROOM_COLORS.glassBorder,
+    shadowColor: ROOM_COLORS.emberWarm,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.12,
+    shadowRadius: 40,
+    elevation: 6,
   },
 
   contentLayer: {
@@ -391,6 +400,8 @@ const styles = StyleSheet.create({
   floorLevel: {
     height: "54%",
     backgroundColor: ROOM_COLORS.floorBase,
+    borderTopWidth: 1,
+    borderTopColor: ROOM_COLORS.glassBorder,
     justifyContent: "flex-end",
     paddingBottom: 28,
   },
