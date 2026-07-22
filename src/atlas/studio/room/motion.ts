@@ -72,6 +72,64 @@ import { Easing } from "react-native";
  * decides how bright and how present the Heart is; `BREATHE` only decides
  * that it is quietly alive while it waits, the way a screen's own backlight
  * never itself carries information.
+ *
+ * `ORBIT` is new (Phase 5.7, "Atlas Is The Product") — the Heart's one
+ * continuous rotational motion, never selected on judgment either. Two
+ * durations, not one: `ringDuration` (slow) turns the outer tick ring,
+ * `particleDuration` (faster, opposite direction) turns a single orbiting
+ * point — two different speeds in opposite directions read as depth and
+ * mechanism ("a living technological object"), where one flat spin alone
+ * would just read as a loading indicator. Both are continuous `Easing.linear`
+ * loops — rotation has no start or settle to ease, unlike every other motion
+ * constant here.
+ *
+ * Phase 5.8 ("Rebuild Space Around Atlas") adds two more to the same set, same discipline
+ * (continuous, `Easing.linear`, never selected on judgment): `segmentDuration` turns the new
+ * segmented, partially-lit arc ring — slower than the tick ring so the two never fall into a
+ * visually synchronized lockstep — and `secondParticleDuration` turns a second orbiting point at
+ * a third speed. Four independent rotation speeds across the whole Heart, still one constant
+ * set, still nothing here ever chosen conditionally.
+ *
+ * Phase 5.9 ("Complete Presentation Reset") adds two more for Heart's rebuilt core: `plateDuration`
+ * turns a small rotating faceted plate behind the core — a different shape category (a rounded
+ * square, not a circle), reading as an internal mechanical part rather than one more glow ring.
+ * `bracketDuration` turns four HUD-style corner brackets extremely slowly — almost imperceptible
+ * as motion, present mainly so the brackets never look like a static decal painted onto the
+ * screen. Same discipline as every other entry here: continuous, linear, never judgment-driven.
+ *
+ * `NARRATION` is new ("Remove Manual Progression From the Briefing") — the timing for Atlas's own
+ * autonomous narration, replacing the tap-driven advance the Briefing previously required.
+ * `reveal`/`exit` govern every step's own materialize/dematerialize beat (within the brief's
+ * suggested 500–800ms), reused for every step including the greeting — the greeting is not a
+ * separate timing system, it is simply step zero. `holdBase`/`holdPerCharacter`/`holdMax` compute
+ * how long an informational step stays on screen once revealed: proportional to how much there is
+ * to read, not a fixed slideshow interval, clamped so a long step never stalls indefinitely.
+ * `decisionResolvedHold` is the one different case — the brief pause after the CEO has just acted
+ * on a decision (Approve/Adjust/Later), before Atlas moves on, distinct from reading-time because
+ * nothing is being read at that moment, only confirmed.
+ *
+ * Design 2.0 ("The Core") is a correction to `BREATHE` and a near-total retirement of the old
+ * `ORBIT` set, not an addition to it. The brief's own words: "No constant spinning. No continuous
+ * rotating rings... Every other motion should happen because Atlas is doing something." Phase
+ * 5.7–5.9's Heart rotated four to six independent rings continuously, forever, regardless of
+ * whether anything was happening — reviewed as reading like "an animated circle," a loading
+ * indicator with extra steps, not an intelligence at rest. `BREATHE` is now the one motion that
+ * never stops, slowed to the brief's 8–12s full-cycle range (`duration` is a half-cycle, so 5000ms
+ * here is a 10s breath) and flattened in amplitude so it reads as "almost imperceptible," not a
+ * pulse. Every rotation constant that used to loop unconditionally is gone; the three that remain
+ * (`containmentDuration`, `plateDuration`, `bracketDuration`) are only ever started by Heart.tsx
+ * when its `state` prop calls for rotation — never at `"rest"` — and even then are slower than any
+ * of Phase 5.9's speeds, deliberate rather than decorative.
+ *
+ * Correction, stated openly (same sprint, a follow-up round): the first cut of `BREATHE` above
+ * shipped with a real bug, not a restrained design choice. A single `amplitude` was reused for
+ * both scale and opacity, but Heart.tsx additionally scaled it down `* 0.3` for scale only — the
+ * resting breathing motion was actually swinging about a third of a percent, effectively invisible
+ * on most screens. `amplitude` is now two named, one-directional values that swing from the resting
+ * value up to a peak and back — never below rest, matching the brief's literal "1.000 → 1.012 →
+ * 1.000" — and Heart.tsx's `breatheBoost` per `state` lets breathing itself (not rotation) be the
+ * thing that visibly strengthens for `"thinking"`, which this round also stopped rotating anything
+ * for: thinking is attentive stillness, not activity.
  */
 export const ROOM_MOTION = {
   TRANSITION: {
@@ -95,9 +153,41 @@ export const ROOM_MOTION = {
   REVEAL: {
     dormant: 0.06,
   },
+  NARRATION: {
+    reveal: {
+      duration: 650,
+      easing: Easing.bezier(0.16, 1, 0.3, 1),
+    },
+    exit: {
+      duration: 650,
+      easing: Easing.bezier(0.16, 1, 0.3, 1),
+    },
+    holdBase: 1200,
+    holdPerCharacter: 15,
+    holdMax: 4000,
+    decisionResolvedHold: 1000,
+  },
   BREATHE: {
-    duration: 2600,
+    // One leg (rest → peak, or peak → rest); two legs make the full ~10s cycle.
+    duration: 5000,
+    // A true sine-based ease (not a linear ramp), composed symmetrically — this is what keeps
+    // the cycle from ever feeling like a mechanical up/down snap.
     easing: Easing.inOut(Easing.sin),
-    amplitude: 0.05,
+    // Design 2.0 correction: the previous single `amplitude` was applied two different ways —
+    // halved (`* 0.3`) for scale but not for opacity — which left the scale swing at roughly
+    // ±0.3%, well under what a screen can reliably render without subpixel rounding eating it
+    // entirely. That was the actual cause of "breathing is missing," not the curve or the
+    // duration. Scale and opacity now each have their own named, one-directional amplitude
+    // (rest → peak → rest, never dipping below the resting value), matched to the brief's
+    // explicit numbers: scale swings a full 1.2% (1.000 → 1.012 → 1.000), opacity swings 2.5%
+    // (inside the requested 2–3% band).
+    scaleAmplitude: 0.012,
+    opacityAmplitude: 0.025,
+  },
+  ORBIT: {
+    containmentDuration: 54000,
+    plateDuration: 96000,
+    bracketDuration: 130000,
+    easing: Easing.linear,
   },
 } as const;

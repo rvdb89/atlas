@@ -4,43 +4,33 @@ import { ROOM_COLORS } from "../theme";
 import { RATIFIED_DEPARTMENTS, type RatifiedDepartmentId } from "@/atlas/team";
 
 /**
- * Department Projection — Phase 5.6 ("Atlas Space").
+ * A department, projected — Phase 5.9 ("Complete Presentation Reset"), rewritten from a blank
+ * file. Renders exactly one department's identity, or none: a small radial instrument reading
+ * (a bright point with a narrow fan of thin ticks) plus its label, never a wall, never several
+ * at once, never a permanent object. This is the one piece of "information Atlas projects" that
+ * exists as a real, non-text visual today — used only by `briefingSteps.ts`'s attention step,
+ * via `step.visualReference` (`synthesisEngine.ts`'s own logic, never invented here).
  *
- * Sprint 14 ("The Room — Version 1") ratified a permanent Department Wall: every real
- * department, side by side, always visible once the Heart was approached. Phase 5.6 retires
- * that architecture — not the organization itself. Engineering, Publishing, Customer Contact
- * and Signal & Research (`RATIFIED_DEPARTMENTS`) remain exactly as real and permanent as they
- * always were; "nothing about the business model changes." Only their permanent *visual*
- * representation is retired: a department is no longer a fixed place in Space. It is an
- * organizational identity Atlas materializes only while actually discussing it, and lets
- * dissolve the moment that's finished — the single-source model `ATLAS_RENDERING_LAW.md` §7
- * now states as the general rule for all of Space, not an exception to it.
- *
- * This file is that materialization, extracted (not reinvented) from what was previously
- * `ExecutiveBriefingOverlay.tsx`'s own inline `PointVisual` (Sprint 5.4) — the one place in the
- * current codebase where Atlas genuinely "discusses" one specific department: the Attention
- * step's `visualReference`, sourced from `synthesisEngine.ts`'s `capacityClause()`, never
- * invented here. Same two-layer Vein / Warm Vein idiom this file always used, same
- * `ROOM_COLORS` tokens, same canonical `RATIFIED_DEPARTMENTS` label table. Renders exactly one
- * department, or none — never a wall, never several at once, never a placeholder.
- *
- * `DepartmentSpec`/`mapDepartmentsForRoom()` (`roomData.ts`) are unchanged and still real — they
- * are simply retired from having a permanent visual consumer in `RoomScene.tsx`. A future
- * capability that genuinely needs an ambient, always-current department signal can reinstate a
- * call site without any change to that data layer; this sprint does not invent one, since no
- * such "Atlas is currently discussing this" event exists outside the Briefing today.
+ * `RATIFIED_DEPARTMENTS`, the department data model, and this component's one prop
+ * (`departmentId`) are all unchanged — this rewrite only replaces how the identity is drawn.
  */
+const TICK_ANGLES = [-54, -27, 0, 27, 54] as const;
+const TICK_RADIUS = 16;
+
 export default function DepartmentProjection({ departmentId }: { departmentId: string }) {
   const label = RATIFIED_DEPARTMENTS[departmentId as RatifiedDepartmentId]?.label ?? departmentId;
 
   return (
     <View style={styles.wrap}>
-      <View style={styles.shape}>
-        {/* The Vein — the same fixed structural carrier Department Wall always rendered,
-            here scoped to the one department actually being discussed. */}
-        <View style={styles.vein} />
-        {/* Warm Vein — the sole visible expression of judgment, unchanged. */}
-        <View style={styles.warmVein} />
+      <View style={styles.field}>
+        {TICK_ANGLES.map((angle) => (
+          <View
+            key={angle}
+            style={[styles.tick, { transform: [{ rotate: `${angle}deg` }, { translateY: -TICK_RADIUS }] }]}
+          />
+        ))}
+        <View style={styles.ring} />
+        <View style={styles.core} />
       </View>
       <Text style={styles.label}>{label}</Text>
     </View>
@@ -51,36 +41,44 @@ const styles = StyleSheet.create({
   wrap: {
     alignItems: "center",
     alignSelf: "center",
-    gap: 4,
+    gap: 6,
   },
 
-  shape: {
-    width: 36,
-    height: 40,
+  field: {
+    width: 44,
+    height: 44,
     alignItems: "center",
     justifyContent: "center",
   },
 
-  vein: {
+  tick: {
     position: "absolute",
-    width: 10,
-    height: "100%",
-    borderRadius: 8,
-    backgroundColor: ROOM_COLORS.wallDeep,
-    opacity: 0.35,
+    width: 1.5,
+    height: 8,
+    borderRadius: 1,
+    backgroundColor: ROOM_COLORS.emberWarm,
+    opacity: 0.45,
   },
 
-  warmVein: {
+  ring: {
     position: "absolute",
-    width: 10,
-    height: 20,
-    borderRadius: 8,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: ROOM_COLORS.emberCore,
+    opacity: 0.4,
+  },
+
+  core: {
+    width: 6,
+    height: 6,
+    borderRadius: 999,
     backgroundColor: ROOM_COLORS.emberCore,
-    opacity: 0.85,
     shadowColor: ROOM_COLORS.emberWarm,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 12,
+    shadowOpacity: 0.85,
+    shadowRadius: 10,
     elevation: 8,
   },
 

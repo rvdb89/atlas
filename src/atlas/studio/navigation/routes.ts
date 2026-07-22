@@ -36,8 +36,8 @@ export const ATLAS_STUDIO_NAV: StudioRouteItem[] = [
  * to annotation only.
  */
 export const ATLAS_STUDIO_SECONDARY_NAV: StudioRouteItem[] = [
-  { id: "atlas", emoji: "◈", title: "Atlas", route: "/atlas", description: "The Room · first living prototype" },
-  { id: "room", emoji: "◈", title: "The Room", route: "/room", description: "Prototype 1 · spatial Atlas" },
+  { id: "atlas", emoji: "◈", title: "Atlas", route: "/atlas", description: "Atlas Space · first living prototype" },
+  { id: "room", emoji: "◈", title: "Atlas Space", route: "/room", description: "Prototype 1 · spatial Atlas" },
   { id: "ceo", emoji: "★", title: "CEO Workflow", route: "/studio/ceo-workflow", description: "Secondary · legacy release flow" },
   { id: "mission", emoji: "◉", title: "Mission Control", route: "/studio", description: "Secondary · OS widgets" },
   { id: "command", emoji: "⌘", title: "Command Center", route: "/studio/command-center", description: "Secondary · diagnostics cockpit" },

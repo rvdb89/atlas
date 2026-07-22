@@ -189,6 +189,17 @@ function presenceForDoorway(businesses: BusinessOverview[], doorway: DoorwayId):
   return PRESENCE_BY_STATUS[business.status];
 }
 
+/** Phase 5.7 ("Strip Space to Atlas") — a pure name lookup, not a new judgment. The visible
+ * Company Doorways (Archway Recess) are retired from the main Space composition this phase;
+ * the underlying route and the `DOORWAY_BUSINESS_ID` association above are preserved exactly,
+ * and this is the one addition needed to label the restrained text-link fallback that replaces
+ * them (`RoomScreen.tsx`) — the same real `BusinessOverview.name` Company Portfolio already
+ * shows, nothing invented. */
+export function doorwayBusinessName(businesses: BusinessOverview[], doorway: DoorwayId): string {
+  const business = businesses.find((candidate) => candidate.id === DOORWAY_BUSINESS_ID[doorway]);
+  return business?.name ?? DOORWAY_BUSINESS_ID[doorway];
+}
+
 export type ExecutiveBriefing = {
   greeting: string;
   businessUpdate: string[];

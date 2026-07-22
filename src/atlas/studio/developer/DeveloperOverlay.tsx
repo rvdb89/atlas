@@ -1,16 +1,30 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { usePathname } from "expo-router";
 
 import { getAtlasVersionLabel } from "@/atlas/version";
 import { STUDIO_COLORS, STUDIO_RADIUS } from "../core/theme";
 import AtlasNotificationHost from "./AtlasNotificationHost";
 import { useAtlasDevBridge } from "./useAtlasDevBridge";
 
+// Phase 5.8 ("Rebuild Space Around Atlas") — this global FAB (visible only in `__DEV__` builds
+// already) is real, useful engineering infrastructure for the whole app: FPS/memory/route
+// diagnostics and a restart trigger, unrelated to Atlas Space's own presentation. It predates
+// Atlas Space and correctly stays exactly as it is everywhere else. But it renders on every
+// route, including Atlas Space, where its permanently-visible brown circle is exactly the kind
+// of independent visual actor this sprint removes — the same reasoning `StudioOsShell.tsx`
+// already applies to exempt `/studio/control` from its own sidebar/inspector chrome. This is
+// that same exemption, not a deletion: the tool is untouched, still real, still reachable from
+// every other screen; it is only route-scoped away from the one screen where Atlas must be the
+// only permanent visible thing, in every build, not only production ones.
+const ATLAS_SPACE_ROUTES = new Set(["/atlas", "/room"]);
+
 export default function DeveloperOverlay() {
   const insets = useSafeAreaInsets();
   const bridge = useAtlasDevBridge();
+  const pathname = usePathname();
 
-  if (!__DEV__) {
+  if (!__DEV__ || ATLAS_SPACE_ROUTES.has(pathname)) {
     return null;
   }
 
