@@ -292,7 +292,10 @@ export default function AtlasSpace() {
   const vignetteSize = Math.hypot(width, height) * 1.6;
   const vignetteOpacity = 0.2 + 0.22 * heartVitality;
   const ambientOpacity = 0.7 + 0.3 * heartVitality;
-  const restOffset = Math.min(Math.max(height * 0.24, 170), 260);
+  // Same unit formula as Heart.tsx — briefing sits below Atlas's outer frame + ~32px gap.
+  const atlasUnit = Math.min(Math.max(Math.min(width, height) * 0.36, 200), 460);
+  const atlasOuterRadius = atlasUnit * 0.58;
+  const restOffset = atlasOuterRadius + 32;
 
   const stageStyle = {
     opacity: entrance,
@@ -324,7 +327,12 @@ export default function AtlasSpace() {
   const expressionStyle = {
     opacity: expressionProgress,
     transform: [
-      { translateY: expressionProgress.interpolate({ inputRange: [0, 1], outputRange: [0, restOffset] }) },
+      {
+        translateY: expressionProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [height / 2, height / 2 + restOffset],
+        }),
+      },
       { scale: expressionProgress.interpolate({ inputRange: [0, 1], outputRange: [0.72, 1] }) },
     ],
   };
@@ -333,7 +341,7 @@ export default function AtlasSpace() {
     opacity: Animated.multiply(expressionProgress, 0.3),
     height: expressionProgress.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, Math.max(restOffset - 140, 40)],
+      outputRange: [0, atlasOuterRadius],
     }),
   };
 
@@ -389,7 +397,7 @@ export default function AtlasSpace() {
           </Animated.View>
 
           <View style={styles.expressionRoot} pointerEvents={activated ? "box-none" : "none"}>
-            <Animated.View pointerEvents="none" style={[styles.seam, seamStyle]} />
+            <Animated.View pointerEvents="none" style={[styles.seam, seamStyle, { top: height / 2 }]} />
             <Animated.View style={[styles.expression, expressionStyle]}>
               {currentStep ? (
                 <Animated.View style={{ width: "100%", alignItems: "center", ...stepLifecycleStyle }}>
@@ -551,7 +559,7 @@ const styles = StyleSheet.create({
   expressionRoot: {
     ...StyleSheet.absoluteFill,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
   },
 
   seam: {

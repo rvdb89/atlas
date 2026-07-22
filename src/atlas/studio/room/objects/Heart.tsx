@@ -258,7 +258,12 @@ export default function Heart({
       focusRadius={999}
     >
       <View pointerEvents="none" style={styles.wrap}>
-        <Animated.View style={[styles.presence, { transform: [{ scale: presenceScale }] }]}>
+        <Animated.View
+          style={[
+            styles.presence,
+            { width: GLASS_SHELL, height: GLASS_SHELL, transform: [{ scale: presenceScale }] },
+          ]}
+        >
           {/* Outermost, almost invisible — a transparent containment shell, not a visible ring. */}
           <Animated.View
             style={[

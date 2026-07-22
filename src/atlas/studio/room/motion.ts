@@ -181,7 +181,7 @@ export const ROOM_MOTION = {
     // (rest → peak → rest, never dipping below the resting value), matched to the brief's
     // explicit numbers: scale swings a full 1.2% (1.000 → 1.012 → 1.000), opacity swings 2.5%
     // (inside the requested 2–3% band).
-    scaleAmplitude: 0.012,
+    scaleAmplitude: 0.095,
     opacityAmplitude: 0.025,
   },
   ORBIT: {
